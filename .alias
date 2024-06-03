@@ -1,0 +1,8 @@
+#!/bin/bash
+# usage: source .alias
+
+alias cd.='cd $PROJECT_ROOT'
+alias cd.errorz='cd $PROJECT_ROOT/errorz'
+alias cd.stacktracez='cd $PROJECT_ROOT/stacktracez'
+alias cd.stringz='cd $PROJECT_ROOT/stringz'
+alias cd.unsafez='cd $PROJECT_ROOT/unsafez'
