@@ -2,6 +2,7 @@
 # usage: source .alias
 
 alias cd.='cd $PROJECT_ROOT'
+alias cd.colorz='cd $PROJECT_ROOT/colorz'
 alias cd.errorz='cd $PROJECT_ROOT/errorz'
 alias cd.stacktracez='cd $PROJECT_ROOT/stacktracez'
 alias cd.stringz='cd $PROJECT_ROOT/stringz'
