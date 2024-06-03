@@ -1,0 +1,4 @@
+#!/bin/bash
+set -eo pipefail
+
+source "${PROJECT_ROOT}/zscripts/_run.sh"
