@@ -1,8 +1,8 @@
 package diffz
 
 import (
-	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	godebugdiff "github.com/kylelemons/godebug/diff"
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -19,19 +19,52 @@ const ( // re-export
 	DiffEqual  = diffmatchpatch.DiffEqual
 )
 
-const DefaultPlaceholder = "█"
+const DefaultPlaceholder = '█'
 
-var regexpSpace = regexp.MustCompile(`^\s*$`)
-
-type Diffs struct {
-	Items []diffmatchpatch.Diff
-
-	ignoreSpace bool
-	placeholder string
+type Option struct {
+	IgnoreSpace bool
+	Placeholder rune
 }
 
-func (ds Diffs) Unwrap() []diffmatchpatch.Diff {
-	return ds.Items
+func Default() Option {
+	return Option{}
+}
+func IgnoreSpace() Option {
+	return Option{IgnoreSpace: true}
+}
+func Placeholder() Option {
+	return Option{Placeholder: DefaultPlaceholder}
+}
+func PlaceholderX(placeholder rune) Option {
+	return Option{Placeholder: placeholder}
+}
+func PlaceholderZ() Option {
+	return Option{
+		IgnoreSpace: true,
+		Placeholder: DefaultPlaceholder,
+	}
+}
+func (opt Option) AndIgnoreSpace() Option {
+	opt.IgnoreSpace = true
+	return opt
+}
+func (opt Option) AndPlaceholder() Option {
+	opt.Placeholder = DefaultPlaceholder
+	return opt
+}
+func (opt Option) AndPlaceholderX(placeholder rune) Option {
+	opt.Placeholder = placeholder
+	return opt
+}
+func (opt Option) DiffByChar(left, right string) (out Diffs) {
+	return ByCharX(left, right, opt)
+}
+func (opt Option) DiffByLine(left, right string) (out Diffs) {
+	return ByLineX(left, right, opt)
+}
+
+type Diffs struct {
+	Items []Diff
 }
 
 func (ds Diffs) IsDiff() bool {
@@ -44,38 +77,56 @@ func (ds Diffs) IsDiff() bool {
 }
 
 func ByChar(left, right string) Diffs {
+	return ByCharX(left, right, Default())
+}
+
+func ByCharX(left, right string, opt Option) (out Diffs) {
 	dmp := diffmatchpatch.New()
-	diffs := dmp.DiffMain(left, right, false)
-	return Diffs{Items: diffs}
+	out.Items = dmp.DiffMain(left, right, false)
+	return process(opt, out)
 }
 
 func ByCharZ(left, right string) Diffs {
-	return ByChar(left, right).IgnoreSpace().Placeholder()
+	return ByCharX(left, right, PlaceholderZ())
 }
 
 func ByLine(left, right string) (out Diffs) {
-	chunks := godebugdiff.DiffChunks(split(left), split(right))
+	return ByLineX(left, right, Default())
+}
+
+func ByLineX(left, right string, opt Option) (out Diffs) {
+	split := func(s string) (lines []string) {
+		lastIdx := 0
+		for i := 0; i < len(s); i++ {
+			if s[i] == '\n' {
+				lines = append(lines, s[lastIdx:i+1])
+				lastIdx = i + 1
+			}
+		}
+		if lastIdx < len(s) {
+			lines = append(lines, s[lastIdx:])
+		}
+		return lines
+	}
+
+	lefts, rights := split(left), split(right)
+	chunks := godebugdiff.DiffChunks(lefts, rights)
 	for _, chunk := range chunks {
-		for _, line := range chunk.Added {
-			out.Items = append(out.Items, Diff{
-				Type: DiffInsert,
-				Text: line,
-			})
+		for _, text := range chunk.Deleted {
+			out.Items = append(out.Items, Diff{Type: DiffDelete, Text: text})
 		}
-		for _, line := range chunk.Deleted {
-			out.Items = append(out.Items, Diff{
-				Type: DiffDelete,
-				Text: line,
-			})
+		for _, text := range chunk.Added {
+			out.Items = append(out.Items, Diff{Type: DiffInsert, Text: text})
 		}
-		for _, line := range chunk.Equal {
-			out.Items = append(out.Items, Diff{
-				Type: DiffEqual,
-				Text: line,
-			})
+		for _, text := range chunk.Equal {
+			out.Items = append(out.Items, Diff{Type: DiffEqual, Text: text})
 		}
 	}
-	return out
+	return process(opt, out)
+}
+
+func ByLineZ(left, right string) (out Diffs) {
+	return ByLineX(left, right, PlaceholderZ())
 }
 
 func Format(diffs Diffs) string {
@@ -83,147 +134,165 @@ func Format(diffs Diffs) string {
 	return dmp.DiffPrettyText(diffs.Items)
 }
 
-func (ds Diffs) IgnoreSpace() Diffs {
-	ds.ignoreSpace = true
-	outItems := make([]diffmatchpatch.Diff, 0, len(ds.Items))
-	for i := 0; i < len(ds.Items); i++ {
-		diff := ds.Items[i]
-		switch diff.Type {
-		case DiffEqual:
-			outItems = append(outItems, diff)
-
-		case DiffInsert:
-			if strings.TrimSpace(diff.Text) == "" {
-				continue // ignore empty diff
+func process(opt Option, ds Diffs) Diffs {
+	if opt == (Option{}) {
+		return ds
+	}
+	match := func(delText, insText string) (delI, insI int, ok bool) {
+		delL, insL := len(delText), len(insText)
+		for {
+			delCh, delSize := utf8.DecodeRuneInString(delText[delI:])
+			if delSize == 0 {
+				return delI, insI, delI == delL || insI == insL
 			}
-			outItems = append(outItems, diff)
-
-		case DiffDelete:
-			if strings.TrimSpace(diff.Text) == "" {
-				continue // ignore empty diff
+			insCh, insSize := utf8.DecodeRuneInString(insText[insI:])
+			if insSize == 0 {
+				return delI, insI, delI == delL || insI == insL
 			}
-			if len(ds.Items) <= i+1 {
-				outItems = append(outItems, diff)
+			if delCh == utf8.RuneError || insCh == utf8.RuneError {
+				return 0, 0, false
+			}
+			if delCh == insCh {
+				delI, insI = delI+delSize, insI+insSize
 				continue
 			}
-			nextDiff := ds.Items[i+1]
-			if nextDiff.Type != DiffInsert {
-				outItems = append(outItems, diff)
+			if opt.IgnoreSpace && isSpace(delCh) {
+				delI += delSize
 				continue
 			}
-			if ds.matchPlaceholder(diff.Text, nextDiff.Text) {
-				i++ // ignore the diff after the placeholder
-				outItems = append(outItems, Diff{
-					Type: DiffEqual,
-					Text: nextDiff.Text,
-				})
+			if opt.IgnoreSpace && isSpace(insCh) {
+				insI += insSize
 				continue
 			}
-			if ds.matchPlaceholder(nextDiff.Text, diff.Text) {
-				i++ // ignore the diff after the placeholder
-				outItems = append(outItems, Diff{
-					Type: DiffEqual,
-					Text: diff.Text,
-				})
+			if opt.Placeholder != 0 && opt.Placeholder == delCh || opt.Placeholder == insCh {
+				delI += delSize
+				insI += insSize
 				continue
 			}
-			outItems = append(outItems, diff)
+			return delI, insI, false
 		}
 	}
-	ds.Items = outItems
-	return ds
-}
 
-func (ds Diffs) Placeholder() Diffs {
-	return ds.PlaceholderX(DefaultPlaceholder)
-}
-
-func (ds Diffs) PlaceholderX(placeholder string) Diffs {
-	if placeholder == "" {
-		panic("placeholder cannot be empty")
-	}
-	ds.placeholder = placeholder
+	i, iDel, iIns, L := 0, 0, 0, len(ds.Items)
 	outItems := make([]Diff, 0, len(ds.Items))
-	for i := 0; i < len(ds.Items); i++ {
-		diff := ds.Items[i]
-		switch diff.Type {
-		case DiffEqual:
-			outItems = append(outItems, diff)
+	remainDel, remainIns := "", ""
 
-		case DiffInsert:
-			outItems = append(outItems, diff)
-
-		case DiffDelete:
-			if len(ds.Items) <= i+1 {
+	appendOut := func(op Operation, text string) {
+		if opt.IgnoreSpace {
+			text = strings.TrimSpace(text)
+		}
+		if text != "" {
+			outItems = append(outItems, Diff{Type: op, Text: text})
+		}
+		// TODO
+	}
+	appendEqual := func(delText, insText string) {
+		if delText != "" {
+			outItems = append(outItems, Diff{Type: DiffEqual, Text: delText})
+		}
+	}
+	skipEqualOrSpaceDiffs := func() {
+		for ; i < L; i++ {
+			diff := ds.Items[i]
+			if diff.Type == DiffEqual {
 				outItems = append(outItems, diff)
 				continue
 			}
-			nextDiff := ds.Items[i+1]
-			if nextDiff.Type != DiffInsert {
-				outItems = append(outItems, diff)
+			if opt.IgnoreSpace && strings.TrimSpace(diff.Text) == "" {
 				continue
 			}
-			if ds.matchPlaceholder(diff.Text, nextDiff.Text) {
-				i++ // ignore the diff after the placeholder
-				outItems = append(outItems, Diff{
-					Type: DiffEqual,
-					Text: nextDiff.Text,
-				})
-				continue
-			}
-			if ds.matchPlaceholder(nextDiff.Text, diff.Text) {
-				i++ // ignore the diff after the placeholder
-				outItems = append(outItems, Diff{
-					Type: DiffEqual,
-					Text: diff.Text,
-				})
-				continue
-			}
-			outItems = append(outItems, diff)
-
-		default:
-			panic("unreachable")
+			return
 		}
 	}
-	ds.Items = outItems
-	return ds
+	nextDelDiff := func() (out string, ok bool) {
+		if remainDel != "" {
+			out, remainDel = remainDel, ""
+			return out, true
+		}
+		iDel = max(iDel, i)
+		for ; iDel < L; iDel++ {
+			diff := ds.Items[iDel]
+			if opt.IgnoreSpace && strings.TrimSpace(diff.Text) == "" {
+				continue
+			}
+			switch diff.Type {
+			case DiffEqual:
+				if opt.IgnoreSpace && strings.TrimSpace(diff.Text) == "" {
+					continue
+				}
+				return "", false
+			case DiffDelete:
+				iDel++
+				return diff.Text, true
+			}
+		}
+		return "", false
+	}
+	nextInsDiff := func() (out string, ok bool) {
+		if remainIns != "" {
+			out, remainIns = remainIns, ""
+			return out, true
+		}
+		iIns = max(iIns, i)
+		for ; iIns < L; iIns++ {
+			diff := ds.Items[iIns]
+			if opt.IgnoreSpace && strings.TrimSpace(diff.Text) == "" {
+				continue
+			}
+			switch diff.Type {
+			case DiffEqual:
+				return "", false
+			case DiffInsert:
+				iIns++
+				return diff.Text, true
+			}
+		}
+		return "", false
+	}
+	processRemaining := func() {
+		appendOut(DiffDelete, remainDel)
+		appendOut(DiffInsert, remainIns)
+		remainDel, remainIns = "", ""
+		i = max(i, min(iDel, iIns))
+		for ; i < L; i++ {
+			diff := ds.Items[i]
+			switch diff.Type {
+			case DiffEqual:
+				return
+			default:
+				appendOut(diff.Type, diff.Text)
+			}
+		}
+	}
+
+	for i < L {
+		skipEqualOrSpaceDiffs()
+		for {
+			delText, ok := nextDelDiff()
+			if !ok {
+				processRemaining()
+				break
+			}
+			insText, ok := nextInsDiff()
+			if !ok {
+				processRemaining()
+				break
+			}
+			delI, insI, ok := match(delText, insText)
+			appendEqual(delText[:delI], insText[:insI])
+			remainDel, remainIns = delText[delI:], insText[insI:]
+			if !ok {
+				appendOut(DiffDelete, remainDel)
+				appendOut(DiffInsert, remainIns)
+				processRemaining()
+				break
+			}
+			i = min(iDel, iIns)
+		}
+	}
+	return Diffs{Items: outItems}
 }
 
-func (ds Diffs) matchPlaceholder(placeholderText, normalText string) bool {
-	if ds.placeholder == "" {
-		return false
-	}
-	if ds.ignoreSpace {
-		placeholderText = strings.TrimSpace(placeholderText)
-		normalText = strings.TrimSpace(normalText)
-	}
-	placeholder := ds.placeholder
-	if len(placeholderText)%len(placeholder) != 0 {
-		return false
-	}
-	N := len(placeholderText) / len(placeholder)
-	for i := 0; i < len(placeholderText); i += len(placeholder) {
-		if placeholderText[i:i+len(placeholder)] != placeholder {
-			return false
-		}
-	}
-	count := 0
-	for range normalText {
-		count++
-		if count > N {
-			return false
-		}
-	}
-	return count == N
-}
-
-func split(s string) (lines []string) {
-	lastIdx := 0
-	for i := 0; i < len(s); i++ {
-		if s[i] == '\n' {
-			lines = append(lines, s[lastIdx:i+1])
-			lastIdx = i + 1
-		}
-	}
-	return lines
+func isSpace(c rune) bool {
+	return c == ' ' || c == '\t' || c == '\n' || c == '\r'
 }
