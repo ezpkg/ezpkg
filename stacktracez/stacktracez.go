@@ -25,6 +25,7 @@ func (fz *Frames) Unwrap() *runtime.Frames {
 func (fz *Frames) Next() (frame runtime.Frame, more bool) {
 	return fz.Unwrap().Next()
 }
+
 func (fz *Frames) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's', 'v':

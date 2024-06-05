@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"diffz"
+	"github.com/ezpkg/diffz"
 )
 
 var left0 = `

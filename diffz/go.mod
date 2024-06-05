@@ -1,4 +1,4 @@
-module diffz
+module github.com/ezpkg/diffz
 
 go 1.21
 
