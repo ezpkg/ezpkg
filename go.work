@@ -6,5 +6,6 @@ use (
 	errorz
 	stacktracez
 	stringz
+	testingz
 	unsafez
 )
