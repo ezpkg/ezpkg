@@ -11,10 +11,31 @@ import (
 type Frames runtime.Frames
 type Frame runtime.Frame
 
+type StackTracer interface {
+	StackTrace() *runtime.Frames
+}
+type StackTracerZ interface {
+	StackTraceZ() *Frames
+}
+
+func (fz *Frames) StackTraceZ() *Frames        { return fz }
+func (fz *Frames) StackTrace() *runtime.Frames { return fz.Unwrap() }
+
 func StackTrace() *Frames {
 	var pc [32]uintptr
 	runtime.Callers(1, pc[:])
 	frames := runtime.CallersFrames(pc[:])
+	return (*Frames)(frames)
+}
+
+func StackTraceSkip(skip int) *Frames {
+	var pc [32]uintptr
+	n := runtime.Callers(skip+1, pc[:])
+	frames := runtime.CallersFrames(pc[:n])
+	return (*Frames)(frames)
+}
+
+func Wrap(frames *runtime.Frames) *Frames {
 	return (*Frames)(frames)
 }
 
