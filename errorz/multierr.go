@@ -3,7 +3,6 @@ package errorz
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/ezpkg/stacktracez"
 )
@@ -17,21 +16,25 @@ type Errors interface {
 }
 
 func Append(pErr *error, errs ...error) {
+	appendErrs(Option{}, pErr, errs...)
+}
+
+func appendErrs(opt Option, pErr *error, errs ...error) {
 	switch err0 := (*pErr).(type) {
 	case nil:
 		var zErrs zErrors
 		zErrs.Append(errs...)
-		*pErr = zErrs.process()
+		*pErr = zErrs.process(opt)
 
 	case *zErrors:
 		err0.Append(errs...)
-		*pErr = err0.process()
+		*pErr = err0.process(opt)
 
 	default:
 		var zErrs zErrors
 		zErrs.errors = make([]error, len(errs))
 		zErrs.Append(errs...)
-		*pErr = zErrs.process()
+		*pErr = zErrs.process(opt)
 	}
 }
 
@@ -42,7 +45,7 @@ func Appendf(pErr *error, err error, msg string, args ...any) {
 	if msg != "" {
 		err = Wrapf(err, msg, args...)
 	}
-	Append(pErr, err)
+	appendErrs(Option{}, pErr, err)
 }
 
 func Validatef(pErr *error, condition bool, msg string, args ...any) {
@@ -180,14 +183,10 @@ func (es *zErrors) Append(errs ...error) {
 }
 
 func (es *zErrors) Appendf(err error, msgArgs ...any) {
-	if err == nil {
-		return
+	err = formatMsg(err, msgArgs)
+	if err != nil {
+		es.errors = append(es.errors, err)
 	}
-	msg := formatMsg(msgArgs)
-	if msg != "" {
-		err = Wrap(err, msg)
-	}
-	es.errors = append(es.errors, err)
 }
 
 func (es *zErrors) Validatef(condition bool, msg string, args ...any) {
@@ -197,22 +196,23 @@ func (es *zErrors) Validatef(condition bool, msg string, args ...any) {
 	}
 }
 
-func (es *zErrors) process() error {
+func (es *zErrors) process(opt Option) error {
 	if len(es.errors) == 0 {
 		return nil
 	}
-	if es.stack == nil {
-		es.stack = stacktracez.StackTraceSkip(2)
+	if es.stack != nil || opt.NoStack {
+		return es
 	}
+	es.stack = stacktracez.StackTraceSkip(opt.CallersSkip + 2)
 	return es
 }
 
-func formatMsg(msgArgs []any) string {
+func formatMsg(err error, msgArgs []any) error {
 	if len(msgArgs) == 0 {
-		return ""
+		return err
 	}
 	if format, ok := msgArgs[0].(string); ok {
-		return fmt.Sprintf(format, msgArgs[1:]...)
+		return NoStack().Wrapf(err, format, msgArgs[1:]...)
 	}
-	return strings.TrimSpace(fmt.Sprintln(msgArgs...))
+	return NoStack().Wrap(err, fmt.Sprintln(msgArgs...))
 }

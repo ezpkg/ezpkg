@@ -57,103 +57,11 @@ func Errorf(format string, args ...any) error {
 }
 
 func Wrap(err error, msg string) error {
-	return (Option{Skip: 1}).Wrap(err, msg)
+	return (Option{CallersSkip: 1}).Wrap(err, msg)
 }
 
 func Wrapf(err error, format string, args ...any) error {
-	return (Option{Skip: 1}).Wrapf(err, format, args...)
-}
-
-type Option struct {
-	NoStack bool
-	Skip    int
-}
-
-func NoStack() Option {
-	return Option{NoStack: true}
-}
-func CallersSkip(n int) Option {
-	return Option{Skip: n}
-}
-
-func (opt Option) New(msg string) error {
-	zErr := &zError{
-		msg: msg,
-	}
-	if !opt.NoStack {
-		zErr.stack = stacktracez.StackTraceSkip(opt.Skip + 1)
-	}
-	return zErr
-}
-
-func (opt Option) Newf(format string, args ...any) error {
-	zErr := &zError{
-		msg: fmt.Sprintf(format, args...),
-	}
-	if !opt.NoStack {
-		zErr.stack = stacktracez.StackTraceSkip(opt.Skip + 1)
-	}
-	return zErr
-}
-
-func (opt Option) Error(msg string) error {
-	zErr := &zError{
-		msg: msg,
-	}
-	if !opt.NoStack {
-		zErr.stack = stacktracez.StackTraceSkip(opt.Skip + 1)
-	}
-	return zErr
-}
-
-func (opt Option) Errorf(format string, args ...any) error {
-	zErr := &zError{
-		msg: fmt.Sprintf(format, args...),
-	}
-	if !opt.NoStack {
-		zErr.stack = stacktracez.StackTraceSkip(opt.Skip + 1)
-	}
-	return zErr
-}
-
-func (opt Option) Wrap(err error, msg string) error {
-	if err == nil {
-		return nil
-	}
-	zErr := &zError{
-		msg:   msg,
-		cause: err,
-	}
-	if opt.NoStack {
-		return zErr
-	}
-	stack, ok := err.(stacktracez.StackTracerZ)
-	if ok && stack.StackTraceZ() != nil {
-		zErr.stack = stack.StackTraceZ()
-	} else {
-		zErr.stack = stacktracez.StackTraceSkip(opt.Skip + 1)
-	}
-	return zErr
-}
-
-func (opt Option) Wrapf(err error, format string, args ...any) error {
-	if err == nil {
-		return nil
-	}
-	zErr := &zError{
-		msg:   fmt.Sprintf(format, args...),
-		cause: err,
-	}
-	if opt.NoStack {
-		return zErr
-	}
-	stack, ok := err.(stacktracez.StackTracerZ)
-	if ok && stack.StackTraceZ() != nil {
-		zErr.stack = stack.StackTraceZ()
-	} else {
-		zErr.stack = stacktracez.StackTraceSkip(opt.Skip + 1)
-	}
-	return zErr
+	return (Option{CallersSkip: 1}).Wrapf(err, format, args...)
 }
 
 func (e *zError) Error() string {

@@ -44,6 +44,20 @@ func TestErrors(t *testing.T) {
 		assert(t, len(errs2) == 3).Errorf("❌ expect len(errs2) == 3")
 	})
 	t.Run("format", func(t *testing.T) {
+		stackPlus := `
+github.com/ezpkg/errorz.Append
+	/Users/i/ws/ezpkg/ezpkg/errorz/multierr.go:██
+github.com/ezpkg/errorz_test.TestErrors.func█.█
+	/Users/i/ws/ezpkg/ezpkg/errorz/multierr_test.go:██
+testing.tRunner
+	/usr/local/go/src/testing/testing.go:████
+`
+		stackAlt := `
+github.com/ezpkg/errorz/multierr.go:██ · Append
+github.com/ezpkg/errorz_test/multierr_test.go:██ · TestErrors.func█.█
+testing/testing.go:████ · tRunner
+`
+
 		t.Run("one", func(t *testing.T) {
 			var err error
 			errorz.Append(&err, fmt.Errorf("error/foo"))
@@ -57,20 +71,14 @@ func TestErrors(t *testing.T) {
 				assertEqual(t, str, `
 1 error occurred:
 	* error/foo
-github.com/ezpkg/errorz_test.TestErrors.func█.█
-	/Users/i/ws/ezpkg/ezpkg/errorz/multierr_test.go:██
-testing.tRunner
-	/usr/local/go/src/testing/testing.go:████
-`)
+`+stackPlus)
 			})
 			t.Run("%#v", func(t *testing.T) {
 				str := fmt.Sprintf("%#v", err)
 				assertEqual(t, str, `
 1 error occurred:
 	* error/foo
-github.com/ezpkg/errorz_test/multierr_test.go:██ · TestErrors.func█.█
-testing/testing.go:████ · tRunner
-`)
+`+stackAlt)
 			})
 		})
 		t.Run("two", func(t *testing.T) {
@@ -88,11 +96,7 @@ testing/testing.go:████ · tRunner
 2 errors occurred:
 	* error/foo
 	* error/bar
-github.com/ezpkg/errorz_test.TestErrors.func█.█
-	/Users/i/ws/ezpkg/ezpkg/errorz/multierr_test.go:██
-testing.tRunner
-	/usr/local/go/src/testing/testing.go:████
-`)
+`+stackPlus)
 			})
 			t.Run("%#v", func(t *testing.T) {
 				str := fmt.Sprintf("%#v", err)
@@ -100,9 +104,7 @@ testing.tRunner
 2 errors occurred:
 	* error/foo
 	* error/bar
-github.com/ezpkg/errorz_test/multierr_test.go:██ · TestErrors.func█.█
-testing/testing.go:████ · tRunner
-`)
+`+stackAlt)
 			})
 		})
 	})
@@ -116,7 +118,16 @@ testing/testing.go:████ · tRunner
 		assert(t, len(errs) == 2).Errorf("❌ expect len(errs) == 2")
 
 		t.Run("format", func(t *testing.T) {
-
+			str := fmt.Sprintf("%#v", err)
+			assertEqual(t, str, `
+2 errors occurred:
+	* error/foo
+	* error/42
+github.com/ezpkg/errorz/multierr.go:██ · Append
+github.com/ezpkg/errorz/multierr.go:██ · Validatef
+github.com/ezpkg/errorz_test/multierr_test.go:███ · TestErrors.func█
+testing/testing.go:████ · tRunner
+`)
 		})
 	})
 }
