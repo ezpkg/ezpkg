@@ -2,7 +2,6 @@ package errorz_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/ezpkg/diffz"
@@ -28,18 +27,22 @@ func TestError(t *testing.T) {
 		t.Run("printf:%+v", func(t *testing.T) {
 			str := fmt.Sprintf("%+v", zErr)
 			fmt.Println(str)
-			assertRegexp(t, str, `^bar/one: foo\n`)
-			assertRegexp(t, str, `github[.]com/ezpkg/errorz[.]Wrapf\n`)
-			assertRegexp(t, str, `/ezpkg/ezpkg/errorz/errorz[.]go:\d+\n`)
-			assertRegexp(t, str, `\ntesting[.]tRunner\n`)
-			assertRegexp(t, str, `/testing/testing[.]go:\d+\n$`)
+			assertEqual(t, str, `
+bar/one: foo
+github.com/ezpkg/errorz_test.TestError.func1
+	/Users/i/ws/ezpkg/ezpkg/errorz/errorz_test.go:██
+testing.tRunner
+	/usr/local/go/src/testing/testing.go:████
+`)
 		})
 		t.Run("printf:%#v", func(t *testing.T) {
 			str := fmt.Sprintf("%#v", zErr)
 			fmt.Println(str)
-			assertRegexp(t, str, `^bar/one: foo\n`)
-			assertRegexp(t, str, `\ngithub[.]com/ezpkg/errorz/errorz[.]go:\d+ · Wrapf\n`)
-			assertRegexp(t, str, `\ntesting/testing[.]go:\d+ · tRunner\n$`)
+			assertEqual(t, str, `
+bar/one: foo
+github.com/ezpkg/errorz_test/errorz_test.go:██ · TestError.func1
+testing/testing.go:████ · tRunner
+`)
 		})
 		t.Run("printf:%v", func(t *testing.T) {
 			str := fmt.Sprintf("%v", zErr)
@@ -64,8 +67,20 @@ func TestError(t *testing.T) {
 	})
 }
 
+type assertFn func(format string, args ...any)
+
+func (fn assertFn) Errorf(format string, args ...any) { fn(format, args...) }
+
+func assert(t *testing.T, cond bool) assertFn {
+	if cond {
+		return func(string, ...any) {}
+	} else {
+		return t.Errorf
+	}
+}
+
 func assertEqual(t *testing.T, actual, expect string) {
-	diffs := diffz.ByLine(actual, expect)
+	diffs := diffz.ByLineZ(actual, expect)
 	if diffs.IsDiff() {
 		fmt.Println(actual)
 		fmt.Println()
@@ -73,11 +88,5 @@ func assertEqual(t *testing.T, actual, expect string) {
 		t.Error("❌ not equal")
 	} else {
 		fmt.Println(actual)
-	}
-}
-
-func assertRegexp(t *testing.T, actual, expect string) {
-	if !regexp.MustCompile(expect).MatchString(actual) {
-		t.Errorf("❌ expect %q to contain %q", actual, expect)
 	}
 }

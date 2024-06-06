@@ -26,19 +26,23 @@ func (fz *Frames) StackTraceZ() *Frames { return fz }
 
 func StackTrace() *Frames {
 	var pc [maxFrames]uintptr
-	runtime.Callers(1, pc[:])
+	runtime.Callers(2, pc[:])
 	frames := runtime.CallersFrames(pc[:])
 	return &Frames{frames: frames}
 }
 
 func StackTraceSkip(skip int) *Frames {
 	var pc [maxFrames]uintptr
-	n := runtime.Callers(skip+1, pc[:])
+	n := runtime.Callers(skip+2, pc[:])
 	frames := runtime.CallersFrames(pc[:n])
 	return &Frames{frames: frames}
 }
 
 func (fz *Frames) Format(s fmt.State, verb rune) {
+	if fz == nil {
+		writeString(s, "<nil>")
+		return
+	}
 	switch verb {
 	case 's', 'v':
 		formatFrames(s, verb, fz.GetFrames())
@@ -46,6 +50,9 @@ func (fz *Frames) Format(s fmt.State, verb rune) {
 }
 
 func (fz *Frames) GetFrames() []Frame {
+	if fz == nil {
+		return nil
+	}
 	fz.mutex.RLock()
 	if cached := fz.cached; cached != nil {
 		fz.mutex.RUnlock()
@@ -88,6 +95,9 @@ func (f Frame) Format(s fmt.State, verb rune) {
 }
 
 func formatFrames(s fmt.State, verb rune, frames []Frame) {
+	if len(frames) == 0 {
+		writeString(s, "[]")
+	}
 	for _, frame := range frames {
 		frame.Format(s, verb)
 		writeString(s, "\n")

@@ -172,14 +172,14 @@ func (e *zError) Format(s fmt.State, v rune) {
 		return
 	}
 	switch v {
-	case 'v':
+	case 's', 'v':
 		e.writeMessage(s)
 		if (s.Flag('+') || s.Flag('#')) && e.stack != nil {
 			writeString(s, "\n")
-			e.stack.Format(s, v)
+			if e.stack != nil {
+				e.stack.Format(s, v)
+			}
 		}
-	case 's':
-		e.writeMessage(s)
 	case 'q':
 		switch {
 		case e.msg != "":
@@ -206,6 +206,9 @@ func (e *zError) writeMessage(s fmt.State) {
 }
 
 func (e *zError) StackTraceZ() *stacktracez.Frames {
+	if e == nil || e.stack == nil {
+		return nil
+	}
 	return e.stack.StackTraceZ()
 }
 
