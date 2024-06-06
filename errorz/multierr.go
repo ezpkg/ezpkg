@@ -50,7 +50,7 @@ func Appendf(pErr *error, err error, msg string, args ...any) {
 
 func Validatef(pErr *error, condition bool, msg string, args ...any) {
 	if !condition {
-		Append(pErr, NoStack().Errorf(msg, args...))
+		appendErrs(Option{}, pErr, NoStack().Errorf(msg, args...))
 	}
 }
 
@@ -58,7 +58,7 @@ func ValidateX[T any](pErr *error, value T, condition bool, msg string, args ...
 	if condition {
 		return value
 	} else {
-		Append(pErr, NoStack().Errorf(msg, args...))
+		appendErrs(Option{}, pErr, NoStack().Errorf(msg, args...))
 		return out
 	}
 }
@@ -203,7 +203,7 @@ func (es *zErrors) process(opt Option) error {
 	if es.stack != nil || opt.NoStack {
 		return es
 	}
-	es.stack = stacktracez.StackTraceSkip(opt.CallersSkip + 2)
+	es.stack = stacktracez.StackTraceSkip(opt.CallersSkip + 3)
 	return es
 }
 
