@@ -19,6 +19,6 @@ func BenchmarkZ(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		frames := StackTrace()
-		frames.Next()
+		frames.GetFrames()
 	}
 }

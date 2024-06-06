@@ -3,7 +3,6 @@ package errorz
 import (
 	"fmt"
 	"io"
-	"runtime"
 
 	"github.com/ezpkg/stacktracez"
 )
@@ -20,6 +19,8 @@ func MustZ(err error) {
 		panic(err)
 	}
 }
+
+var _ stacktracez.StackTracerZ = (*zError)(nil)
 
 type zError struct {
 	msg   string
@@ -126,9 +127,9 @@ func (opt Option) Wrap(err error, msg string) error {
 	if opt.NoStack {
 		return zErr
 	}
-	stack, ok := err.(stacktracez.StackTracer)
-	if ok && stack.StackTrace() != nil {
-		zErr.stack = stacktracez.Wrap(stack.StackTrace())
+	stack, ok := err.(stacktracez.StackTracerZ)
+	if ok && stack.StackTraceZ() != nil {
+		zErr.stack = stack.StackTraceZ()
 	} else {
 		zErr.stack = stacktracez.StackTraceSkip(opt.Skip + 1)
 	}
@@ -146,9 +147,9 @@ func (opt Option) Wrapf(err error, format string, args ...any) error {
 	if opt.NoStack {
 		return zErr
 	}
-	stack, ok := err.(stacktracez.StackTracer)
-	if ok && stack.StackTrace() != nil {
-		zErr.stack = stacktracez.Wrap(stack.StackTrace())
+	stack, ok := err.(stacktracez.StackTracerZ)
+	if ok && stack.StackTraceZ() != nil {
+		zErr.stack = stack.StackTraceZ()
 	} else {
 		zErr.stack = stacktracez.StackTraceSkip(opt.Skip + 1)
 	}
@@ -156,6 +157,9 @@ func (opt Option) Wrapf(err error, format string, args ...any) error {
 }
 
 func (e *zError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
 	if e.cause == nil && e.msg != "" {
 		return e.msg
 	}
@@ -163,10 +167,14 @@ func (e *zError) Error() string {
 }
 
 func (e *zError) Format(s fmt.State, v rune) {
+	if e == nil {
+		writeString(s, "<nil>")
+		return
+	}
 	switch v {
 	case 'v':
 		e.writeMessage(s)
-		if s.Flag('+') && e.stack != nil {
+		if (s.Flag('+') || s.Flag('#')) && e.stack != nil {
 			writeString(s, "\n")
 			e.stack.Format(s, v)
 		}
@@ -174,8 +182,6 @@ func (e *zError) Format(s fmt.State, v rune) {
 		e.writeMessage(s)
 	case 'q':
 		switch {
-		case e == nil:
-			writeString(s, "<nil>")
 		case e.msg != "":
 			fprintf(s, "%q", e.msg)
 		case e.cause != nil:
@@ -188,8 +194,6 @@ func (e *zError) Format(s fmt.State, v rune) {
 
 func (e *zError) writeMessage(s fmt.State) {
 	switch {
-	case e == nil:
-		writeString(s, "<nil>")
 	case e.msg != "" && e.cause != nil:
 		fprintf(s, "%s: %v", e.msg, e.cause)
 	case e.msg != "":
@@ -201,9 +205,6 @@ func (e *zError) writeMessage(s fmt.State) {
 	}
 }
 
-func (e *zError) StackTrace() *runtime.Frames {
-	return e.stack.StackTrace()
-}
 func (e *zError) StackTraceZ() *stacktracez.Frames {
 	return e.stack.StackTraceZ()
 }

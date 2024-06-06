@@ -17,9 +17,9 @@ func TestStackTrace(t *testing.T) {
 	fmt.Println(st1)
 
 	assert(t, regexp.MustCompile(`^github\.com/ezpkg/stacktracez\.StackTrace\n`).MatchString(st0)).
-		Errorf("malform stacktrace")
+		Errorf("❌1")
 	assert(t, regexp.MustCompile(`\n\t[\w/]+/ezpkg/ezpkg/stacktracez/stacktracez.go:\d+\n`).MatchString(st0)).
-		Errorf("malform stacktrace")
+		Errorf("❌2")
 
 	expected := regexp.MustCompile(strings.TrimSpace(`
 github\.com/ezpkg/stacktracez/stacktracez\.go:\d+ · StackTrace
@@ -27,7 +27,7 @@ github\.com/ezpkg/stacktracez/stacktracez_test\.go:\d+ · TestStackTrace\.func1
 github\.com/ezpkg/stacktracez/stacktracez_test\.go:\d+ · TestStackTrace
 testing/testing\.go:\d+ · tRunner
 `))
-	assert(t, expected.MatchString(st1)).Errorf("malform stacktrace")
+	assert(t, expected.MatchString(st1)).Errorf("❌3")
 }
 
 type assertFn func(format string, args ...any)
