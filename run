@@ -2,7 +2,7 @@
 set -eo pipefail
 
 task_testall() {
-    find . -name go.mod -execdir go test ./... \;
+    find . -name go.mod -execdir go test "$@" ./... \;
 }
 
 source "${PROJECT_ROOT}/zscripts/_run.sh"

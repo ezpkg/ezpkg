@@ -68,7 +68,7 @@ func (c Color) Fprintf(w io.Writer, format string, args ...any) (n int, err erro
 	ni, err = fmt.Fprintf(w, format, args...)
 	n += ni
 	if err != nil {
-		return 0, err
+		return n, err
 	}
 	ni, err = fmt.Fprintf(w, "\x1b[0m")
 	return n + ni, err
