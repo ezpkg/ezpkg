@@ -96,6 +96,9 @@ func ByLine(left, right string) (out Diffs) {
 
 func ByLineX(left, right string, opt Option) (out Diffs) {
 	split := func(s string) (lines []string) {
+		if s == "" {
+			return nil
+		}
 		lastIdx := 0
 		for i := 0; i < len(s); i++ {
 			if s[i] == '\n' {
@@ -105,6 +108,9 @@ func ByLineX(left, right string, opt Option) (out Diffs) {
 		}
 		if lastIdx < len(s) {
 			lines = append(lines, s[lastIdx:])
+		}
+		if !strings.HasSuffix(s, "\n") {
+			lines[len(lines)-1] += "\n"
 		}
 		return lines
 	}
@@ -178,18 +184,18 @@ func process(opt Option, ds Diffs) Diffs {
 	remainDel, remainIns := "", ""
 
 	appendOut := func(op Operation, text string) {
-		if opt.IgnoreSpace {
-			text = strings.TrimSpace(text)
+		if opt.IgnoreSpace && strings.TrimSpace(text) == "" {
+			return
 		}
 		if text != "" {
 			outItems = append(outItems, Diff{Type: op, Text: text})
 		}
-		// TODO
 	}
 	appendEqual := func(delText, insText string) {
 		if delText != "" {
 			outItems = append(outItems, Diff{Type: DiffEqual, Text: delText})
 		}
+		// TODO: handle placeholder when format
 	}
 	skipEqualOrSpaceDiffs := func() {
 		for ; i < L; i++ {
@@ -259,8 +265,16 @@ func process(opt Option, ds Diffs) Diffs {
 			switch diff.Type {
 			case DiffEqual:
 				return
-			default:
-				appendOut(diff.Type, diff.Text)
+			case DiffDelete:
+				if i >= iDel {
+					iDel++
+					appendOut(diff.Type, diff.Text)
+				}
+			case DiffInsert:
+				if i >= iIns {
+					iIns++
+					appendOut(diff.Type, diff.Text)
+				}
 			}
 		}
 	}
@@ -275,6 +289,7 @@ func process(opt Option, ds Diffs) Diffs {
 			}
 			insText, ok := nextInsDiff()
 			if !ok {
+				remainDel = delText
 				processRemaining()
 				break
 			}
@@ -282,12 +297,9 @@ func process(opt Option, ds Diffs) Diffs {
 			appendEqual(delText[:delI], insText[:insI])
 			remainDel, remainIns = delText[delI:], insText[insI:]
 			if !ok {
-				appendOut(DiffDelete, remainDel)
-				appendOut(DiffInsert, remainIns)
 				processRemaining()
 				break
 			}
-			i = min(iDel, iIns)
 		}
 	}
 	return Diffs{Items: outItems}
