@@ -5,8 +5,11 @@ use (
 	colorz
 	diffz
 	errorz
+	mapz
+	slicez
 	stacktracez
 	stringz
 	testingz
+	typez
 	unsafez
 )
