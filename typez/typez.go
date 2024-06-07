@@ -1,4 +1,4 @@
-package typez
+package typez // import "ezpkg.io/typez"
 
 import (
 	"reflect"

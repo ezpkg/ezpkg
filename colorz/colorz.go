@@ -1,4 +1,4 @@
-package colorz
+package colorz // import "ezpkg.io/colorz"
 
 import (
 	"fmt"

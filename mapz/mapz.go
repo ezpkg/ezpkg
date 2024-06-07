@@ -1,4 +1,4 @@
-package mapz
+package mapz // import "ezpkg.io/mapz"
 
 import (
 	"slices"

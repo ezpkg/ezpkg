@@ -1,4 +1,4 @@
-package errorz
+package errorz // import "ezpkg.io/errorz"
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package slicez
+package slicez // import "ezpkg.io/slicez"
 
 func First[S ~[]E, E any](s S) (out E) {
 	if len(s) > 0 {

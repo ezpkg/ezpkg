@@ -1,4 +1,4 @@
-package stacktracez
+package stacktracez // import "ezpkg.io/stacktracez"
 
 import (
 	"fmt"

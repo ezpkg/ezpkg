@@ -1,4 +1,4 @@
-package testingz
+package testingz // import "ezpkg.io/testingz"
 
 import (
 	"ezpkg.io/diffz"

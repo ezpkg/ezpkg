@@ -1,4 +1,4 @@
-package stringz
+package stringz // import "ezpkg.io/stringz"
 
 func FirstNParts(s string, n int, sep byte) string {
 	for i := 0; i < len(s); i++ {

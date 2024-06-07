@@ -1,4 +1,4 @@
-package unsafez
+package unsafez // import "ezpkg.io/unsafez"
 
 import (
 	"unsafe"

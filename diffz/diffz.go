@@ -1,4 +1,4 @@
-package diffz
+package diffz // import "ezpkg.io/diffz"
 
 import (
 	"strings"
