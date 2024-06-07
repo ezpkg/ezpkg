@@ -1,3 +1,3 @@
-module github.com/ezpkg/ezpkg
+module ezpkg.io/ezpkg
 
 go 1.21

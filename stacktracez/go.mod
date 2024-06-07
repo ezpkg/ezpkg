@@ -1,3 +1,3 @@
-module github.com/ezpkg/stacktracez
+module ezpkg.io/stacktracez
 
 go 1.21

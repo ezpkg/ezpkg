@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ezpkg/errorz"
+	"ezpkg.io/errorz"
 )
 
 type MockError struct{}
@@ -45,13 +45,13 @@ func TestErrors(t *testing.T) {
 	})
 	t.Run("format", func(t *testing.T) {
 		stackPlus := `
-github.com/ezpkg/errorz_test.TestErrors.func█.█
+ezpkg.io/errorz_test.TestErrors.func█.█
 	/Users/i/ws/ezpkg/ezpkg/errorz/multierr_test.go:██
 testing.tRunner
 	/usr/local/go/src/testing/testing.go:████
 `
 		stackAlt := `
-github.com/ezpkg/errorz_test/multierr_test.go:██ · TestErrors.func█.█
+ezpkg.io/errorz_test/multierr_test.go:██ · TestErrors.func█.█
 testing/testing.go:████ · tRunner
 `
 
@@ -120,7 +120,7 @@ testing/testing.go:████ · tRunner
 2 errors occurred:
 	* error/foo
 	* error/42
-github.com/ezpkg/errorz_test/multierr_test.go:███ · TestErrors.func█
+ezpkg.io/errorz_test/multierr_test.go:███ · TestErrors.func█
 testing/testing.go:████ · tRunner
 `)
 		})

@@ -1,7 +1,7 @@
 package testingz
 
 import (
-	"github.com/ezpkg/diffz"
+	"ezpkg.io/diffz"
 )
 
 func DiffByChar(expect, actual string) (formatted string, isDiff bool) {

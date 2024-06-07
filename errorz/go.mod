@@ -1,3 +1,3 @@
-module github.com/ezpkg/errorz
+module ezpkg.io/errorz
 
 go 1.21

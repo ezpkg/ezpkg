@@ -1,3 +1,3 @@
-module github.com/ezpkg/unsafez
+module ezpkg.io/unsafez
 
 go 1.21

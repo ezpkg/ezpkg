@@ -1,3 +1,3 @@
-module github.com/ezpkg/colorz
+module ezpkg.io/colorz
 
 go 1.21

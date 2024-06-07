@@ -16,15 +16,15 @@ func TestStackTrace(t *testing.T) {
 	fmt.Println(st0)
 	fmt.Println(st1)
 
-	assert(t, regexp.MustCompile(`^github[.]com/ezpkg/stacktracez[.]TestStackTrace[.]func1\n`).MatchString(st0)).
+	assert(t, regexp.MustCompile(`^ezpkg[.]io/stacktracez[.]TestStackTrace[.]func1\n`).MatchString(st0)).
 		Errorf("❌1")
 	assert(t, regexp.MustCompile(`\n\t[\w/]+/ezpkg/ezpkg/stacktracez/stacktracez_test[.]go:\d+\n`).MatchString(st0)).
 		Errorf("❌2")
 
 	expected := regexp.MustCompile(strings.TrimSpace(`
-github\.com/ezpkg/stacktracez/stacktracez_test\.go:\d+ · TestStackTrace\.func1
-github\.com/ezpkg/stacktracez/stacktracez_test\.go:\d+ · TestStackTrace
-testing/testing\.go:\d+ · tRunner
+ezpkg[.]io/stacktracez/stacktracez_test[.]go:\d+ · TestStackTrace[.]func1
+ezpkg[.]io/stacktracez/stacktracez_test[.]go:\d+ · TestStackTrace
+testing/testing[.]go:\d+ · tRunner
 `))
 	assert(t, expected.MatchString(st1)).Errorf("❌3")
 }

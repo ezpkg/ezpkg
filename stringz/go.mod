@@ -1,3 +1,3 @@
-module github.com/ezpkg/stringz
+module ezpkg.io/stringz
 
 go 1.21

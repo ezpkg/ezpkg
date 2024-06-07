@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/ezpkg/stacktracez"
+	"ezpkg.io/stacktracez"
 )
 
 var _ Errors = (*zErrors)(nil)

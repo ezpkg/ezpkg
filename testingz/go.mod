@@ -1,4 +1,4 @@
-module github.com/ezpkg/testingz
+module ezpkg.io/testingz
 
 go 1.21
 

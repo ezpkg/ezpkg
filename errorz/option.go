@@ -3,7 +3,7 @@ package errorz
 import (
 	"fmt"
 
-	"github.com/ezpkg/stacktracez"
+	"ezpkg.io/stacktracez"
 )
 
 type Option struct {

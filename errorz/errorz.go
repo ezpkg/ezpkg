@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/ezpkg/stacktracez"
+	"ezpkg.io/stacktracez"
 )
 
 func Must[T any](v T, err error) T {

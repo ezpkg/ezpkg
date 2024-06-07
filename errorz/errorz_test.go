@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ezpkg/diffz"
-	"github.com/ezpkg/errorz"
+	"ezpkg.io/diffz"
+	"ezpkg.io/errorz"
 )
 
 func TestError(t *testing.T) {
@@ -29,7 +29,7 @@ func TestError(t *testing.T) {
 			fmt.Println(str)
 			assertEqual(t, str, `
 bar/one: foo
-github.com/ezpkg/errorz_test.TestError.func1
+ezpkg.io/errorz_test.TestError.func1
 	/Users/i/ws/ezpkg/ezpkg/errorz/errorz_test.go:██
 testing.tRunner
 	/usr/local/go/src/testing/testing.go:████
@@ -40,7 +40,7 @@ testing.tRunner
 			fmt.Println(str)
 			assertEqual(t, str, `
 bar/one: foo
-github.com/ezpkg/errorz_test/errorz_test.go:██ · TestError.func1
+ezpkg.io/errorz_test/errorz_test.go:██ · TestError.func1
 testing/testing.go:████ · tRunner
 `)
 		})
