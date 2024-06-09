@@ -18,18 +18,29 @@ func (b *Builder) WriteByte(c byte) error            { return b.unwrap().WriteBy
 func (b *Builder) WriteRune(r rune) (int, error)     { return b.unwrap().WriteRune(r) }
 func (b *Builder) WriteString(s string) (int, error) { return b.unwrap().WriteString(s) }
 
+func (b *Builder) WriteZ(p []byte) int {
+	n, _ := b.unwrap().Write(p)
+	return n
+}
+func (b *Builder) WriteByteZ(c byte) {
+	b.unwrap().WriteByte(c)
+}
+func (b *Builder) WriteRuneZ(r rune) int {
+	n, _ := b.unwrap().WriteRune(r)
+	return n
+}
+func (b *Builder) WriteStringZ(s string) {
+	_, _ = b.unwrap().WriteString(s)
+}
 func (b *Builder) PrintBytes(p []byte) {
 	_, _ = b.Write(p)
 }
-
 func (b *Builder) Printf(format string, args ...any) {
 	_, _ = fmt.Fprintf(b.unwrap(), format, args...)
 }
-
 func (b *Builder) Println(args ...any) {
 	_, _ = fmt.Fprintln(b.unwrap(), args...)
 }
-
 func (b *Builder) Print(args ...any) {
 	_, _ = fmt.Fprint(b.unwrap(), args...)
 }
