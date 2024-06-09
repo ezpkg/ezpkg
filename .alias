@@ -2,10 +2,10 @@
 # usage: source .alias
 
 alias cd.='cd $PROJECT_ROOT'
+alias cd.bytez='cd $PROJECT_ROOT/bytez'
 alias cd.colorz='cd $PROJECT_ROOT/colorz'
 alias cd.diffz='cd $PROJECT_ROOT/diffz'
 alias cd.errorz='cd $PROJECT_ROOT/errorz'
-alias cd.ezpkg='cd $PROJECT_ROOT'
 alias cd.mapz='cd $PROJECT_ROOT/mapz'
 alias cd.slicez='cd $PROJECT_ROOT/slicez'
 alias cd.stacktracez='cd $PROJECT_ROOT/stacktracez'
