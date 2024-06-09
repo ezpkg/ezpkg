@@ -1,0 +1,4 @@
+# QUICK USAGE:
+  ezrun list            : list all packages
+  ezrun pkg --all       : generate code for all packages
+  ezrun pkg NAME ...    : generate code for specific package(s)
