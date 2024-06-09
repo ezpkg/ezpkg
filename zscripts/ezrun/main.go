@@ -21,9 +21,10 @@ var flags struct {
 }
 
 var env struct {
-	RootDir   string
-	EzpkgDir  string
-	TargetDir string
+	RootDir     string
+	EzpkgDir    string
+	TargetDir   string
+	ZscriptsDir string
 
 	Info *EzpkgInfo
 }
@@ -73,6 +74,7 @@ func main() {
 func initEnv() {
 	env.EzpkgDir = mustDir(mustGetenv("PROJECT_ROOT"))
 	env.RootDir = mustDir(filepath.Dir(env.EzpkgDir))
+	env.ZscriptsDir = mustDir(filepath.Join(env.EzpkgDir, "zscripts"))
 
 	env.TargetDir = filepath.Join(env.RootDir, "ztarget")
 	errorz.MustZ(os.MkdirAll(env.TargetDir, 0755))

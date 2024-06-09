@@ -76,6 +76,8 @@ func (c *cmdPkg) generateCode(pkgs []string) {
 		default:
 			errorz.MustZ(err)
 		}
+		// copy ztarget.tpl
+		copyDir(env.ZscriptsDir+"/ztarget.tpl", targetPkgDir)
 	}
 
 	// parse packages
@@ -89,7 +91,7 @@ func (c *cmdPkg) generateCode(pkgs []string) {
 	}
 	errorz.MustZ(err)
 
-	// copy all files to target dirs, except tests and *_test.go
+	// copy all files to target dirs, except tests
 	for _, pkg := range pkgs {
 		fmt.Printf("writing %v\n", pkg)
 		pkgInfo := c.pkgInfo[pkg]
@@ -100,9 +102,15 @@ func (c *cmdPkg) generateCode(pkgs []string) {
 			file = errorz.Must(filepath.Rel(pkgDir, file))
 			copyFile(pkgDir, targetPkgDir, file)
 		}
+
 		// go.mod & go.local.mod
 		errorz.MustZ(os.WriteFile(filepath.Join(targetPkgDir, "go.mod"), pkgInfo.goModPublish, 0644))
 		errorz.MustZ(os.WriteFile(filepath.Join(targetPkgDir, "go.local.mod"), pkgInfo.goModLocal, 0644))
+
+		// create mock _test.go
+		mockTestData := generateMockTestFile(pkgInfo)
+		mockTestFile := fmt.Sprintf("%s/%s_test.go", targetPkgDir, pkgInfo.Name)
+		errorz.MustZ(os.WriteFile(mockTestFile, mockTestData, 0644))
 	}
 	fmt.Printf("\n✅ DONE!\n")
 }
@@ -157,11 +165,9 @@ func (c *cmdPkg) processGoMod(pkgInfo *PkgInfo, pkgDir string) {
 			}
 			b.Printf(")\n")
 			if isLocal {
-				b.Printf("replace (\n")
 				for _, importPath := range ezpkgImports {
-					b.Printf("\t%s => ../%s\n", importPath, filepath.Base(importPath))
+					b.Printf("replace %s => ../%s\n", importPath, filepath.Base(importPath))
 				}
-				b.Printf(")\n\n")
 			}
 		}
 		data0 := bytes.TrimSpace(data[idx:])
@@ -176,10 +182,31 @@ func (c *cmdPkg) processGoMod(pkgInfo *PkgInfo, pkgDir string) {
 	pkgInfo.goModLocal = outputGoMod(true)
 }
 
+func generateMockTestFile(pkgInfo *PkgInfo) []byte {
+	var b bytez.Buffer
+	b.Printf(`package %s_test
+
+// Tests are stripped when publishing to reduce dependencies.
+// For actual tests, see 👉 https://github.com/ezpkg/ezpkg/tree/main/%s
+`, pkgInfo.Name, pkgInfo.Name)
+	return b.Bytes()
+}
+
 func copyFile(srcDir, dstDir, file string) {
 	srcPath := filepath.Join(srcDir, file)
 	dstPath := filepath.Join(dstDir, file)
 	data := errorz.Must(os.ReadFile(srcPath))
 	errorz.MustZ(os.MkdirAll(filepath.Dir(dstPath), 0755))
 	errorz.MustZ(os.WriteFile(dstPath, data, 0644))
+}
+
+func copyDir(srcDir, dstDir string) {
+	errorz.MustZ(filepath.Walk(srcDir, func(path string, d os.FileInfo, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+		file := errorz.Must(filepath.Rel(srcDir, path))
+		copyFile(srcDir, dstDir, file)
+		return nil
+	}))
 }
