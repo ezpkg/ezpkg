@@ -1,6 +1,6 @@
 # [ezpkg.io](https://ezpkg.io)
 
-A collection of packages and tools for writing Go code easier.
+Collection of packages and tools to make writing Go code easier.
 
 ## Author
 
