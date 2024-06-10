@@ -15,7 +15,7 @@ Package colorz provides utilities for working with colors in terminal.
 ## Installation
 
 ```sh
-go get -u ezpkg.io/colorz@v0.0.3
+go get -u ezpkg.io/colorz@v0.0.4
 ```
 
 ## Examples
