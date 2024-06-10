@@ -15,7 +15,7 @@ Package bytez provides utilities for working with byte slices. It aims to extend
 ## Installation
 
 ```sh
-go get -u ezpkg.io/bytez@v0.0.4
+go get -u ezpkg.io/bytez@v0.0.5
 ```
 
 ## Examples

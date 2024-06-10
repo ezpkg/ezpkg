@@ -15,7 +15,7 @@ Package unsafez provides unsafe functions for working with unsafe.Pointer.
 ## Installation
 
 ```sh
-go get -u ezpkg.io/unsafez@v0.0.4
+go get -u ezpkg.io/unsafez@v0.0.5
 ```
 
 ## Examples
