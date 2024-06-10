@@ -16,6 +16,7 @@ task_testall() {
 }
 
 task_pkgall() {
+    go run "${EZPKG_DIR}/zscripts/ezrun" doc --all
     go run "${EZPKG_DIR}/zscripts/ezrun" pkg --all
     task_ztarget_finalize
 }

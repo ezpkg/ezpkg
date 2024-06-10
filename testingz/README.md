@@ -15,7 +15,7 @@ Packages testingz provides utilities for testing. Support ignoring spaces and us
 ## Installation
 
 ```sh
-go get -u ezpkg.io/testingz@v0.0.1
+go get -u ezpkg.io/testingz@v0.0.2
 ```
 
 ## Examples
