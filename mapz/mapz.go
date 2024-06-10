@@ -7,7 +7,7 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-func FromSlice[S ~[]E, E comparable, R any](s S, fn func(E) R) map[E]R {
+func FromSliceFunc[S ~[]E, E comparable, R any](s S, fn func(E) R) map[E]R {
 	result := make(map[E]R, len(s))
 	for _, item := range s {
 		result[item] = fn(item)
