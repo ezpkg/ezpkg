@@ -65,6 +65,12 @@ func main() {
 				Action: (&cmdList{}).Run,
 				Flags:  []cli.Flag{flagAll},
 			},
+			{
+				Name:   "doc",
+				Usage:  "generate README.md for all packages",
+				Action: (&cmdDoc{}).Run,
+				Flags:  []cli.Flag{flagAll},
+			},
 		},
 	}
 	initEnv()
@@ -72,7 +78,7 @@ func main() {
 }
 
 func initEnv() {
-	env.EzpkgDir = mustDir(mustGetenv("PROJECT_ROOT"))
+	env.EzpkgDir = mustDir(mustGetenv("EZPKG_DIR"))
 	env.RootDir = mustDir(filepath.Dir(env.EzpkgDir))
 	env.ZscriptsDir = mustDir(filepath.Join(env.EzpkgDir, "zscripts"))
 
