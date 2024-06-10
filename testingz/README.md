@@ -6,7 +6,7 @@
 
 # ezpkg.io/testingz
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/testingz)](https://pkg.go.dev/github.com/ezpkg/testingz/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/testingz)](https://pkg.go.dev/ezpkg.io/testingz)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/testingz)](https://github.com/ezpkg/testingz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/testingz?label=version)](https://github.com/ezpkg/testingz/tags)
 

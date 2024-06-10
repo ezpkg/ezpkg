@@ -6,7 +6,7 @@
 
 # ezpkg.io/unsafez
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/unsafez)](https://pkg.go.dev/github.com/ezpkg/unsafez/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/unsafez)](https://pkg.go.dev/ezpkg.io/unsafez)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/unsafez)](https://github.com/ezpkg/unsafez/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/unsafez?label=version)](https://github.com/ezpkg/unsafez/tags)
 

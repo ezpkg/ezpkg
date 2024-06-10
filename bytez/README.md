@@ -6,7 +6,7 @@
 
 # ezpkg.io/bytez
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/bytez)](https://pkg.go.dev/github.com/ezpkg/bytez/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/bytez)](https://pkg.go.dev/ezpkg.io/bytez)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/bytez)](https://github.com/ezpkg/bytez/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/bytez?label=version)](https://github.com/ezpkg/bytez/tags)
 

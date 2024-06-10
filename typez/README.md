@@ -6,7 +6,7 @@
 
 # ezpkg.io/typez
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/typez)](https://pkg.go.dev/github.com/ezpkg/typez/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/typez)](https://pkg.go.dev/ezpkg.io/typez)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/typez)](https://github.com/ezpkg/typez/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/typez?label=version)](https://github.com/ezpkg/typez/tags)
 

@@ -6,7 +6,7 @@
 
 # ezpkg.io/stacktracez
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/stacktracez)](https://pkg.go.dev/github.com/ezpkg/stacktracez/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/stacktracez)](https://pkg.go.dev/ezpkg.io/stacktracez)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/stacktracez)](https://github.com/ezpkg/stacktracez/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/stacktracez?label=version)](https://github.com/ezpkg/stacktracez/tags)
 

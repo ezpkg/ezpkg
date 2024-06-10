@@ -6,7 +6,7 @@
 
 # ezpkg.io/mapz
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/mapz)](https://pkg.go.dev/github.com/ezpkg/mapz/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/mapz)](https://pkg.go.dev/ezpkg.io/mapz)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/mapz)](https://github.com/ezpkg/mapz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/mapz?label=version)](https://github.com/ezpkg/mapz/tags)
 

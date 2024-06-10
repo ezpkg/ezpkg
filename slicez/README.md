@@ -6,7 +6,7 @@
 
 # ezpkg.io/slicez
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/slicez)](https://pkg.go.dev/github.com/ezpkg/slicez/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/slicez)](https://pkg.go.dev/ezpkg.io/slicez)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/slicez)](https://github.com/ezpkg/slicez/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/slicez?label=version)](https://github.com/ezpkg/slicez/tags)
 

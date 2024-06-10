@@ -6,7 +6,7 @@
 
 # ezpkg.io/errorz
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/errorz)](https://pkg.go.dev/github.com/ezpkg/errorz/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/errorz)](https://pkg.go.dev/ezpkg.io/errorz)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/errorz)](https://github.com/ezpkg/errorz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/errorz?label=version)](https://github.com/ezpkg/errorz/tags)
 

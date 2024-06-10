@@ -6,7 +6,7 @@
 
 # ezpkg.io/diffz
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/diffz)](https://pkg.go.dev/github.com/ezpkg/diffz/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/diffz)](https://pkg.go.dev/ezpkg.io/diffz)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/diffz)](https://github.com/ezpkg/diffz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/diffz?label=version)](https://github.com/ezpkg/diffz/tags)
 

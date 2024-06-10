@@ -6,7 +6,7 @@
 
 # ezpkg.io/stringz
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/stringz)](https://pkg.go.dev/github.com/ezpkg/stringz/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/stringz)](https://pkg.go.dev/ezpkg.io/stringz)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/stringz)](https://github.com/ezpkg/stringz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/stringz?label=version)](https://github.com/ezpkg/stringz/tags)
 

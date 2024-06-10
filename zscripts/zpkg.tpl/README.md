@@ -6,7 +6,7 @@
 
 # ezpkg.io/{PKGNAME}
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/{PKGNAME})](https://pkg.go.dev/github.com/ezpkg/{PKGNAME}/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/ezpkg.io/{PKGNAME})](https://pkg.go.dev/ezpkg.io/{PKGNAME})
 [![GitHub License](https://img.shields.io/github/license/ezpkg/{PKGNAME})](https://github.com/ezpkg/{PKGNAME}/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/{PKGNAME}?label=version)](https://github.com/ezpkg/{PKGNAME}/tags)
 

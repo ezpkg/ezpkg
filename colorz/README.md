@@ -6,7 +6,7 @@
 
 # ezpkg.io/colorz
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/colorz)](https://pkg.go.dev/github.com/ezpkg/colorz/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/colorz)](https://pkg.go.dev/ezpkg.io/colorz)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/colorz)](https://github.com/ezpkg/colorz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/colorz?label=version)](https://github.com/ezpkg/colorz/tags)
 
