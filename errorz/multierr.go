@@ -15,7 +15,12 @@ type Errors interface {
 	Errors() []error
 }
 
-func Append(pErr *error, errs ...error) {
+func Append(err0 error, errs ...error) error {
+	appendErrs(Option{}, &err0, errs...)
+	return err0
+}
+
+func AppendTo(pErr *error, errs ...error) {
 	appendErrs(Option{}, pErr, errs...)
 }
 
@@ -38,7 +43,18 @@ func appendErrs(opt Option, pErr *error, errs ...error) {
 	}
 }
 
-func Appendf(pErr *error, err error, msg string, args ...any) {
+func Appendf(err0 error, err error, msg string, args ...any) error {
+	if err == nil {
+		return err0
+	}
+	if msg != "" {
+		err = Wrapf(err, msg, args...)
+	}
+	appendErrs(Option{}, &err0, err)
+	return err0
+}
+
+func AppendTof(pErr *error, err error, msg string, args ...any) {
 	if err == nil {
 		return
 	}

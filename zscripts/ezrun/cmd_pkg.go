@@ -87,7 +87,7 @@ func (c *cmdPkg) generateCode(pkgs []string) {
 		fmt.Printf("loading %v\n", pkg)
 		pkgInfo, err0 := c.processPackage(pkg)
 		c.pkgInfo[pkg] = pkgInfo
-		errorz.Append(&err, err0)
+		errorz.AppendTo(&err, err0)
 	}
 	errorz.MustZ(err)
 

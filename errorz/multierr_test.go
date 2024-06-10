@@ -14,17 +14,17 @@ func (*MockError) Error() string { return "mock" }
 func TestErrors(t *testing.T) {
 	t.Run("zero", func(t *testing.T) {
 		var err error
-		errorz.Append(&err, nil)
-		errorz.Append(&err, (*MockError)(nil))
-		errorz.Appendf(&err, nil, "empty error")
+		errorz.AppendTo(&err, nil)
+		errorz.AppendTo(&err, (*MockError)(nil))
+		errorz.AppendTof(&err, nil, "empty error")
 
 		assert(t, err == nil).Errorf("❌ expect err == nil")
 	})
 	t.Run("one", func(t *testing.T) {
 		var err error
-		errorz.Append(&err, (*MockError)(nil))
-		errorz.Append(&err, fmt.Errorf("error/foo"))
-		errorz.Append(&err, nil)
+		errorz.AppendTo(&err, (*MockError)(nil))
+		errorz.AppendTo(&err, fmt.Errorf("error/foo"))
+		errorz.AppendTo(&err, nil)
 
 		errs := errorz.GetErrors(err)
 		assert(t, len(errs) == 1).Errorf("❌ expect len(errs) == 1")
@@ -32,12 +32,12 @@ func TestErrors(t *testing.T) {
 	})
 	t.Run("many", func(t *testing.T) {
 		var err1 error
-		errorz.Append(&err1, fmt.Errorf("error/foo"))
-		errorz.Append(&err1, errorz.Errorf("error/bar"))
+		errorz.AppendTo(&err1, fmt.Errorf("error/foo"))
+		errorz.AppendTo(&err1, errorz.Errorf("error/bar"))
 
 		var err2 error
-		errorz.Append(&err2, err1)
-		errorz.Append(&err2, errorz.Errorf("error/baz"))
+		errorz.AppendTo(&err2, err1)
+		errorz.AppendTo(&err2, errorz.Errorf("error/baz"))
 
 		errs1, errs2 := errorz.GetErrors(err1), errorz.GetErrors(err2)
 		assert(t, len(errs1) == 2).Errorf("❌ expect len(errs1) == 2")
@@ -57,7 +57,7 @@ testing/testing.go:████ · tRunner
 
 		t.Run("one", func(t *testing.T) {
 			var err error
-			errorz.Append(&err, fmt.Errorf("error/foo"))
+			errorz.AppendTo(&err, fmt.Errorf("error/foo"))
 
 			t.Run("%v", func(t *testing.T) {
 				str := fmt.Sprintf("%v", err)
@@ -80,8 +80,8 @@ testing/testing.go:████ · tRunner
 		})
 		t.Run("two", func(t *testing.T) {
 			var err error
-			errorz.Append(&err, fmt.Errorf("error/foo"))
-			errorz.Append(&err, fmt.Errorf("error/bar"))
+			errorz.AppendTo(&err, fmt.Errorf("error/foo"))
+			errorz.AppendTo(&err, fmt.Errorf("error/bar"))
 
 			t.Run("%v", func(t *testing.T) {
 				str := fmt.Sprintf("%v", err)
