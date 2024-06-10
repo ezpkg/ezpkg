@@ -1,31 +1,40 @@
 #!/bin/bash
 set -eo pipefail
 
-ztarget_dir="${PROJECT_ROOT}/../ztarget"
+ZTARGET_DIR="${EZPKG_ROOT_DIR}/ztarget"
 
 task_all() {
-    find . -name go.mod -execdir bash -c "$*" \;
+    find $EZPKG_DIR/*z -name go.mod -execdir bash -c "
+export PKGNAME=\$(basename \$PWD)
+echo 👉 \$PWD
+$*
+" \;
 }
 
 task_testall() {
-    find . -name go.mod -execdir go test "$@" ./... \;
+    find $EZPKG_DIR/*z -name go.mod -execdir go test "$@" ./... \;
 }
 
 task_pkgall() {
-    go run "${PROJECT_ROOT}/zscripts/ezrun" pkg --all
+    go run "${EZPKG_DIR}/zscripts/ezrun" pkg --all
     task_ztarget_finalize
 }
 
 task_ztarget() {
-    find "$ztarget_dir" -name go.local.mod -execdir bash -c "$*" \;
+    find "$ZTARGET_DIR" -name go.local.mod -execdir bash -c "
+export PKGNAME=\$(basename \$PWD)
+echo 👉 \$PWD
+$*
+" \;
 }
 
 task_ztarget_finalize() {
-    find "$ztarget_dir" -name go.local.mod -execdir bash -c '
+    find "$ZTARGET_DIR" -name go.local.mod -execdir bash -c "
+echo 👉 \$PWD
 go get  -modfile=go.local.mod ./...
 go test -modfile=go.local.mod ./...
-cat go.local.mod | grep -v "replace ezpkg\.io" > go.mod
-' bash {} +
+cat go.local.mod | grep -v \"replace ezpkg\.io\" > go.mod
+" bash {} +
 }
 
-source "${PROJECT_ROOT}/zscripts/_run.sh"
+source "${EZPKG_DIR}/zscripts/_run.sh"
