@@ -1,8 +1,8 @@
-<p align="center">
-<a href="https://ezpkg.io">
-<img alt="gopherz" src="./_/gopherz.png" style="width:420px">
-</a>
-</p>
+<div align="center">
+
+[![gopherz](./_/gopherz.svg)](https://ezpkg.io)
+
+</div>
 
 # ezpkg.io
 
@@ -115,4 +115,4 @@ run pkgall
 
 ## Author
 
-<a href="https://olivernguyen.io"><img alt="olivernguyen.io" src="https://olivernguyen.io/_/badge.png" height="28px"></a>&nbsp;&nbsp;[![github](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/iOliverNguyen)
+[![Oliver Nguyen](https://olivernguyen.io/_/badge.svg)](https://olivernguyen.io)&nbsp;&nbsp;[![github](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/iOliverNguyen)

@@ -1,12 +1,12 @@
-<p align="center">
-<a href="https://ezpkg.io">
-<img alt="gopherz" src="https://ezpkg.io/_/gopherz.png" style="width:420px">
-</a>
-</p>
+<div align="center">
+
+[![gopherz](https://ezpkg.io/_/gopherz.svg)](https://ezpkg.io)
+
+</div>
 
 # ezpkg.io/diffz
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ezpkg/diffz)](https://pkg.go.dev/ezpkg.io/diffz)
+[![PkgGoDev](https://pkg.go.dev/badge/ezpkg.io/diffz)](https://pkg.go.dev/ezpkg.io/diffz)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/diffz)](https://github.com/ezpkg/diffz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/diffz?label=version)](https://github.com/ezpkg/diffz/tags)
 
@@ -53,4 +53,4 @@ For more information, see the [main repository](https://github.com/ezpkg/ezpkg).
 
 ## Author
 
-<a href="https://olivernguyen.io"><img alt="olivernguyen.io" src="https://olivernguyen.io/_/badge.png" height="28px"></a>&nbsp;&nbsp;[![github](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/iOliverNguyen)
+[![Oliver Nguyen](https://olivernguyen.io/_/badge.svg)](https://olivernguyen.io)&nbsp;&nbsp;[![github](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/iOliverNguyen)
