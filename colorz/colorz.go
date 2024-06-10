@@ -1,3 +1,4 @@
+// Package colorz provides utilities for working with colors in terminal.
 package colorz // import "ezpkg.io/colorz"
 
 import (
