@@ -15,7 +15,7 @@ Package typez provides generic functions for working with types.
 ## Installation
 
 ```sh
-go get -u ezpkg.io/typez@v0.0.2
+go get -u ezpkg.io/typez@v0.0.3
 ```
 
 ## Examples

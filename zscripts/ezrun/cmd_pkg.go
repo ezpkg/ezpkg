@@ -103,8 +103,9 @@ func (c *cmdPkg) generateCode(pkgs []string) {
 			copyFile(pkgDir, targetPkgDir, file)
 		}
 
-		// README.md
+		// README.md & LICENSE
 		copyFile(pkgDir, targetPkgDir, "README.md")
+		copyFile(pkgDir, targetPkgDir, "LICENSE")
 
 		// go.mod & go.local.mod
 		errorz.MustZ(os.WriteFile(filepath.Join(targetPkgDir, "go.mod"), pkgInfo.goModPublish, 0644))

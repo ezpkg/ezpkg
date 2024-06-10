@@ -15,7 +15,7 @@ Package stringz extends the standard library [strings](https://pkg.go.dev/string
 ## Installation
 
 ```sh
-go get -u ezpkg.io/stringz@v0.0.2
+go get -u ezpkg.io/stringz@v0.0.3
 ```
 
 ## Examples
