@@ -43,16 +43,16 @@ task=$1
 case "$task" in
     "" | "-h" | "--help" | "--helpz")
         task_help $1
-        if [[ "$1" && "$PWD" != "$PROJECT_ROOT" ]]; then
-            bash -c "cd $PROJECT_ROOT && $PROJECT_ROOT/run --helpz"
+        if [[ "$1" && "$PWD" != "$REPO_ROOT" ]]; then
+            bash -c "cd $REPO_ROOT && $REPO_ROOT/run --helpz"
         fi
         ;;
     *)
         shift
         if compgen -A "function" | grep "task_$task" >/dev/null ; then
             task_"${task}" "$@"
-        elif [[ "$PWD" != "$PROJECT_ROOT" ]]; then
-            bash -c "cd $PROJECT_ROOT && $PROJECT_ROOT/run $task $*"
+        elif [[ "$PWD" != "$REPO_ROOT" ]]; then
+            bash -c "cd $REPO_ROOT && $REPO_ROOT/run $task $*"
         else
             echo "Task $task not found."
             exit 2

@@ -7,12 +7,12 @@ This directory contains scripts to build and manage the ezpkg.io project. It's i
 The project are organized in the following structure:
 
 ```
-root_dir/
+ezpkg_root/
   ├─ ezpkg/               # github.com/ezpkg/ezpkg
   │   ├─ errorz/          # source code and tests for errorz package
   │   ├─ stringz/         # source code and tests for stringz package
   │   ├─ ...              # ...
-  │   ├─ zscripts/
+  │   ├─ zscripts/        # scripts and tools for managing ezpkg.io
   │   │   └─ ezrun        # the main code for building & managing ezpkg.io
   │   └─ run              # the entrypoint script, which wraps zscripts/ezrun
   ├── ztarget/            # root directory for generated packages

@@ -17,4 +17,4 @@ task_colors() {
     color {232..255}
 }
 
-source "${PROJECT_ROOT}/zscripts/_run.sh"
+source "${REPO_ROOT}/zscripts/_run.sh"
