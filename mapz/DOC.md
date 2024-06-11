@@ -8,3 +8,9 @@ mapCodes := mapz.FromSliceFunc([]int{1, 2, 3}, func(i int) string {
 })
 fmt.Println(mapCodes)
 ```
+
+## Similar Packages
+
+This package is based on:
+
+- [golang.org/x/exp/maps](https://pkg.go.dev/golang.org/x/exp/maps)

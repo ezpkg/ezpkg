@@ -27,6 +27,12 @@ mapCodes := mapz.FromSliceFunc([]int{1, 2, 3}, func(i int) string {
 fmt.Println(mapCodes)
 ```
 
+## Similar Packages
+
+This package is based on:
+
+- [golang.org/x/exp/maps](https://pkg.go.dev/golang.org/x/exp/maps)
+
 ## About ezpkg.io
 
 As I work on various Go projects, I often find myself creating utility functions, extending existing packages, or developing packages to solve specific problems. Moving from one project to another, I usually have to copy or rewrite these solutions. So I created this repository to have all these utilities and packages in one place. Hopefully, you'll find them useful as well.
