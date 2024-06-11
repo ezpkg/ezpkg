@@ -71,6 +71,14 @@ err2 = errorz.Append(err2, err)
 fmt.Printf("%+v", err2)
 ```
 
+## Similar Packages
+
+- [github.com/pkg/errors](https://pkg.go.dev/github.com/pkg/errors)
+- [github.com/hashicorp/go-multierror](https://github.com/hashicorp/go-multierror)
+- [github.com/uber-go/multierr](https://github.com/uber-go/multierr)
+- [tailscale.com/util/multierr](https://pkg.go.dev/tailscale.com/util/multierr)
+- [sigs.k8s.io/cli-utils/pkg/multierror](https://pkg.go.dev/sigs.k8s.io/cli-utils/pkg/multierror)
+
 ## About ezpkg.io
 
 As I work on various Go projects, I often find myself creating utility functions, extending existing packages, or developing packages to solve specific problems. Moving from one project to another, I usually have to copy or rewrite these solutions. So I created this repository to have all these utilities and packages in one place. Hopefully, you'll find them useful as well.

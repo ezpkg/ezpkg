@@ -52,3 +52,11 @@ var err2 error
 err2 = errorz.Append(err2, err)
 fmt.Printf("%+v", err2)
 ```
+
+## Similar Packages
+
+- [github.com/pkg/errors](https://pkg.go.dev/github.com/pkg/errors)
+- [github.com/hashicorp/go-multierror](https://github.com/hashicorp/go-multierror)
+- [github.com/uber-go/multierr](https://github.com/uber-go/multierr)
+- [tailscale.com/util/multierr](https://pkg.go.dev/tailscale.com/util/multierr)
+- [sigs.k8s.io/cli-utils/pkg/multierror](https://pkg.go.dev/sigs.k8s.io/cli-utils/pkg/multierror)
