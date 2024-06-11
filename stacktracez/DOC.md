@@ -18,3 +18,9 @@ fmt.Printf("%v", stack)
 // ezpkg.io/stacktracez/stacktracez_test.go:15 · TestStackTrace
 // testing/testing.go:1689 · tRunner
 ```
+
+## Similar Packages
+
+- [github.com/pkg/errors](https://github.com/pkg/errors)
+- [go.elastic.co/apm/v2/stacktrace](https://pkg.go.dev/go.elastic.co/apm/v2/stacktrace)
+- [github.com/palantir/stacktrace](github.com/palantir/stacktrace)

@@ -37,6 +37,12 @@ fmt.Printf("%v", stack)
 // testing/testing.go:1689 · tRunner
 ```
 
+## Similar Packages
+
+- [github.com/pkg/errors](https://github.com/pkg/errors)
+- [go.elastic.co/apm/v2/stacktrace](https://pkg.go.dev/go.elastic.co/apm/v2/stacktrace)
+- [github.com/palantir/stacktrace](github.com/palantir/stacktrace)
+
 ## About ezpkg.io
 
 As I work on various Go projects, I often find myself creating utility functions, extending existing packages, or developing packages to solve specific problems. Moving from one project to another, I usually have to copy or rewrite these solutions. So I created this repository to have all these utilities and packages in one place. Hopefully, you'll find them useful as well.
