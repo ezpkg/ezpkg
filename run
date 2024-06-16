@@ -12,7 +12,7 @@ $*
 }
 
 task_list() {
-    go run "${EZPKG_DIR}/zscripts/ezrun" list
+    go run "${EZPKG_DIR}/zscripts/ezrun" list "$@"
 }
 
 task_testall() {

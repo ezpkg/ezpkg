@@ -30,10 +30,11 @@ var env struct {
 }
 
 var flagAll = &cli.BoolFlag{Name: "all", Usage: "all packages"}
+var flagX = &cli.BoolFlag{Name: "x", Usage: "extra functionality"}
 
 func main() {
 	script.Init(script.InitParams{
-		Name:  "color",
+		Name:  "ezrun",
 		Usage: script.ProcessUsageText(usageText),
 	})
 	app := &cli.App{
@@ -63,7 +64,7 @@ func main() {
 				Name:   "list",
 				Usage:  "list all packages",
 				Action: (&cmdList{}).Run,
-				Flags:  []cli.Flag{flagAll},
+				Flags:  []cli.Flag{flagAll, flagX},
 			},
 			{
 				Name:   "doc",
