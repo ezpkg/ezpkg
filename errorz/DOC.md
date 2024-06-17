@@ -2,7 +2,7 @@ Package errorz provides functions for dealing with errors, with stacktrace, vali
 
 ## Examples
 
-#### Must
+### Must
 
 ```go
 data := errorz.Must(os.ReadFile(path))
@@ -11,7 +11,7 @@ fmt.Printf("%s", data)
 errorz.MustZ(os.WriteFile(path, data, 0644))
 ```
 
-#### Stacktrace
+### Stacktrace
 
 ```go
 err := fmt.Errorf("foo")
@@ -33,14 +33,14 @@ fmt.Printf("%#v\n", zErr)
 // testing/testing.go:7890 · tRunner
 ```
 
-**No stacktrace:**
+#### No stacktrace
 
 ```go
 zErr := errorz.NoStack().New("no stack")
 fmt.Printf("%+v", zErr)
 ```
 
-#### Multi-errors
+### Multi-errors
 
 ```go
 var err error
