@@ -69,6 +69,15 @@ func (args *Args) Next() string {
 	return args.Get(0)
 }
 
+func (args *Args) Consume() string {
+	if len(*args) == 0 {
+		return ""
+	}
+	out := (*args)[0]
+	*args = (*args)[1:]
+	return out
+}
+
 func (args *Args) MustConsume(name string) string {
 	if len(*args) == 0 {
 		ExitWithUsagef("missing argument %v", name)

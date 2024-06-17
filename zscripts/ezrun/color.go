@@ -5,6 +5,8 @@ import (
 	"slices"
 
 	"github.com/lucasb-eyer/go-colorful"
+
+	"ezpkg.io/bytez"
 )
 
 // https://github.com/lucasb-eyer/go-colorful/blob/master/doc/gradientgen/gradientgen.go
@@ -15,10 +17,36 @@ type Color struct {
 	colorful.Color
 }
 
+func (c Color) String() string {
+	return c.Hex()
+}
+
+func (c Color) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%q", c.Hex())), nil
+}
+
 func (c Color) Darken(p float64) Color {
 	l, a, b := c.Lab()
 	l *= (1 - p)
 	return Color{Color: colorful.Lab(l, a, b)}
+}
+
+type MapColors []struct {
+	Code  int
+	Color Color
+}
+
+func (cs MapColors) MarshalJSON() ([]byte, error) {
+	var b bytez.Buffer
+	b.WriteByteZ('{')
+	for i, c := range cs {
+		if i > 0 {
+			b.WriteByteZ(',')
+		}
+		b.Printf(`"%d":%q`, c.Code, c.Color.Hex())
+	}
+	b.WriteByteZ('}')
+	return b.Bytes(), nil
 }
 
 func GradientTable_0() *GradientTable {
@@ -105,7 +133,7 @@ func GradientTable_Tailwind() *GradientTable {
 // This table contains the "keypoints" of the colorgradient you want to generate.
 // The position of each keypoint has to live in the range [0,1]
 type GradientTable struct {
-	Names []int
+	Codes []int
 	Items []GradientTableItem
 }
 
@@ -114,13 +142,13 @@ type GradientTableItem struct {
 	Colors []Color
 }
 
-func NewGradientTable(names ...int) *GradientTable {
-	return &GradientTable{Names: names}
+func NewGradientTable(codes ...int) *GradientTable {
+	return &GradientTable{Codes: codes}
 }
 
 func (gt *GradientTable) Add(pos float64, colors []Color) *GradientTable {
-	if len(colors) != len(gt.Names) {
-		panic(fmt.Sprintf("wrong number of colors (expected %v)", len(gt.Names)))
+	if len(colors) != len(gt.Codes) {
+		panic(fmt.Sprintf("wrong number of colors (expected %v)", len(gt.Codes)))
 	}
 	gt.Items = append(gt.Items, GradientTableItem{Pos: pos, Colors: colors})
 	return gt
@@ -140,10 +168,10 @@ func (gt *GradientTable) RecalculatePositions() *GradientTable {
 // This is the meat of the gradient computation. It returns a HCL-blend between
 // the two colors around `t`.
 // Note: It relies heavily on the fact that the gradient keypoints are sorted.
-func (gt GradientTable) GetInterpolatedColorFor(name int, t float64) Color {
-	idx := slices.Index(gt.Names, name)
+func (gt GradientTable) GetInterpolatedColorFor(code int, t float64) Color {
+	idx := slices.Index(gt.Codes, code)
 	if idx < 0 {
-		panic(fmt.Sprintf("invalid name: %v", name))
+		panic(fmt.Sprintf("invalid code: %v", code))
 	}
 	N := len(gt.Items)
 	for i := 0; i < N-1; i++ {
@@ -161,9 +189,9 @@ func (gt GradientTable) GetInterpolatedColorFor(name int, t float64) Color {
 }
 
 func (gt GradientTable) GetInterpolatedPaletteFor(t float64) []Color {
-	colors := make([]Color, len(gt.Names))
-	for i, name := range gt.Names {
-		colors[i] = gt.GetInterpolatedColorFor(name, t)
+	colors := make([]Color, len(gt.Codes))
+	for i, code := range gt.Codes {
+		colors[i] = gt.GetInterpolatedColorFor(code, t)
 	}
 	return colors
 }

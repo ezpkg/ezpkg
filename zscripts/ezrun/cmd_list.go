@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,9 +22,10 @@ type cmdList struct {
 }
 
 type cmdListPkgInfo struct {
-	pkg    string
-	color  Color
-	colors []Color
+	Name      string    `json:"name"`
+	Color     Color     `json:"color"`
+	Colors    []Color   `json:"-"`
+	MapColors MapColors `json:"colors"`
 }
 
 func (c *cmdList) Run(cx *cli.Context) error {
@@ -31,21 +33,37 @@ func (c *cmdList) Run(cx *cli.Context) error {
 	if len(pkgs) == 0 {
 		script.Exitf("no packages found")
 	}
-	if cx.Bool("x") {
-		ps := c.addExtraInfo(pkgs)
-		fmt.Println(c.formatPkgs(ps))
-	} else {
+	defer func() { // verify sorted
+		for i := 0; i < len(pkgs)-1; i++ {
+			if pkgs[i] > pkgs[i+1] {
+				panic(fmt.Sprintf("invalid order of package: %v -> %v", pkgs[i], pkgs[i+1]))
+			}
+		}
+	}()
+
+	args := script.WrapArgs(cx)
+	if !cx.Bool("x") {
 		for _, pkg := range pkgs {
 			fmt.Println(pkg)
 		}
+		return nil
 	}
-	// verify sorted
-	for i := 0; i < len(pkgs)-1; i++ {
-		if pkgs[i] > pkgs[i+1] {
-			panic(fmt.Sprintf("invalid order of package: %v -> %v", pkgs[i], pkgs[i+1]))
-		}
+	ps := c.addExtraInfo(pkgs)
+	fmt.Println(c.formatPkgs(ps))
+	file := args.Consume()
+	if file == "" {
+		return nil
 	}
-	return nil
+	if !strings.HasSuffix(file, ".json") {
+		script.Exitf("output file: only .json is supported")
+	}
+
+	mp := make(map[string]MapColors, len(ps))
+	for _, pkg := range ps {
+		mp[pkg.Name] = pkg.MapColors
+	}
+	data := errorz.Must(json.MarshalIndent(mp, "", "    "))
+	return os.WriteFile(file, data, 0644)
 }
 
 func (c *cmdList) addExtraInfo(pkgs []string) []*cmdListPkgInfo {
@@ -57,10 +75,11 @@ func (c *cmdList) addExtraInfo(pkgs []string) []*cmdListPkgInfo {
 	gColor := GradientTable_Tailwind()
 	N, ps := len(pkgs), make([]*cmdListPkgInfo, len(pkgs))
 	for i := range pkgs {
-		ps[i] = &cmdListPkgInfo{pkg: pkgs[i]}
+		ps[i] = &cmdListPkgInfo{Name: pkgs[i]}
 		pos := float64((i+N-errorzIdx)%N) / float64(N)
-		ps[i].color = gColor.GetInterpolatedColorFor(500, pos)
-		ps[i].colors = gColor.GetInterpolatedPaletteFor(pos)
+		ps[i].Color = gColor.GetInterpolatedColorFor(500, pos)
+		ps[i].Colors = gColor.GetInterpolatedPaletteFor(pos)
+		ps[i].MapColors = mapColors(gColor.Codes, ps[i].Colors)
 	}
 	return ps
 }
@@ -75,16 +94,28 @@ func (c *cmdList) formatPkgs(pkgs []*cmdListPkgInfo) string {
 		b.Printf("  ⏺  %s", colorz.Reset)
 	}
 	for _, pkg := range pkgs {
-		b.Printf("% 12s %s ", pkg.pkg, pkg.color.Hex())
-		printColor(pkg.color, pkg.colors[2])
+		b.Printf("% 12s %s ", pkg.Name, pkg.Color.Hex())
+		printColor(pkg.Color, pkg.Colors[2])
 		b.Print(" ")
-		for i, color := range pkg.colors {
-			textColor := typez.If(i > 4, pkg.colors[2], pkg.colors[len(pkg.colors)-3])
+		for i, color := range pkg.Colors {
+			textColor := typez.If(i > 4, pkg.Colors[2], pkg.Colors[len(pkg.Colors)-3])
 			printColor(color, textColor)
 		}
 		b.Println()
 	}
 	return b.String()
+}
+
+func mapColors(codes []int, colors []Color) MapColors {
+	if len(codes) != len(colors) {
+		panic(fmt.Sprintf("wrong number of colors (expected %v)", len(codes)))
+	}
+	mp := make(MapColors, len(colors))
+	for i, code := range codes {
+		mp[i].Code = code
+		mp[i].Color = colors[i]
+	}
+	return mp
 }
 
 func listAllPkgs() (pkgs []string) {
