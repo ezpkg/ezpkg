@@ -6,6 +6,7 @@ use (
 	colorz
 	diffz
 	errorz
+	fmtz
 	mapz
 	slicez
 	stacktracez
