@@ -42,6 +42,27 @@ func main() {
 }
 ```
 
+#### FormatMsgArgs
+
+`fmtz.FormatMsgArgs` is a helper function that formats a message with arguments. It is useful for using in logging and error messages.
+
+```go
+func validate(err error, msgAndArgs ...any) error {
+    if err == nil {
+		return nil
+    }
+	msg := fmtz.FormatMsgArgs(msgAndArgs...)
+	return typez.If(msg == "", err, fmt.Errorf("%v: %w", msg, err))
+}
+
+func main() {
+    someError := errors.New("something went wrong")
+    err := validate(someError, "failed to do something foo=%v bar=%v", "10", "20")
+    fmt.Println(err)
+	// Output: failed to do something foo=10 bar=20: something went wrong
+}
+```
+
 ## About ezpkg.io
 
 As I work on various Go projects, I often find myself creating utility functions, extending existing packages, or developing packages to solve specific problems. Moving from one project to another, I usually have to copy or rewrite these solutions. So I created this repository to have all these utilities and packages in one place. Hopefully, you'll find them useful as well.

@@ -23,3 +23,24 @@ func main() {
     fmt.Printf("%v", c)
 }
 ```
+
+#### FormatMsgArgs
+
+`fmtz.FormatMsgArgs` is a helper function that formats a message with arguments. It is useful for using in logging and error messages.
+
+```go
+func validate(err error, msgAndArgs ...any) error {
+    if err == nil {
+		return nil
+    }
+	msg := fmtz.FormatMsgArgs(msgAndArgs...)
+	return typez.If(msg == "", err, fmt.Errorf("%v: %w", msg, err))
+}
+
+func main() {
+    someError := errors.New("something went wrong")
+    err := validate(someError, "failed to do something foo=%v bar=%v", "10", "20")
+    fmt.Println(err)
+	// Output: failed to do something foo=10 bar=20: something went wrong
+}
+```
