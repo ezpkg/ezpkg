@@ -2,8 +2,8 @@ package errorz // import "ezpkg.io/errorz"
 
 import (
 	"fmt"
-	"io"
 
+	"ezpkg.io/fmtz"
 	"ezpkg.io/stacktracez"
 )
 
@@ -74,16 +74,17 @@ func (e *zError) Error() string {
 	return fmt.Sprintf("%s", e)
 }
 
-func (e *zError) Format(s fmt.State, v rune) {
+func (e *zError) Format(s0 fmt.State, v rune) {
+	s := fmtz.WrapState(s0)
 	if e == nil {
-		writeString(s, "<nil>")
+		s.WriteStringZ("<nil>")
 		return
 	}
 	switch v {
 	case 's', 'v':
 		e.writeMessage(s)
 		if (s.Flag('+') || s.Flag('#')) && e.stack != nil {
-			writeString(s, "\n")
+			s.WriteStringZ("\n")
 			if e.stack != nil {
 				e.stack.Format(s, v)
 			}
@@ -91,25 +92,26 @@ func (e *zError) Format(s fmt.State, v rune) {
 	case 'q':
 		switch {
 		case e.msg != "":
-			fprintf(s, "%q", e.msg)
+			s.Printf("%q", e.msg)
 		case e.cause != nil:
-			fprintf(s, "%q", e.cause)
+			s.Printf("%q", e.cause)
 		default:
-			writeString(s, "<empty>")
+			s.WriteStringZ("<empty>")
 		}
 	}
 }
 
-func (e *zError) writeMessage(s fmt.State) {
+func (e *zError) writeMessage(s0 fmt.State) {
+	s := fmtz.WrapState(s0)
 	switch {
 	case e.msg != "" && e.cause != nil:
-		fprintf(s, "%s: %v", e.msg, e.cause)
+		s.Printf("%s: %v", e.msg, e.cause)
 	case e.msg != "":
-		writeString(s, e.msg)
+		s.WriteStringZ(e.msg)
 	case e.cause != nil:
-		fprintf(s, "%v", e.cause)
+		s.Printf("%v", e.cause)
 	default:
-		writeString(s, "<empty>")
+		s.WriteStringZ("<empty>")
 	}
 }
 
@@ -118,12 +120,4 @@ func (e *zError) StackTraceZ() *stacktracez.Frames {
 		return nil
 	}
 	return e.stack.StackTraceZ()
-}
-
-func writeString(w fmt.State, s string) {
-	_, _ = io.WriteString(w, s)
-}
-
-func fprintf(w fmt.State, format string, args ...any) {
-	_, _ = fmt.Fprintf(w, format, args...)
 }

@@ -23,7 +23,7 @@ func (b State) WriteRune(r rune) (int, error) {
 	return b.Write(utf8.AppendRune(d[:0], r))
 }
 func (b State) WriteString(s string) (int, error) {
-	return io.WriteString(b, s)
+	return io.WriteString(b.State, s)
 }
 func (b State) WriteZ(p []byte) int {
 	n, _ := b.State.Write(p)
@@ -37,7 +37,7 @@ func (b State) WriteRuneZ(r rune) int {
 	return n
 }
 func (b State) WriteStringZ(s string) {
-	_, _ = io.WriteString(b, s)
+	_, _ = io.WriteString(b.State, s)
 }
 func (b State) PrintBytes(p []byte) {
 	_, _ = b.Write(p)
@@ -69,7 +69,7 @@ func (b MustState) WriteRune(r rune) (int, error) {
 	return b.Write(utf8.AppendRune(d[:], r))
 }
 func (b MustState) WriteString(s string) (int, error) {
-	return io.WriteString(b, s)
+	return io.WriteString(b.State, s)
 }
 func (b MustState) WriteZ(p []byte) int {
 	return must(b.State.Write(p))
@@ -81,7 +81,7 @@ func (b MustState) WriteRuneZ(r rune) int {
 	return must(b.WriteRune(r))
 }
 func (b MustState) WriteStringZ(s string) {
-	must(io.WriteString(b, s))
+	must(io.WriteString(b.State, s))
 }
 func (b MustState) PrintBytes(p []byte) {
 	must(b.Write(p))

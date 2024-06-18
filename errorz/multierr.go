@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"ezpkg.io/fmtz"
 	"ezpkg.io/stacktracez"
 )
 
@@ -111,9 +112,10 @@ func (es *zErrors) Error() string {
 	}
 }
 
-func (es *zErrors) Format(s fmt.State, verb rune) {
+func (es *zErrors) Format(s0 fmt.State, verb rune) {
+	s := fmtz.WrapState(s0)
 	if es == nil {
-		writeString(s, "<nil>")
+		s.WriteStringZ("<nil>")
 		return
 	}
 	isPlus := s.Flag('+') || s.Flag('#')
@@ -121,39 +123,39 @@ func (es *zErrors) Format(s fmt.State, verb rune) {
 	case 's', 'v':
 		switch {
 		case len(es.errors) == 0:
-			writeString(s, "<empty>")
+			s.WriteStringZ("<empty>")
 			return
 		case len(es.errors) == 1:
 			if isPlus {
-				fprintf(s, "1 error occurred:\n\t* %v\n", es.errors[0])
+				s.Printf("1 error occurred:\n\t* %v\n", es.errors[0])
 			} else {
-				fprintf(s, "(1 error) %v", es.errors[0])
+				s.Printf("(1 error) %v", es.errors[0])
 			}
 			if isPlus && es.stack != nil {
 				es.stack.Format(s, verb)
 			}
 		default:
 			if isPlus {
-				fprintf(s, "%d errors occurred:\n", len(es.errors))
+				s.Printf("%d errors occurred:\n", len(es.errors))
 			} else {
-				fprintf(s, "(%d errors) ", len(es.errors))
+				s.Printf("(%d errors) ", len(es.errors))
 			}
 			for i, err := range es.errors {
 				if isPlus {
-					fprintf(s, "\t* %v\n", err)
+					s.Printf("\t* %v\n", err)
 					continue
 				}
 				if i > 0 {
-					fprintf(s, " ; ")
+					s.Printf(" ; ")
 				}
-				fprintf(s, "%v", err)
+				s.Printf("%v", err)
 			}
 			if isPlus && es.stack != nil {
 				es.stack.Format(s, verb)
 			}
 		}
 	case 'd':
-		fprintf(s, "%d", len(es.errors))
+		s.Printf("%d", len(es.errors))
 	}
 }
 
@@ -224,11 +226,9 @@ func (es *zErrors) process(opt Option) error {
 }
 
 func formatMsg(err error, msgArgs []any) error {
-	if len(msgArgs) == 0 {
+	msg := fmtz.FormatMsgArgs(msgArgs)
+	if msg == "" {
 		return err
 	}
-	if format, ok := msgArgs[0].(string); ok {
-		return NoStack().Wrapf(err, format, msgArgs[1:]...)
-	}
-	return NoStack().Wrap(err, fmt.Sprintln(msgArgs...))
+	return NoStack().Wrap(err, msg)
 }
