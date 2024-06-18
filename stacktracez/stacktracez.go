@@ -2,11 +2,12 @@ package stacktracez // import "ezpkg.io/stacktracez"
 
 import (
 	"fmt"
-	"io"
 	"path"
 	"runtime"
 	"strings"
 	"sync"
+
+	"ezpkg.io/fmtz"
 )
 
 const maxFrames = 32
@@ -38,9 +39,10 @@ func StackTraceSkip(skip int) *Frames {
 	return &Frames{frames: frames}
 }
 
-func (fz *Frames) Format(s fmt.State, verb rune) {
+func (fz *Frames) Format(s0 fmt.State, verb rune) {
+	s := fmtz.WrapState(s0)
 	if fz == nil {
-		writeString(s, "<nil>")
+		s.WriteStringZ("<nil>")
 		return
 	}
 	switch verb {
@@ -71,12 +73,13 @@ func (fz *Frames) GetFrames() []Frame {
 	return fz.cached
 }
 
-func (f Frame) Format(s fmt.State, verb rune) {
+func (f Frame) Format(s0 fmt.State, verb rune) {
+	s := fmtz.WrapState(s0)
 	switch verb {
 	case 's', 'v':
 		switch {
 		case s.Flag('+'):
-			fprintf(s, "%s\n\t%s:%d", f.Function, f.File, f.Line)
+			s.Printf("%s\n\t%s:%d", f.Function, f.File, f.Line)
 		default:
 			sepIdx := strings.LastIndexByte(f.Function, '/')
 			if sepIdx < 0 {
@@ -87,27 +90,19 @@ func (f Frame) Format(s fmt.State, verb rune) {
 				dotIdx = -1
 			}
 			pkgPath := f.Function[:sepIdx+dotIdx]
-			fprintf(s, "%s/%s:%d · %s", pkgPath, path.Base(f.File), f.Line, f.Function[sepIdx+dotIdx+1:])
+			s.Printf("%s/%s:%d · %s", pkgPath, path.Base(f.File), f.Line, f.Function[sepIdx+dotIdx+1:])
 		}
 	case 'd':
-		fprintf(s, "%d", f.Line)
+		s.Printf("%d", f.Line)
 	}
 }
 
-func formatFrames(s fmt.State, verb rune, frames []Frame) {
+func formatFrames(s fmtz.State, verb rune, frames []Frame) {
 	if len(frames) == 0 {
-		writeString(s, "[]")
+		s.WriteStringZ("[]")
 	}
 	for _, frame := range frames {
 		frame.Format(s, verb)
-		writeString(s, "\n")
+		s.WriteStringZ("\n")
 	}
-}
-
-func writeString(w fmt.State, s string) {
-	_, _ = io.WriteString(w, s)
-}
-
-func fprintf(w fmt.State, format string, args ...any) {
-	_, _ = fmt.Fprintf(w, format, args...)
 }

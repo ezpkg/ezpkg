@@ -4,6 +4,8 @@ package colorz // import "ezpkg.io/colorz"
 import (
 	"fmt"
 	"io"
+
+	"ezpkg.io/fmtz"
 )
 
 const (
@@ -50,14 +52,15 @@ func (c Color) Wrap(s string) string {
 	return c.Code() + s + Reset.Code()
 }
 
-func (c Color) Format(s fmt.State, verb rune) {
+func (c Color) Format(s0 fmt.State, verb rune) {
+	s := fmtz.WrapState(s0)
 	switch {
 	case verb == 'v' && (s.Flag('+') || s.Flag('#')):
-		fprintf(s, "Color(%d)", byte(c))
+		s.Printf("Color(%d)", byte(c))
 	case verb == 'd':
-		fprintf(s, "%d", byte(c))
+		s.Printf("%d", byte(c))
 	default:
-		writeString(s, c.Code())
+		s.WriteStringZ(c.Code())
 	}
 }
 
@@ -101,12 +104,4 @@ func (c Color) Println(args ...any) {
 	fmt.Printf("\x1b[%dm", byte(c))
 	fmt.Println(args...)
 	fmt.Printf("\x1b[0m")
-}
-
-func writeString(w fmt.State, s string) {
-	_, _ = io.WriteString(w, s)
-}
-
-func fprintf(w fmt.State, format string, args ...any) {
-	_, _ = fmt.Fprintf(w, format, args...)
 }
