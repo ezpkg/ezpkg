@@ -15,7 +15,7 @@ Package errorz provides functions for dealing with errors, with stacktrace, vali
 ## Installation
 
 ```sh
-go get -u ezpkg.io/errorz@v0.0.6
+go get -u ezpkg.io/errorz@v0.0.7
 ```
 
 ## Examples

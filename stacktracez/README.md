@@ -15,7 +15,7 @@ Package stacktracez provides functions for getting stack trace for using in erro
 ## Installation
 
 ```sh
-go get -u ezpkg.io/stacktracez@v0.0.6
+go get -u ezpkg.io/stacktracez@v0.0.7
 ```
 
 ## Examples

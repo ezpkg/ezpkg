@@ -18,20 +18,24 @@ If you have any questions or suggestions, feel free to [create new issues](https
 
 ## Packages
 
-| Package                                             | Description                                                                                   |
-|-----------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| [bytez](https://github.com/ezpkg/bytez)             | Extends the standard library [bytes](https://pkg.go.dev/bytes) with additional functions.     |
-| [colorz](https://github.com/ezpkg/colorz)           | Working with colors in terminal.                                                              |
-| [diffz](https://github.com/ezpkg/diffz)             | Comparing and displaying differences between two strings.                                     |
-| [errorz](https://github.com/ezpkg/errorz)           | Utilities for working with errors: Must, Validate, multi-errors, etc.                         |
-| [fmtz](https://github.com/ezpkg/fmtz)               | Utilities for working with errors: Must, Validate, multi-errors, etc.                         |
-| [mapz](https://github.com/ezpkg/mapz)               | Extends the standard library [fmt](https://pkg.go.dev/fmt) with additional functions.         |
-| [slicez](https://github.com/ezpkg/slicez)           | Extends the standard library [slices](https://pkg.go.dev/slices) with additional functions.   |
-| [stacktracez](https://github.com/ezpkg/stacktracez) | Get stack trace for using in errors and logs.                                                 |
+<div align="center">
+
+| Package                                             | Description                                                                                  |
+|-----------------------------------------------------|----------------------------------------------------------------------------------------------|
+| [bytez](https://github.com/ezpkg/bytez)             | Extends the standard library [bytes](https://pkg.go.dev/bytes) with additional functions.    |
+| [colorz](https://github.com/ezpkg/colorz)           | Working with colors in terminal.                                                             |
+| [diffz](https://github.com/ezpkg/diffz)             | Comparing and displaying differences between two strings.                                    |
+| [errorz](https://github.com/ezpkg/errorz)           | Utilities for working with errors: Must, Validate, multi-errors, etc.                        |
+| [fmtz](https://github.com/ezpkg/fmtz)               | Extends the standard library [fmt](https://pkg.go.dev/fmt) with additional functions.        |
+| [mapz](https://github.com/ezpkg/mapz)               | Extends the package [golang.org/x/exp/maps](https://pkg.go.dev/golang.org/x/exp/maps).       |
+| [slicez](https://github.com/ezpkg/slicez)           | Extends the standard library [slices](https://pkg.go.dev/slices) with additional functions.  |
+| [stacktracez](https://github.com/ezpkg/stacktracez) | Get stack trace for using in errors and logs.                                                |
 | [stringz](https://github.com/ezpkg/stringz)         | Extends the standard library [strings](https://pkg.go.dev/strings) with additional functions. |
-| [testingz](https://github.com/ezpkg/testingz)       | Utilities for testing.                                                                        |
-| [typez](https://github.com/ezpkg/typez)             | Generic functions for working with types.                                                     |
-| [unsafez](https://github.com/ezpkg/unsafez)         | Convert bytes to strings using unsafe pointer.                                                |
+| [testingz](https://github.com/ezpkg/testingz)       | Utilities for testing.                                                                       |
+| [typez](https://github.com/ezpkg/typez)             | Generic functions for working with types.                                                    |
+| [unsafez](https://github.com/ezpkg/unsafez)         | Convert bytes to strings using unsafe pointer.                                               |
+
+</div>
 
 ### Installation
 
