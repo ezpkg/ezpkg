@@ -24,7 +24,7 @@ type WriterZ interface {
 	WriteZ(p []byte) int
 	WriteByteZ(c byte)
 	WriteRuneZ(r rune) int
-	WriteStringZ(s string)
+	WriteStringZ(s string) int
 	PrintBytes(p []byte)
 	Printf(format string, args ...any)
 	Println(args ...any)
@@ -47,6 +47,14 @@ func (c CodeStd) Format(s fmt.State, r rune) {
 	p = utf8.AppendRune(p, c.Char)
 	_, _ = s.Write(p)
 	_, _ = fmt.Fprint(s, c.Number)
+}
+
+func TestState(t *testing.T) {
+	code := Code{'Ω', 123}
+	out := fmt.Sprint(code)
+	if out != "Ω123" {
+		t.Errorf("unexpected output: %q", out)
+	}
 }
 
 func BenchmarkState(b *testing.B) {

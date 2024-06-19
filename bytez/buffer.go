@@ -44,8 +44,9 @@ func (b *Buffer) WriteRuneZ(r rune) int {
 	n, _ := b.unwrap().WriteRune(r)
 	return n
 }
-func (b *Buffer) WriteStringZ(s string) {
-	_, _ = b.unwrap().WriteString(s)
+func (b *Buffer) WriteStringZ(s string) int {
+	n, _ := b.unwrap().WriteString(s)
+	return n
 }
 func (b *Buffer) PrintBytes(p []byte) {
 	_, _ = b.Write(p)

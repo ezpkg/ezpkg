@@ -29,8 +29,9 @@ func (b *Builder) WriteRuneZ(r rune) int {
 	n, _ := b.unwrap().WriteRune(r)
 	return n
 }
-func (b *Builder) WriteStringZ(s string) {
-	_, _ = b.unwrap().WriteString(s)
+func (b *Builder) WriteStringZ(s string) int {
+	n, _ := b.unwrap().WriteString(s)
+	return n
 }
 func (b *Builder) PrintBytes(p []byte) {
 	_, _ = b.Write(p)
