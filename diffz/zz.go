@@ -1,4 +1,4 @@
 package diffz
 
 // internal usage
-const ZzVersion = `0.0.5`
+const ZzVersion = `0.0.6`

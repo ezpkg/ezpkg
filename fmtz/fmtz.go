@@ -1,4 +1,5 @@
-package fmtz
+// Package fmtz provides utilities for working with formatted strings. It aims to extend the standard library fmt package with additional functionality.
+package fmtz // import "ezpkg.io/fmtz"
 
 import (
 	"fmt"

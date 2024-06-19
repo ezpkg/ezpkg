@@ -24,7 +24,8 @@ If you have any questions or suggestions, feel free to [create new issues](https
 | [colorz](https://github.com/ezpkg/colorz)           | Working with colors in terminal.                                                              |
 | [diffz](https://github.com/ezpkg/diffz)             | Comparing and displaying differences between two strings.                                     |
 | [errorz](https://github.com/ezpkg/errorz)           | Utilities for working with errors: Must, Validate, multi-errors, etc.                         |
-| [mapz](https://github.com/ezpkg/mapz)               | Extends the package [golang.org/x/exp/maps](https://pkg.go.dev/golang.org/x/exp/maps).        |
+| [fmtz](https://github.com/ezpkg/fmtz)               | Utilities for working with errors: Must, Validate, multi-errors, etc.                         |
+| [mapz](https://github.com/ezpkg/mapz)               | Extends the standard library [fmt](https://pkg.go.dev/fmt) with additional functions.         |
 | [slicez](https://github.com/ezpkg/slicez)           | Extends the standard library [slices](https://pkg.go.dev/slices) with additional functions.   |
 | [stacktracez](https://github.com/ezpkg/stacktracez) | Get stack trace for using in errors and logs.                                                 |
 | [stringz](https://github.com/ezpkg/stringz)         | Extends the standard library [strings](https://pkg.go.dev/strings) with additional functions. |

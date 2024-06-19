@@ -15,7 +15,7 @@ Package diffz provides functions for comparing and displaying differences betwee
 ## Installation
 
 ```sh
-go get -u ezpkg.io/diffz@v0.0.5
+go get -u ezpkg.io/diffz@v0.0.6
 ```
 
 ## Examples
