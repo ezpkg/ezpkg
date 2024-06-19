@@ -10,7 +10,7 @@
 [![GitHub License](https://img.shields.io/github/license/ezpkg/unsafez)](https://github.com/ezpkg/unsafez/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/unsafez?label=version)](https://github.com/ezpkg/unsafez/tags)
 
-Package unsafez provides unsafe functions for working with unsafe.Pointer.
+Package [unsafez](https://pkg.go.dev/ezpkg.io/unsafez) provides unsafe functions for working with unsafe.Pointer.
 
 ## Installation
 
@@ -21,8 +21,7 @@ go get -u ezpkg.io/unsafez@v0.0.7
 ## Examples
 
 ```go
-data, err := os.ReadFile())
-errorz.MustZ(err)
+data := errorz.Must(os.ReadFile()))
 str := unsafez.BytesToString(data)
 fmt.Println(str)
 ```

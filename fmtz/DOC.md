@@ -1,8 +1,8 @@
-Package fmtz extends the standard library [fmt](https://pkg.go.dev/fmt) with additional functions.
+Package [fmtz](https://pkg.go.dev/ezpkg.io/fmtz) extends the standard library [fmt](https://pkg.go.dev/fmt) with additional functions.
 
 ## Examples
 
-#### fmt.State
+### fmt.State
 
 The stdlib `fmt.State` provides many functions that always return nil error. They have their counterparts as `fmtz.State` that eliminate the need of error handling. There is also `fmtz.MustState` that panics on error, which is useful when other types implement `fmt.State` that may return non-nil error.
 
@@ -24,7 +24,7 @@ func main() {
 }
 ```
 
-#### FormatMsgArgs
+### FormatMsgArgs
 
 `fmtz.FormatMsgArgs` is a helper function that formats a message with arguments. It is useful for using in logging and error messages.
 

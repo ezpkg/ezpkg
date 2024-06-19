@@ -10,7 +10,7 @@
 [![GitHub License](https://img.shields.io/github/license/ezpkg/stacktracez)](https://github.com/ezpkg/stacktracez/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/stacktracez?label=version)](https://github.com/ezpkg/stacktracez/tags)
 
-Package stacktracez provides functions for getting stack trace for using in errors and logs.
+Package [stacktracez](https://pkg.go.dev/ezpkg.io/stacktracez) provides functions for getting stack trace for using in errors and logs.
 
 ## Installation
 

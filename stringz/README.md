@@ -10,7 +10,7 @@
 [![GitHub License](https://img.shields.io/github/license/ezpkg/stringz)](https://github.com/ezpkg/stringz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/stringz?label=version)](https://github.com/ezpkg/stringz/tags)
 
-Package stringz extends the standard library [strings](https://pkg.go.dev/strings) with additional functions.
+Package [stringz](https://pkg.go.dev/ezpkg.io/stringz) extends the standard library [strings](https://pkg.go.dev/strings) with additional functions.
 
 ## Installation
 
@@ -20,7 +20,7 @@ go get -u ezpkg.io/stringz@v0.0.7
 
 ## Examples
 
-#### stringz.Builder
+### stringz.Builder
 
 The stdlib `strings.Builder` provides many functions that always return nil error. They have their counterparts in `stringz.Builder` that eliminate the need of error handling.
 

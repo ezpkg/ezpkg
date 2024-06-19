@@ -10,7 +10,7 @@
 [![GitHub License](https://img.shields.io/github/license/ezpkg/errorz)](https://github.com/ezpkg/errorz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/errorz?label=version)](https://github.com/ezpkg/errorz/tags)
 
-Package errorz provides functions for dealing with errors, with stacktrace, validation, and multi-errors.
+Package [errorz](https://pkg.go.dev/ezpkg.io/errorz) provides functions for dealing with errors, with stacktrace, validation, and multi-errors.
 
 ## Installation
 
@@ -51,7 +51,7 @@ fmt.Printf("%#v\n", zErr)
 // testing/testing.go:7890 · tRunner
 ```
 
-#### No stacktrace
+### No stacktrace
 
 ```go
 zErr := errorz.NoStack().New("no stack")

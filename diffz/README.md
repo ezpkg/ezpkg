@@ -10,7 +10,7 @@
 [![GitHub License](https://img.shields.io/github/license/ezpkg/diffz)](https://github.com/ezpkg/diffz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/diffz?label=version)](https://github.com/ezpkg/diffz/tags)
 
-Package diffz provides functions for comparing and displaying differences between two strings. It's based on [kylelemons/godebug](https://github.com/kylelemons/godebug) and [sergi/go-diff](https://github.com/sergi/go-diff). It provides additional features of ignoring spaces and supporting placeholders.
+Package [diffz](https://pkg.go.dev/ezpkg.io/diffz) provides functions for comparing and displaying differences between two strings. It's based on [kylelemons/godebug](https://github.com/kylelemons/godebug) and [sergi/go-diff](https://github.com/sergi/go-diff). It provides additional features of ignoring spaces and supporting placeholders.
 
 ## Installation
 

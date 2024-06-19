@@ -1,4 +1,4 @@
-Package errorz provides functions for dealing with errors, with stacktrace, validation, and multi-errors.
+Package [errorz](https://pkg.go.dev/ezpkg.io/errorz) provides functions for dealing with errors, with stacktrace, validation, and multi-errors.
 
 ## Examples
 
@@ -33,7 +33,7 @@ fmt.Printf("%#v\n", zErr)
 // testing/testing.go:7890 · tRunner
 ```
 
-#### No stacktrace
+### No stacktrace
 
 ```go
 zErr := errorz.NoStack().New("no stack")

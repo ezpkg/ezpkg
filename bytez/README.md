@@ -10,7 +10,7 @@
 [![GitHub License](https://img.shields.io/github/license/ezpkg/bytez)](https://github.com/ezpkg/bytez/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/bytez?label=version)](https://github.com/ezpkg/bytez/tags)
 
-Package bytez provides utilities for working with byte slices. It aims to extend the standard library `bytes` package with additional functionality.
+Package [bytez](https://pkg.go.dev/ezpkg.io/bytez) provides utilities for working with byte slices. It aims to extend the standard library [bytes](https://pkg.go.dev/bytes) package with additional functionality.
 
 ## Installation
 
@@ -20,7 +20,7 @@ go get -u ezpkg.io/bytez@v0.0.7
 
 ## Examples
 
-#### bytez.Buffer
+### bytez.Buffer
 
 The stdlib `bytes.Buffer` provides many functions that always return nil error. They have their counterparts in `bytez.Buffer` that eliminate the need of error handling.
 

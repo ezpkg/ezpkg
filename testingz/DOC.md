@@ -1,4 +1,4 @@
-Packages testingz provides utilities for testing. Support ignoring spaces and using placeholders.
+Packages [testingz](https://pkg.go.dev/ezpkg.io/testingz) provides utilities for testing. Support ignoring spaces and using placeholders.
 
 ## Examples
 

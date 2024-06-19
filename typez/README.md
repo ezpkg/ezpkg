@@ -10,7 +10,7 @@
 [![GitHub License](https://img.shields.io/github/license/ezpkg/typez)](https://github.com/ezpkg/typez/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/typez?label=version)](https://github.com/ezpkg/typez/tags)
 
-Package typez provides generic functions for working with types.
+Package [typez](https://pkg.go.dev/ezpkg.io/typez) provides generic functions for working with types.
 
 ## Installation
 
