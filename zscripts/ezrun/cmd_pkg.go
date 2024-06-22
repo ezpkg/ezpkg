@@ -128,7 +128,7 @@ func (c *cmdPkg) processPackage(pkgName string) (pkgInfo *PkgInfo, err error) {
 	}
 	_pkgs := errorz.Must(packages.Load(config, "./..."))
 	for _, pkg := range _pkgs {
-		errorz.Validatef(&err, strings.HasPrefix(pkg.PkgPath, "ezpkg.io/"), "package path must start with ezpkg.io: %v", pkg.PkgPath)
+		errorz.ValidateTof(&err, strings.HasPrefix(pkg.PkgPath, "ezpkg.io/"), "package path must start with ezpkg.io: %v", pkg.PkgPath)
 		if pkg.Name == pkgName {
 			if pkgInfo != nil {
 				panic(fmt.Sprintf("duplicated package name %q", pkg.Name))

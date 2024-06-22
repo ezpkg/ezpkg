@@ -16,8 +16,8 @@ type EzpkgInfo struct {
 
 func (x *EzpkgInfo) Validate() (err error) {
 	reVer := regexp.MustCompile(`^\d+\.\d+\.\d+$`)
-	errorz.Validatef(&err, x.Version != "", "version is required")
-	errorz.Validatef(&err, reVer.MatchString(x.Version), "malformed version %q", x.Version)
+	errorz.ValidateTof(&err, x.Version != "", "version is required")
+	errorz.ValidateTof(&err, reVer.MatchString(x.Version), "malformed version %q", x.Version)
 	return err
 }
 
