@@ -8,14 +8,14 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/ezpkg.io/mapz)](https://pkg.go.dev/ezpkg.io/mapz)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/mapz)](https://github.com/ezpkg/mapz/tree/main/LICENSE)
-[![version](https://img.shields.io/github/v/tag/ezpkg/mapz?label=version)](https://github.com/ezpkg/mapz/tags)
+[![version](https://img.shields.io/github/v/tag/ezpkg/mapz?label=version)](https://pkg.go.dev/ezpkg.io/mapz?tab=versions)
 
 Package [mapz](https://pkg.go.dev/ezpkg.io/mapz) extends the package [golang.org/x/exp/maps](https://pkg.go.dev/golang.org/x/exp/maps) with additional functions.
 
 ## Installation
 
 ```sh
-go get -u ezpkg.io/mapz@v0.0.7
+go get -u ezpkg.io/mapz@v0.0.8
 ```
 
 ## Examples

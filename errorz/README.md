@@ -8,14 +8,14 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/ezpkg.io/errorz)](https://pkg.go.dev/ezpkg.io/errorz)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/errorz)](https://github.com/ezpkg/errorz/tree/main/LICENSE)
-[![version](https://img.shields.io/github/v/tag/ezpkg/errorz?label=version)](https://github.com/ezpkg/errorz/tags)
+[![version](https://img.shields.io/github/v/tag/ezpkg/errorz?label=version)](https://pkg.go.dev/ezpkg.io/errorz?tab=versions)
 
 Package [errorz](https://pkg.go.dev/ezpkg.io/errorz) provides functions for dealing with errors, with stacktrace, validation, and multi-errors.
 
 ## Installation
 
 ```sh
-go get -u ezpkg.io/errorz@v0.0.7
+go get -u ezpkg.io/errorz@v0.0.8
 ```
 
 ## Examples

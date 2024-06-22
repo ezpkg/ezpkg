@@ -8,14 +8,14 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/ezpkg.io/colorz)](https://pkg.go.dev/ezpkg.io/colorz)
 [![GitHub License](https://img.shields.io/github/license/ezpkg/colorz)](https://github.com/ezpkg/colorz/tree/main/LICENSE)
-[![version](https://img.shields.io/github/v/tag/ezpkg/colorz?label=version)](https://github.com/ezpkg/colorz/tags)
+[![version](https://img.shields.io/github/v/tag/ezpkg/colorz?label=version)](https://pkg.go.dev/ezpkg.io/colorz?tab=versions)
 
 Package [colorz](https://pkg.go.dev/ezpkg.io/colorz) provides utilities for working with colors in terminal.
 
 ## Installation
 
 ```sh
-go get -u ezpkg.io/colorz@v0.0.7
+go get -u ezpkg.io/colorz@v0.0.8
 ```
 
 ## Examples

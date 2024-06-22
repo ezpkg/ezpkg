@@ -8,7 +8,7 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/ezpkg.io/{PKGNAME})](https://pkg.go.dev/ezpkg.io/{PKGNAME})
 [![GitHub License](https://img.shields.io/github/license/ezpkg/{PKGNAME})](https://github.com/ezpkg/{PKGNAME}/tree/main/LICENSE)
-[![version](https://img.shields.io/github/v/tag/ezpkg/{PKGNAME}?label=version)](https://github.com/ezpkg/{PKGNAME}/tags)
+[![version](https://img.shields.io/github/v/tag/ezpkg/{PKGNAME}?label=version)](https://pkg.go.dev/ezpkg.io/{PKGNAME}?tab=versions)
 
 {PKG_DESC}
 
