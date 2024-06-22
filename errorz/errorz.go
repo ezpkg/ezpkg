@@ -64,7 +64,7 @@ func New(msg string) error {
 
 func Newf(format string, args ...any) error {
 	return &zError{
-		msg:   fmt.Sprintf(format, args...),
+		msg:   sprintf(format, args...),
 		stack: stacktracez.StackTraceSkip(1),
 	}
 }
@@ -78,7 +78,7 @@ func Error(msg string) error {
 
 func Errorf(format string, args ...any) error {
 	return &zError{
-		msg:   fmt.Sprintf(format, args...),
+		msg:   sprintf(format, args...),
 		stack: stacktracez.StackTraceSkip(1),
 	}
 }
@@ -98,7 +98,7 @@ func (e *zError) Error() string {
 	if e.cause == nil && e.msg != "" {
 		return e.msg
 	}
-	return fmt.Sprintf("%s", e)
+	return sprintf("%s", e)
 }
 
 func (e *zError) Format(s0 fmt.State, v rune) {

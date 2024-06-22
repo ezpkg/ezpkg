@@ -103,7 +103,7 @@ func (opt Option) Append(pErr *error, errs ...error) {
 }
 
 func (opt Option) Appendf(pErr *error, err error, msgArgs ...any) {
-	err = formatMsg(err, msgArgs)
+	err = formatErrorMsg(err, msgArgs)
 	if err != nil {
 		appendErrs(opt, pErr, err)
 	}

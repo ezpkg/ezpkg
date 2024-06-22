@@ -65,19 +65,90 @@ func AppendTof(pErr *error, err error, msg string, args ...any) {
 	appendErrs(Option{}, pErr, err)
 }
 
-func Validatef(pErr *error, condition bool, msg string, args ...any) {
+func Validate(condition bool, msgArgs ...any) error {
+	if condition {
+		return nil
+	}
+	return New(formatValidate(msgArgs))
+}
+
+func Validatef(condition bool, msg string, args ...any) error {
+	if condition {
+		return nil
+	}
+	return Newf(msg, args...)
+}
+
+func ValidateX[T any](value T, condition bool, msgArgs ...any) (T, error) {
+	if condition {
+		return value, nil
+	}
+	return value, New(formatValidate(msgArgs))
+}
+
+func ValidateXf[T any](value T, condition bool, msgArgs ...any) (T, error) {
+	if condition {
+		return value, nil
+	}
+	return value, New(formatValidate(msgArgs))
+}
+
+func MustValidate(condition bool, msgArgs ...any) {
+	if condition {
+		return
+	}
+	panic(formatValidate(msgArgs))
+}
+
+func MustValidatef(condition bool, msg string, args ...any) {
+	if condition {
+		return
+	}
+	panic(sprintf(msg, args...))
+}
+
+func MustValidateX[T any](value T, condition bool, msgArgs ...any) T {
+	if condition {
+		return value
+	}
+	panic(formatValidate(msgArgs))
+}
+
+func MustValidateXf[T any](value T, condition bool, msg string, args ...any) T {
+	if condition {
+		return value
+	}
+	panic(sprintf(msg, args...))
+}
+
+func ValidateTo(pErr *error, condition bool, msgArgs ...any) {
+	if !condition {
+		msg := formatValidate(msgArgs)
+		appendErrs(Option{}, pErr, NoStack().Error(msg))
+	}
+}
+
+func ValidateTof(pErr *error, condition bool, msg string, args ...any) {
 	if !condition {
 		appendErrs(Option{}, pErr, NoStack().Errorf(msg, args...))
 	}
 }
 
-func ValidateX[T any](pErr *error, value T, condition bool, msg string, args ...any) (out T) {
+func ValidateToX[T any](pErr *error, value T, condition bool, msgArgs ...any) (out T) {
 	if condition {
 		return value
-	} else {
-		appendErrs(Option{}, pErr, NoStack().Errorf(msg, args...))
-		return out
 	}
+	msg := formatValidate(msgArgs)
+	appendErrs(Option{}, pErr, NoStack().Error(msg))
+	return out
+}
+
+func ValidateToXf[T any](pErr *error, value T, condition bool, msg string, args ...any) (out T) {
+	if condition {
+		return value
+	}
+	appendErrs(Option{}, pErr, NoStack().Errorf(msg, args...))
+	return out
 }
 
 func GetErrors(err error) []error {
@@ -106,9 +177,9 @@ func (es *zErrors) Error() string {
 	case len(es.errors) == 0:
 		return "<empty>"
 	case len(es.errors) == 1:
-		return fmt.Sprintf("(1 error) %v", es.errors[0])
+		return sprintf("(1 error) %v", es.errors[0])
 	default:
-		return fmt.Sprintf("%v", es)
+		return sprintf("%v", es)
 	}
 }
 
@@ -201,7 +272,7 @@ func (es *zErrors) Append(errs ...error) {
 }
 
 func (es *zErrors) Appendf(err error, msgArgs ...any) {
-	err = formatMsg(err, msgArgs)
+	err = formatErrorMsg(err, msgArgs)
 	if err != nil {
 		es.errors = append(es.errors, err)
 	}
@@ -225,10 +296,25 @@ func (es *zErrors) process(opt Option) error {
 	return es
 }
 
-func formatMsg(err error, msgArgs []any) error {
+func sprintf(msg string, args ...any) string {
+	if len(args) == 0 {
+		return msg
+	}
+	return fmt.Sprintf(msg, args...)
+}
+
+func formatErrorMsg(err error, msgArgs []any) error {
 	msg := fmtz.FormatMsgArgs(msgArgs)
 	if msg == "" {
 		return err
 	}
 	return NoStack().Wrap(err, msg)
+}
+
+func formatValidate(msgArgs []any) string {
+	msg := fmtz.FormatMsgArgs(msgArgs)
+	if msg == "" {
+		return "validation failed"
+	}
+	return msg
 }
