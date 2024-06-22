@@ -47,33 +47,6 @@ func Must8[A, B, C, D, E, F, G, H any](a A, b B, c C, d D, e E, f F, g G, h H, e
 	return a, b, c, d, e, f, g, h
 }
 
-func Skip[T any](v T, _ error) T {
-	return v
-}
-func SkipZ(_ error) {
-}
-func Skip2[A, B any](a A, b B, _ error) (A, B) {
-	return a, b
-}
-func Skip3[A, B, C any](a A, b B, c C, _ error) (A, B, C) {
-	return a, b, c
-}
-func Skip4[A, B, C, D any](a A, b B, c C, d D, _ error) (A, B, C, D) {
-	return a, b, c, d
-}
-func Skip5[A, B, C, D, E any](a A, b B, c C, d D, e E, _ error) (A, B, C, D, E) {
-	return a, b, c, d, e
-}
-func Skip6[A, B, C, D, E, F any](a A, b B, c C, d D, e E, f F, _ error) (A, B, C, D, E, F) {
-	return a, b, c, d, e, f
-}
-func Skip7[A, B, C, D, E, F, G any](a A, b B, c C, d D, e E, f F, g G, _ error) (A, B, C, D, E, F, G) {
-	return a, b, c, d, e, f, g
-}
-func Skip8[A, B, C, D, E, F, G, H any](a A, b B, c C, d D, e E, f F, g G, h H, _ error) (A, B, C, D, E, F, G, H) {
-	return a, b, c, d, e, f, g, h
-}
-
 var _ stacktracez.StackTracerZ = (*zError)(nil)
 
 type zError struct {
