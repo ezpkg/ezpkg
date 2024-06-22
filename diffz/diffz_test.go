@@ -126,6 +126,25 @@ func (██ Diffs) IsDiff() bool {
 }
 `
 
+var colorExpect = `
+color:
+  id: ████████-████-████-████-████████████
+  name: red
+  size: small
+  code: #ff0000`
+var red = `
+color:
+  id: d56d5f0d-f05d-4d46-9ce2-af6396d25c55
+  name: red
+  size: small
+  code: #ff0000`
+var green = `
+color:
+  id: 5b01ec0b-0607-446e-8a25-aaef595902a9
+  name: green
+  size: small
+  code: #00ff00`
+
 func TestDiff(t *testing.T) {
 	t.Run("ByChar", func(t *testing.T) {
 		t.Run("default", func(t *testing.T) {
@@ -251,6 +270,28 @@ func TestDiff(t *testing.T) {
 				assert(t, diffs.Items[2].Text == "two\n").Errorf("❌2")
 				assert(t, diffs.Items[3].Text == "three\n").Errorf("❌3")
 			})
+			t.Run("color", func(t *testing.T) {
+				diffs := diffz.IgnoreSpace().DiffByLine(red, green)
+				assertDiff(t, diffs)
+				assert(t, diffs.Items[0].Type == diffz.DiffEqual).Errorf("❌0")
+				assert(t, diffs.Items[1].Type == diffz.DiffEqual).Errorf("❌1a")
+				assert(t, diffs.Items[1].Text == "color:\n").Errorf("❌1b")
+				assert(t, diffs.Items[2].Type == diffz.DiffDelete).Errorf("❌2a")
+				assert(t, diffs.Items[2].Text == "  id: d56d5f0d-f05d-4d46-9ce2-af6396d25c55\n").Errorf("❌2b")
+				assert(t, diffs.Items[3].Type == diffz.DiffInsert).Errorf("❌3a")
+				assert(t, diffs.Items[3].Text == "  id: 5b01ec0b-0607-446e-8a25-aaef595902a9\n").Errorf("❌3b")
+				assert(t, diffs.Items[4].Type == diffz.DiffDelete).Errorf("❌4a")
+				assert(t, diffs.Items[4].Text == "  name: red\n").Errorf("❌4b")
+				assert(t, diffs.Items[5].Type == diffz.DiffInsert).Errorf("❌5a")
+				assert(t, diffs.Items[5].Text == "  name: green\n").Errorf("❌5b")
+				assert(t, diffs.Items[6].Type == diffz.DiffEqual).Errorf("❌6a")
+				assert(t, diffs.Items[6].Text == "  size: small\n").Errorf("❌6b")
+				assert(t, diffs.Items[7].Type == diffz.DiffDelete).Errorf("❌7a")
+				assert(t, diffs.Items[7].Text == "  code: #ff0000\n").Errorf("❌7b")
+				assert(t, diffs.Items[8].Type == diffz.DiffInsert).Errorf("❌8a")
+				assert(t, diffs.Items[8].Text == "  code: #00ff00\n").Errorf("❌8b")
+				assert(t, len(diffs.Items) == 9).Errorf("❌len")
+			})
 		})
 		t.Run("placeholder", func(t *testing.T) {
 			t.Run("no_placeholder/diff", func(t *testing.T) {
@@ -260,6 +301,16 @@ func TestDiff(t *testing.T) {
 			t.Run("use_placeholder/equal", func(t *testing.T) {
 				diffs := diffz.Placeholder().AndIgnoreSpace().DiffByLine(left0, right0_Placeholder)
 				assertEqual(t, diffs)
+			})
+			t.Run("color/equal", func(t *testing.T) {
+				diffs := diffz.IgnoreSpace().AndPlaceholder().DiffByLine(red, colorExpect)
+				assertEqual(t, diffs)
+				assert(t, diffs.Items[0].Text == "\n").Errorf("❌0")
+				assert(t, diffs.Items[1].Text == "color:\n").Errorf("❌1")
+				assert(t, diffs.Items[2].Text == "  id: d56d5f0d-f05d-4d46-9ce2-af6396d25c55\n").Errorf("❌2")
+				assert(t, diffs.Items[3].Text == "  name: red\n").Errorf("❌3")
+				assert(t, diffs.Items[4].Text == "  size: small\n").Errorf("❌4")
+				assert(t, diffs.Items[5].Text == "  code: #ff0000\n").Errorf("❌5")
 			})
 		})
 	})

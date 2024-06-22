@@ -145,7 +145,8 @@ func process(opt Option, ds Diffs) Diffs {
 	if opt == (Option{}) {
 		return ds
 	}
-	match := func(delText, insText string) (delI, insI int, ok bool) {
+	match := func(delText, insText string) (delNL, insNL int, ok bool) {
+		delI, insI := 0, 0
 		delL, insL := len(delText), len(insText)
 		for {
 			delCh, delSize := utf8.DecodeRuneInString(delText[delI:])
@@ -158,6 +159,9 @@ func process(opt Option, ds Diffs) Diffs {
 			}
 			if delCh == utf8.RuneError || insCh == utf8.RuneError {
 				return 0, 0, false
+			}
+			if delCh == '\n' && insCh == '\n' {
+				delNL, insNL = delI+1, insI+1
 			}
 			if delCh == insCh {
 				delI, insI = delI+delSize, insI+insSize
@@ -176,7 +180,7 @@ func process(opt Option, ds Diffs) Diffs {
 				insI += insSize
 				continue
 			}
-			return delI, insI, false
+			return delNL, insNL, false
 		}
 	}
 
@@ -294,9 +298,9 @@ func process(opt Option, ds Diffs) Diffs {
 				processRemaining()
 				break
 			}
-			delI, insI, ok := match(delText, insText)
-			appendEqual(delText[:delI], insText[:insI])
-			remainDel, remainIns = delText[delI:], insText[insI:]
+			delNL, insNL, ok := match(delText, insText)
+			appendEqual(delText[:delNL], insText[:insNL])
+			remainDel, remainIns = delText[delNL:], insText[insNL:]
 			if !ok {
 				processRemaining()
 				break
