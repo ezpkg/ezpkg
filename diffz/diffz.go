@@ -77,6 +77,10 @@ func (ds Diffs) IsDiff() bool {
 	return false
 }
 
+func (ds Diffs) String() string {
+	return Format(ds)
+}
+
 func ByChar(left, right string) Diffs {
 	return ByCharX(left, right, Default())
 }
