@@ -1,6 +1,6 @@
 <div align="center">
 
-[![gopherz](./_/gopherz.svg)](https://ezpkg.io)
+[![gopherz](./_/cover.svg)](https://ezpkg.io)
 
 </div>
 
