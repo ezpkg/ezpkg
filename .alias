@@ -7,6 +7,7 @@ alias cd.ztarget='cd $EZPKG_ROOT_DIR/ztarget'
 
 alias cd.bytez='cd $EZPKG_DIR/bytez'
 alias cd.colorz='cd $EZPKG_DIR/colorz'
+alias cd.conveyz='cd $EZPKG_DIR/conveyz'
 alias cd.diffz='cd $EZPKG_DIR/diffz'
 alias cd.errorz='cd $EZPKG_DIR/errorz'
 alias cd.fmtz='cd $EZPKG_DIR/fmtz'
