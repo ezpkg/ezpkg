@@ -10,7 +10,7 @@ import (
 )
 
 func Test(t *testing.T) {
-	Ω := conveyz.Expect
+	Ω := conveyz.GomegaExpect
 	conveyz.Convey("Start", t, func() {
 		s := "[0]"
 		defer func() { fmt.Printf("\n%s\n", s) }()
@@ -41,7 +41,7 @@ func Test(t *testing.T) {
 				Ω(s).To(gomega.Equal("[0] → [2] → [2.2]"))
 			})
 		})
-		conveyz.SkipConvey("failure message", func() {
+		conveyz.Convey("failure message", func() {
 			// 👆 change SkipConvey to Convey to see failure messages
 
 			conveyz.Convey("fail", func() {

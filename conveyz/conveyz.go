@@ -10,6 +10,7 @@ import (
 
 	"ezpkg.io/colorz"
 	"ezpkg.io/fmtz"
+	"ezpkg.io/stacktracez"
 	"ezpkg.io/stringz"
 )
 
@@ -33,7 +34,7 @@ func Reset(action func()) {
 	convey.Reset(action)
 }
 
-func Expect(actual any, extra ...any) gomega.Assertion {
+func GomegaExpect(actual any, extra ...any) gomega.Assertion {
 	assertion := gomega.Expect(actual, extra...)
 	return gomegaAssertion{actual: actual, assertion: assertion}
 }
@@ -56,11 +57,13 @@ func (a gomegaAssertion) To(matcher gomegatypes.GomegaMatcher, optionalDescripti
 	convey.So(a.actual, func(_ any, _ ...any) string {
 		success, err := matcher.Match(a.actual)
 		if err != nil {
-			return formatMsg(optionalDescription, colorz.Red.Wrap("UNEXPECTED: %v"), err)
+			stack := stacktracez.StackTraceSkip(4)
+			return formatMsg(optionalDescription, colorz.Red.Wrap("UNEXPECTED: %v\n\n%v"), err, stack)
 		}
 		if !success {
+			stack := stacktracez.StackTraceSkip(4)
 			msg := matcher.FailureMessage(a.actual)
-			return formatMsg(optionalDescription, "%s\n", msg)
+			return formatMsg(optionalDescription, "%s\n\n%v\n", msg, stack)
 		}
 		return ""
 	})
@@ -71,11 +74,13 @@ func (a gomegaAssertion) ToNot(matcher gomegatypes.GomegaMatcher, optionalDescri
 	convey.So(a.actual, func(_ any, _ ...any) string {
 		success, err := matcher.Match(a.actual)
 		if err != nil {
-			return formatMsg(optionalDescription, "UNEXPECTED: %v", err)
+			stack := stacktracez.StackTraceSkip(4)
+			return formatMsg(optionalDescription, "UNEXPECTED: %v\n\n%v", err, stack)
 		}
 		if success {
+			stack := stacktracez.StackTraceSkip(4)
 			msg := matcher.NegatedFailureMessage(a.actual)
-			return formatMsg(optionalDescription, "%s\n", msg)
+			return formatMsg(optionalDescription, "%s\n\n%v", msg, stack)
 		}
 		return ""
 	})
