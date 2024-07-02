@@ -20,6 +20,63 @@ go get -u ezpkg.io/conveyz@v0.0.9
 
 ## Examples
 
+```go
+func Test(t *testing.T) {
+	Ω := conveyz.GomegaExpect
+	conveyz.Convey("Start", t, func() {
+		s := "[0]"
+		defer func() { fmt.Printf("\n%s\n", s) }()
+
+		add := func(part string) {
+			s = examples.AppendStr(s, part)
+		}
+
+		conveyz.Convey("Test 1:", func() {
+			add(" → [1]")
+			Ω(s).To(gomega.Equal("[0] → [1]"))
+
+			conveyz.Convey("Test 1.1:", func() {
+				add(" → [1.1]")
+				Ω(s).To(gomega.Equal("[0] → [1] → [1.1]"))
+			})
+			conveyz.Convey("Test 1.2:", func() {
+				add(" → [1.2]")
+				Ω(s).To(gomega.Equal("[0] → [1] → [1.2]"))
+			})
+		})
+		conveyz.Convey("Test 2:", func() {
+			add(" → [2]")
+			Ω(s).To(gomega.Equal("[0] → [2]"))
+
+			conveyz.Convey("Test 2.1:", func() {
+				add(" → [2.1]")
+				Ω(s).To(gomega.Equal("[0] → [2] → [2.1]"))
+			})
+			conveyz.Convey("Test 2.2:", func() {
+				add(" → [2.2]")
+				Ω(s).To(gomega.Equal("[0] → [2] → [2.2]"))
+			})
+		})
+		conveyz.SkipConvey("failure message", func() {
+			// 👆 change SkipConvey to Convey to see failure messages
+
+			conveyz.Convey("fail", func() {
+				//  Expected
+				//      <string>: [0] → [2]
+				//  to equal
+				//      <string>: this test will fail
+				Ω(s).To(gomega.Equal("this test will fail"))
+			})
+			conveyz.Convey("UNEXPECTED ERROR", func() {
+				// UNEXPECTED ERROR: Refusing to compare <nil> to <nil>.
+				//  Be explicit and use BeNil() instead.  This is to avoid mistakes where both sides of an assertion are erroneously uninitialized.
+				Ω(nil).To(gomega.Equal(nil))
+			})
+		})
+	})
+}
+```
+
 ## About ezpkg.io
 
 As I work on various Go projects, I often find myself creating utility functions, extending existing packages, or developing packages to solve specific problems. Moving from one project to another, I usually have to copy or rewrite these solutions. So I created this repository to have all these utilities and packages in one place. Hopefully, you'll find them useful as well.
