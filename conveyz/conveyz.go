@@ -5,6 +5,7 @@
 package conveyz // import "ezpkg.io/conveyz"
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/onsi/gomega"
@@ -61,12 +62,12 @@ func (a gomegaAssertion) To(matcher gomegatypes.GomegaMatcher, optionalDescripti
 		success, err := matcher.Match(a.actual)
 		if err != nil {
 			stack := stacktracez.StackTraceSkip(4)
-			return formatMsg(optionalDescription, colorz.Red.Wrap("UNEXPECTED: %v\n\n%v"), err, stack)
+			return formatMsg(optionalDescription, stack, "%vUNEXPECTED: %v%v", colorz.Red, err, colorz.Yellow)
 		}
 		if !success {
 			stack := stacktracez.StackTraceSkip(4)
 			msg := matcher.FailureMessage(a.actual)
-			return formatMsg(optionalDescription, "%s\n\n%v\n", msg, stack)
+			return formatMsg(optionalDescription, stack, "%s", msg)
 		}
 		return ""
 	})
@@ -78,12 +79,12 @@ func (a gomegaAssertion) ToNot(matcher gomegatypes.GomegaMatcher, optionalDescri
 		success, err := matcher.Match(a.actual)
 		if err != nil {
 			stack := stacktracez.StackTraceSkip(4)
-			return formatMsg(optionalDescription, "UNEXPECTED: %v\n\n%v", err, stack)
+			return formatMsg(optionalDescription, stack, "%vUNEXPECTED: %v%v", colorz.Red, err, colorz.Yellow)
 		}
 		if success {
 			stack := stacktracez.StackTraceSkip(4)
 			msg := matcher.NegatedFailureMessage(a.actual)
-			return formatMsg(optionalDescription, "%s\n\n%v", msg, stack)
+			return formatMsg(optionalDescription, stack, "%s", msg)
 		}
 		return ""
 	})
@@ -119,11 +120,21 @@ func setupGomega(items ...any) {
 	}
 }
 
-func formatMsg(optionalDescription []any, format string, args ...any) string {
+func formatMsg(optionalDescription []any, stack *stacktracez.Frames, format string, args ...any) string {
 	b := &stringz.Builder{}
 	if len(optionalDescription) > 0 {
 		b.Println(fmtz.FormatMsgArgsX(optionalDescription))
 	}
 	b.Printf(format, args...)
+	b.Printf("\n\n")
+	for _, frame := range stack.GetFrames() {
+		pkg, _, _, _ := frame.Components()
+		if pkg == "ezpkg.io/conveyz" ||
+			strings.HasPrefix(pkg, "github.com/jtolds/gls") ||
+			strings.HasPrefix(pkg, "github.com/smartystreets/goconvey") {
+			continue
+		}
+		b.Printf("%s\n", frame)
+	}
 	return b.String()
 }

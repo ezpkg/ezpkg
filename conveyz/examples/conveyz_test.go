@@ -61,6 +61,11 @@ func Test(t *testing.T) {
 				//  Be explicit and use BeNil() instead.  This is to avoid mistakes where both sides of an assertion are erroneously uninitialized.
 				Ω(nil).To(gomega.Equal(nil))
 			})
+			conveyz.Convey("panic", func() {
+				examples.CallFunc(func() {
+					examples.WillPanic()
+				})
+			})
 		})
 	})
 }
