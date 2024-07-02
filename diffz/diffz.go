@@ -1,4 +1,7 @@
-// Package diffz provides functions for comparing and displaying differences between two strings. It's based on kylelemons/godebug and sergi/go-diff.
+// Package diffz provides functions for comparing and displaying differences between two strings. It's based on [kylelemons/godebug] and [sergi/go-diff].
+//
+// [kylelemons/godebug]: https://github.com/kylelemons/godebug
+// [sergi/go-diff]: https://github.com/sergi/go-diff
 package diffz // import "ezpkg.io/diffz"
 
 import (

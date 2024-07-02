@@ -1,4 +1,6 @@
-// Package fmtz provides utilities for working with formatted strings. It aims to extend the standard library fmt package with additional functionality.
+// Package fmtz provides utilities for working with formatted strings. It aims to extend the standard library [fmt] package with additional functionality.
+//
+// [fmt]: https://pkg.go.dev/fmt
 package fmtz // import "ezpkg.io/fmtz"
 
 import (
