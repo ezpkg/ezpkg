@@ -81,20 +81,25 @@ func (f Frame) Format(s0 fmt.State, verb rune) {
 		case s.Flag('+'):
 			s.Printf("%s\n\t%s:%d", f.Function, f.File, f.Line)
 		default:
-			sepIdx := strings.LastIndexByte(f.Function, '/')
-			if sepIdx < 0 {
-				sepIdx = 0
-			}
-			dotIdx := strings.IndexByte(f.Function[sepIdx:], '.')
-			if dotIdx <= 0 {
-				dotIdx = -1
-			}
-			pkgPath := f.Function[:sepIdx+dotIdx]
-			s.Printf("%s/%s:%d · %s", pkgPath, path.Base(f.File), f.Line, f.Function[sepIdx+dotIdx+1:])
+			pkg, file, line, fn := f.Components()
+			s.Printf("%s/%s:%d · %s", pkg, file, line, fn)
 		}
 	case 'd':
 		s.Printf("%d", f.Line)
 	}
+}
+
+func (f Frame) Components() (pkg, file string, line int, fn string) {
+	sepIdx := strings.LastIndexByte(f.Function, '/')
+	if sepIdx < 0 {
+		sepIdx = 0
+	}
+	dotIdx := strings.IndexByte(f.Function[sepIdx:], '.')
+	if dotIdx <= 0 {
+		dotIdx = -1
+	}
+	pkg, fn = f.Function[:sepIdx+dotIdx], f.Function[sepIdx+dotIdx+1:]
+	return pkg, path.Base(f.File), f.Line, fn
 }
 
 func formatFrames(s fmtz.State, verb rune, frames []Frame) {
