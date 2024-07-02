@@ -15,7 +15,7 @@ Package [colorz](https://pkg.go.dev/ezpkg.io/colorz) provides utilities for work
 ## Installation
 
 ```sh
-go get -u ezpkg.io/colorz@v0.0.8
+go get -u ezpkg.io/colorz@v0.0.9
 ```
 
 ## Examples

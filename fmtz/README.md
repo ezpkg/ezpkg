@@ -15,7 +15,7 @@ Package [fmtz](https://pkg.go.dev/ezpkg.io/fmtz) extends the standard library [f
 ## Installation
 
 ```sh
-go get -u ezpkg.io/fmtz@v0.0.8
+go get -u ezpkg.io/fmtz@v0.0.9
 ```
 
 ## Examples

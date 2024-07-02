@@ -15,7 +15,7 @@ Package [stringz](https://pkg.go.dev/ezpkg.io/stringz) extends the standard libr
 ## Installation
 
 ```sh
-go get -u ezpkg.io/stringz@v0.0.8
+go get -u ezpkg.io/stringz@v0.0.9
 ```
 
 ## Examples

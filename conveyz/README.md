@@ -15,7 +15,7 @@ Package [conveyz](https://pkg.go.dev/ezpkg.io/conveyz) extends the package [conv
 ## Installation
 
 ```sh
-go get -u ezpkg.io/conveyz@v0.0.8
+go get -u ezpkg.io/conveyz@v0.0.9
 ```
 
 ## Examples

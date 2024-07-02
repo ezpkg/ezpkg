@@ -15,7 +15,7 @@ Package [diffz](https://pkg.go.dev/ezpkg.io/diffz) provides functions for compar
 ## Installation
 
 ```sh
-go get -u ezpkg.io/diffz@v0.0.8
+go get -u ezpkg.io/diffz@v0.0.9
 ```
 
 ## Examples

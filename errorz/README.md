@@ -15,7 +15,7 @@ Package [errorz](https://pkg.go.dev/ezpkg.io/errorz) provides functions for deal
 ## Installation
 
 ```sh
-go get -u ezpkg.io/errorz@v0.0.8
+go get -u ezpkg.io/errorz@v0.0.9
 ```
 
 ## Examples

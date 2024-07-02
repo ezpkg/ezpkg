@@ -1,4 +1,4 @@
 package stringz
 
 // internal usage
-const ZzVersion = `0.0.8`
+const zzVersion = `0.0.9`
