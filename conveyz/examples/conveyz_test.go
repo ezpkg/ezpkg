@@ -1,4 +1,4 @@
-package conveyz_test
+package examples_test
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"github.com/onsi/gomega"
 
 	"ezpkg.io/conveyz"
+	"ezpkg.io/conveyz/examples"
 )
 
 func Test(t *testing.T) {
@@ -15,29 +16,33 @@ func Test(t *testing.T) {
 		s := "[0]"
 		defer func() { fmt.Printf("\n%s\n", s) }()
 
+		add := func(part string) {
+			s = examples.AppendStr(s, part)
+		}
+
 		conveyz.Convey("Test 1:", func() {
-			s += " → [1]"
+			add(" → [1]")
 			Ω(s).To(gomega.Equal("[0] → [1]"))
 
 			conveyz.Convey("Test 1.1:", func() {
-				s += " → [1.1]"
+				add(" → [1.1]")
 				Ω(s).To(gomega.Equal("[0] → [1] → [1.1]"))
 			})
 			conveyz.Convey("Test 1.2:", func() {
-				s += " → [1.2]"
+				add(" → [1.2]")
 				Ω(s).To(gomega.Equal("[0] → [1] → [1.2]"))
 			})
 		})
 		conveyz.Convey("Test 2:", func() {
-			s += " → [2]"
+			add(" → [2]")
 			Ω(s).To(gomega.Equal("[0] → [2]"))
 
 			conveyz.Convey("Test 2.1:", func() {
-				s += " → [2.1]"
+				add(" → [2.1]")
 				Ω(s).To(gomega.Equal("[0] → [2] → [2.1]"))
 			})
 			conveyz.Convey("Test 2.2:", func() {
-				s += " → [2.2]"
+				add(" → [2.2]")
 				Ω(s).To(gomega.Equal("[0] → [2] → [2.2]"))
 			})
 		})
