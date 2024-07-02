@@ -12,33 +12,67 @@ import (
 func Test(t *testing.T) {
 	Ω := GomegaExpect
 	Convey("stringz", t, func() {
-		input := "one,two,three,four"
+		Convey("empty", func() {
+			Convey("FirstNParts", func() {
+				x, remain := stringz.FirstNPartsX("", 2, "<|>")
+				Ω(x).To(Equal(""))
+				Ω(remain).To(Equal(""))
+			})
+			Convey("LastNParts", func() {
+				x, remain := stringz.LastNPartsX("", 2, "<|>")
+				Ω(x).To(Equal(""))
+				Ω(remain).To(Equal(""))
+			})
+		})
+
+		input := "one<|>two<|>three<|>four"
 		Convey("FirstNParts", func() {
 			Convey("0", func() {
-				x := stringz.FirstNParts(input, 0, ',')
+				x, remain := stringz.FirstNPartsX(input, 0, "<|>")
 				Ω(x).To(Equal(""))
+				Ω(remain).To(Equal("one<|>two<|>three<|>four"))
 			})
 			Convey("2", func() {
-				x := stringz.FirstNParts(input, 2, ',')
-				Ω(x).To(Equal("one,two"))
+				x, remain := stringz.FirstNPartsX(input, 2, "<|>")
+				Ω(x).To(Equal("one<|>two"))
+				Ω(remain).To(Equal("three<|>four"))
 			})
 			Convey("4", func() {
-				x := stringz.FirstNParts(input, 4, ',')
-				Ω(x).To(Equal("one,two,three,four"))
+				x, remain := stringz.FirstNPartsX(input, 4, "<|>")
+				Ω(x).To(Equal("one<|>two<|>three<|>four"))
+				Ω(remain).To(Equal(""))
 			})
 			Convey("10", func() {
-				x := stringz.FirstNParts(input, 10, ',')
-				Ω(x).To(Equal("one,two,three,four"))
+				x, remain := stringz.FirstNPartsX(input, 10, "<|>")
+				Ω(x).To(Equal("one<|>two<|>three<|>four"))
+				Ω(remain).To(Equal(""))
 			})
 		})
 		Convey("LastNParts", func() {
 			Convey("0", func() {
-				x := stringz.LastNParts(input, 0, ',')
+				x, remain := stringz.LastNPartsX(input, 0, "<|>")
 				Ω(x).To(Equal(""))
+				Ω(remain).To(Equal("one<|>two<|>three<|>four"))
+			})
+			Convey("1", func() {
+				x, remain := stringz.LastNPartsX(input, 1, "<|>")
+				Ω(x).To(Equal("four"))
+				Ω(remain).To(Equal("one<|>two<|>three"))
 			})
 			Convey("3", func() {
-				x := stringz.LastNParts(input, 3, ',')
-				Ω(x).To(Equal("two,three,four"))
+				x, remain := stringz.LastNPartsX(input, 3, "<|>")
+				Ω(x).To(Equal("two<|>three<|>four"))
+				Ω(remain).To(Equal("one"))
+			})
+			Convey("4", func() {
+				x, remain := stringz.LastNPartsX(input, 4, "<|>")
+				Ω(x).To(Equal("one<|>two<|>three<|>four"))
+				Ω(remain).To(Equal(""))
+			})
+			Convey("10", func() {
+				x, remain := stringz.LastNPartsX(input, 10, "<|>")
+				Ω(x).To(Equal("one<|>two<|>three<|>four"))
+				Ω(remain).To(Equal(""))
 			})
 		})
 	})
