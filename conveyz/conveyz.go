@@ -1,7 +1,7 @@
 // Package conveyz extends the package [convey] with additional functionality and make it work with [gomega].
 //
-// [convey]: github.com/smartystreets/goconvey/convey
-// [gomega]: github.com/onsi/gomega
+// [convey]: https://github.com/smartystreets/goconvey/convey
+// [gomega]: https://github.com/onsi/gomega
 package conveyz // import "ezpkg.io/conveyz"
 
 import (
@@ -19,43 +19,55 @@ import (
 	"ezpkg.io/stringz"
 )
 
-var skippedTests bool
-
 func Convey(items ...any) {
 	defer setupGomega(items...)()
-	convey.Convey(items...)
+	if !pkgHasFocusConvey() {
+		convey.Convey(items...)
+		return
+	}
+	switch shouldConvert() {
+	case 1:
+		convey.FocusConvey(items...)
+	case -1:
+		convey.SkipConvey(items...)
+	default:
+		convey.Convey(items...)
+	}
 }
 
 // SConvey (alias of SkipConvey) skips the current scope and all child scopes. It also makes the test fail.
 func SConvey(items ...any) {
-	skippedTests=true
+	skippedTests = true
 	patchMessage(items, "SKIP", colorz.Magenta)
 	convey.SkipConvey(items...)
 }
 
 // SkipConvey skips the current scope and all child scopes. It also makes the test fail.
 func SkipConvey(items ...any) {
-	skippedTests=true
+	skippedTests = true
 	patchMessage(items, "SKIP", colorz.Magenta)
 	convey.SkipConvey(items...)
 }
 
 // FConvey (alias of FocusConvey) runs the current scope and all child scopes, but skips all other scopes. It also makes the test fail.
 func FConvey(items ...any) {
-	skippedTests=true
+	defer setupGomega(items...)()
+	skippedTests = true
 	patchMessage(items, "FOCUS", colorz.Magenta)
 	convey.FocusConvey(items...)
 }
 
 // FocusConvey runs the current scope and all child scopes, but skips all other scopes. It also makes the test fail.
 func FocusConvey(items ...any) {
-	skippedTests=true
+	defer setupGomega(items...)()
+	skippedTests = true
 	patchMessage(items, "FOCUS", colorz.Magenta)
 	convey.FocusConvey(items...)
 }
 
 // SkipConveyAsTODO is similar to SkipConvey but does not make the test fail.
 func SkipConveyAsTODO(items ...any) {
+	defer setupGomega(items...)()
 	patchMessage(items, "TODO", colorz.Magenta)
 	convey.SkipConvey(items...)
 }
