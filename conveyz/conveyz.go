@@ -28,30 +28,35 @@ func Convey(items ...any) {
 
 // SConvey (alias of SkipConvey) skips the current scope and all child scopes. It also makes the test fail.
 func SConvey(items ...any) {
-	skippedTests = true
+	skippedTests=true
+	patchMessage(items, "SKIP", colorz.Magenta)
 	convey.SkipConvey(items...)
 }
 
 // SkipConvey skips the current scope and all child scopes. It also makes the test fail.
 func SkipConvey(items ...any) {
-	skippedTests = true
+	skippedTests=true
+	patchMessage(items, "SKIP", colorz.Magenta)
 	convey.SkipConvey(items...)
 }
 
 // FConvey (alias of FocusConvey) runs the current scope and all child scopes, but skips all other scopes. It also makes the test fail.
 func FConvey(items ...any) {
-	skippedTests = true
+	skippedTests=true
+	patchMessage(items, "FOCUS", colorz.Magenta)
 	convey.FocusConvey(items...)
 }
 
 // FocusConvey runs the current scope and all child scopes, but skips all other scopes. It also makes the test fail.
 func FocusConvey(items ...any) {
-	skippedTests = true
+	skippedTests=true
+	patchMessage(items, "FOCUS", colorz.Magenta)
 	convey.FocusConvey(items...)
 }
 
 // SkipConveyAsTODO is similar to SkipConvey but does not make the test fail.
 func SkipConveyAsTODO(items ...any) {
+	patchMessage(items, "TODO", colorz.Magenta)
 	convey.SkipConvey(items...)
 }
 
@@ -171,4 +176,19 @@ func formatMsg(optionalDescription []any, stack *stacktracez.Frames, format stri
 		b.Printf("%s\n", frame)
 	}
 	return b.String()
+}
+
+func patchMessageX(items []any, fn func(s string) string) {
+	if len(items) == 0 {
+		return
+	}
+	if msg, ok := items[0].(string); ok {
+		items[0] = fn(msg)
+	}
+}
+
+func patchMessage(items []any, prefix string, color colorz.Color) {
+	patchMessageX(items, func(s string) string {
+		return fmt.Sprintf("%s%s:%s %s", color, prefix, colorz.Reset, s)
+	})
 }
