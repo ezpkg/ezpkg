@@ -6,6 +6,7 @@ import (
 
 	"github.com/onsi/gomega"
 
+	"ezpkg.io/colorz"
 	"ezpkg.io/conveyz"
 	"ezpkg.io/conveyz/examples"
 )
@@ -46,22 +47,22 @@ func Test(t *testing.T) {
 				Ω(s).To(gomega.Equal("[0] → [2] → [2.2]"))
 			})
 		})
-		conveyz.SkipConvey("failure message", func() {
+		conveyz.SkipConveyAsTODO("failure message", func() {
 			// 👆 change SkipConvey to Convey to see failure messages
 
-			conveyz.Convey("fail", func() {
+			conveyz.Convey(colorz.Cyan.Wrap("👉 this test will fail"), func() {
 				//  Expected
 				//      <string>: [0] → [2]
 				//  to equal
 				//      <string>: this test will fail
 				Ω(s).To(gomega.Equal("this test will fail"))
 			})
-			conveyz.Convey("UNEXPECTED ERROR", func() {
+			conveyz.Convey(colorz.Cyan.Wrap("👉 this test has UNEXPECTED error"), func() {
 				// UNEXPECTED ERROR: Refusing to compare <nil> to <nil>.
 				//  Be explicit and use BeNil() instead.  This is to avoid mistakes where both sides of an assertion are erroneously uninitialized.
 				Ω(nil).To(gomega.Equal(nil))
 			})
-			conveyz.Convey("panic", func() {
+			conveyz.Convey(colorz.Cyan.Wrap("👉 this test will panic"), func() {
 				examples.CallFunc(func() {
 					examples.WillPanic()
 				})

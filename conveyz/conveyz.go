@@ -5,6 +5,7 @@
 package conveyz // import "ezpkg.io/conveyz"
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -18,26 +19,50 @@ import (
 	"ezpkg.io/stringz"
 )
 
+var skippedTests bool
+
 func Convey(items ...any) {
-	setupGomega(items...)
+	defer setupGomega(items...)()
 	convey.Convey(items...)
 }
+
+// SConvey (alias of SkipConvey) skips the current scope and all child scopes. It also makes the test fail.
 func SConvey(items ...any) {
+	skippedTests = true
 	convey.SkipConvey(items...)
 }
+
+// SkipConvey skips the current scope and all child scopes. It also makes the test fail.
 func SkipConvey(items ...any) {
+	skippedTests = true
 	convey.SkipConvey(items...)
 }
+
+// FConvey (alias of FocusConvey) runs the current scope and all child scopes, but skips all other scopes. It also makes the test fail.
 func FConvey(items ...any) {
+	skippedTests = true
 	convey.FocusConvey(items...)
 }
+
+// FocusConvey runs the current scope and all child scopes, but skips all other scopes. It also makes the test fail.
 func FocusConvey(items ...any) {
+	skippedTests = true
 	convey.FocusConvey(items...)
 }
+
+// SkipConveyAsTODO is similar to SkipConvey but does not make the test fail.
+func SkipConveyAsTODO(items ...any) {
+	convey.SkipConvey(items...)
+}
+
+// Reset registers a cleanup function to run after each Convey() in the same scope.
 func Reset(action func()) {
 	convey.Reset(action)
 }
 
+// GomegaExpect is an adapter to make gomega work with goconvey.
+//
+// Usage: Ω := GomegaExpect
 func GomegaExpect(actual any, extra ...any) gomega.Assertion {
 	assertion := gomega.Expect(actual, extra...)
 	return gomegaAssertion{actual: actual, assertion: assertion}
@@ -111,11 +136,20 @@ func (a gomegaAssertion) Error() gomegatypes.Assertion {
 	}
 }
 
-func setupGomega(items ...any) {
-	if len(items) >= 2 {
-		testT, ok := items[1].(*testing.T)
-		if ok {
-			gomega.Default = gomega.NewWithT(testT)
+func setupGomega(items ...any) func() {
+	if len(items) < 2 {
+		return func() {}
+	}
+	testT, ok := items[1].(*testing.T)
+	if !ok {
+		return func() {}
+	}
+	// this is top-level convey, init gomega
+	gomega.Default = gomega.NewWithT(testT)
+	return func() {
+		if skippedTests {
+			fmt.Println(colorz.Magenta.Wrap("--- NOTE: There are skipped/focused tests. Make sure to include them or mark as TODO."))
+			testT.Fail()
 		}
 	}
 }
