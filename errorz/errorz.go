@@ -83,6 +83,17 @@ func Errorf(format string, args ...any) error {
 	}
 }
 
+// MapFunc maps a value and an error to another value and error using the input function.
+func MapFunc[T, Q any](fn func(T) Q) func(v T, err error) (Q, error) {
+	return func(v T, err error) (Q, error) {
+		if err == nil {
+			return fn(v), nil
+		}
+		var zero Q
+		return zero, err
+	}
+}
+
 func Wrap(err error, msg string) error {
 	return (Option{CallersSkip: 1}).Wrap(err, msg)
 }
