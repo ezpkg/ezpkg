@@ -1,7 +1,7 @@
 // Package conveyz extends the package [convey] with additional functionality and make it work with [gomega].
 //
-// [convey]: https://github.com/smartystreets/goconvey/convey
-// [gomega]: https://github.com/onsi/gomega
+// [convey]: https://pkg.go.dev/github.com/smartystreets/goconvey/convey
+// [gomega]: https://pkg.go.dev/github.com/onsi/gomega
 package conveyz // import "ezpkg.io/conveyz"
 
 import (
