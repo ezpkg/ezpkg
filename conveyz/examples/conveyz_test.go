@@ -46,7 +46,7 @@ func Test(t *testing.T) {
 				Ω(s).To(gomega.Equal("[0] → [2] → [2.2]"))
 			})
 		})
-		conveyz.Convey("failure message", func() {
+		conveyz.SkipConvey("failure message", func() {
 			// 👆 change SkipConvey to Convey to see failure messages
 
 			conveyz.Convey("fail", func() {

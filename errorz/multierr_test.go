@@ -107,9 +107,9 @@ testing/testing.go:████ · tRunner
 	})
 	t.Run("validate", func(t *testing.T) {
 		var err error
-		errorz.Validatef(&err, true, "ok, pass")
-		errorz.Validatef(&err, false, "error/foo")
-		errorz.ValidateX(&err, 42, false, "error/42")
+		errorz.ValidateTof(&err, true, "ok, pass")
+		errorz.ValidateTof(&err, false, "error/foo")
+		errorz.ValidateToX(&err, 42, false, "error/42")
 
 		errs := errorz.GetErrors(err)
 		assert(t, len(errs) == 2).Errorf("❌ expect len(errs) == 2")
