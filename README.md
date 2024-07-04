@@ -12,7 +12,7 @@ Collection of packages and tools to make writing Go code easier.
 
 As I work on various Go projects, I often find myself creating utility functions, extending existing packages, or developing packages to solve specific problems. Moving from one project to another, I usually have to copy or rewrite these solutions. So I created this repository to have all these utilities and packages in one place. Hopefully, you'll find them useful as well.
 
-These packages aim to enhance the functionality of the standard library and other popular packages. They are intended to be used together with other packages rather than replacing them. The APIs are designed based on my experience working with Go, focusing on simplicity and ease of use. I will try to follow best practices in Go, but not always. I also tend to choose a more performance implementation if possible.
+These packages aim to enhance the functionality of the standard library and other popular packages. They are intended to be used together with other packages rather than replacing them. The APIs are designed based on my experience working with Go, focusing on simplicity and ease of use. I will try to follow best practices in Go, but not always. I also tend to choose a more performance implementation if possible. [Read the introduction blog post](https://olivernguyen.io/w/ezpkg).
 
 If you have any questions or suggestions, feel free to [create new issues](https://github.com/ezpkg/ezpkg/issues), [open pull requests](https://github.com/ezpkg/ezpkg/pulls), or [post discussions](https://github.com/ezpkg/ezpkg/discussions).
 
@@ -20,20 +20,21 @@ If you have any questions or suggestions, feel free to [create new issues](https
 
 <div align="center">
 
-| Package                                             | Description                                                                                  |
-|-----------------------------------------------------|----------------------------------------------------------------------------------------------|
-| [bytez](https://github.com/ezpkg/bytez)             | Extends the standard library [bytes](https://pkg.go.dev/bytes) with additional functions.    |
-| [colorz](https://github.com/ezpkg/colorz)           | Working with colors in terminal.                                                             |
-| [diffz](https://github.com/ezpkg/diffz)             | Comparing and displaying differences between two strings.                                    |
-| [errorz](https://github.com/ezpkg/errorz)           | Utilities for working with errors: Must, Validate, multi-errors, etc.                        |
-| [fmtz](https://github.com/ezpkg/fmtz)               | Extends the standard library [fmt](https://pkg.go.dev/fmt) with additional functions.        |
-| [mapz](https://github.com/ezpkg/mapz)               | Extends the package [golang.org/x/exp/maps](https://pkg.go.dev/golang.org/x/exp/maps).       |
-| [slicez](https://github.com/ezpkg/slicez)           | Extends the standard library [slices](https://pkg.go.dev/slices) with additional functions.  |
-| [stacktracez](https://github.com/ezpkg/stacktracez) | Get stack trace for using in errors and logs.                                                |
-| [stringz](https://github.com/ezpkg/stringz)         | Extends the standard library [strings](https://pkg.go.dev/strings) with additional functions. |
-| [testingz](https://github.com/ezpkg/testingz)       | Utilities for testing.                                                                       |
-| [typez](https://github.com/ezpkg/typez)             | Generic functions for working with types.                                                    |
-| [unsafez](https://github.com/ezpkg/unsafez)         | Convert bytes to strings using unsafe pointer.                                               |
+| Package                                             | Description                                                                                                                                                          |
+|-----------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [bytez](https://github.com/ezpkg/bytez)             | Extends the standard library [bytes](https://pkg.go.dev/bytes) with additional functions.                                                                            |
+| [colorz](https://github.com/ezpkg/colorz)           | Working with colors in terminal.                                                                                                                                     |
+| [conveyz](https://github.com/ezpkg/conveyz)         | Extends the package [convey](https://pkg.go.dev/github.com/smartystreets/goconvey/convey) and make it work with [gomega](https://pkg.go.dev/github.com/onsi/gomega). |
+| [diffz](https://github.com/ezpkg/diffz)             | Comparing and displaying differences between two strings.                                                                                                            |
+| [errorz](https://github.com/ezpkg/errorz)           | Utilities for working with errors: Must, Validate, multi-errors, etc.                                                                                                |
+| [fmtz](https://github.com/ezpkg/fmtz)               | Extends the standard library [fmt](https://pkg.go.dev/fmt) with additional functions.                                                                                |
+| [mapz](https://github.com/ezpkg/mapz)               | Extends the package [golang.org/x/exp/maps](https://pkg.go.dev/golang.org/x/exp/maps).                                                                               |
+| [slicez](https://github.com/ezpkg/slicez)           | Extends the standard library [slices](https://pkg.go.dev/slices) with additional functions.                                                                          |
+| [stacktracez](https://github.com/ezpkg/stacktracez) | Get stack trace for using in errors and logs.                                                                                                                        |
+| [stringz](https://github.com/ezpkg/stringz)         | Extends the standard library [strings](https://pkg.go.dev/strings) with additional functions.                                                                        |
+| [testingz](https://github.com/ezpkg/testingz)       | Utilities for testing.                                                                                                                                               |
+| [typez](https://github.com/ezpkg/typez)             | Generic functions for working with types.                                                                                                                            |
+| [unsafez](https://github.com/ezpkg/unsafez)         | Convert bytes to strings using unsafe pointer.                                                                                                                       |
 
 </div>
 
