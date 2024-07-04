@@ -15,7 +15,7 @@ Package [mapz](https://pkg.go.dev/ezpkg.io/mapz) extends the package [golang.org
 ## Installation
 
 ```sh
-go get -u ezpkg.io/mapz@v0.0.9
+go get -u ezpkg.io/mapz@v0.1.0
 ```
 
 ## Examples

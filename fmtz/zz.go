@@ -1,4 +1,4 @@
 package fmtz
 
 // internal usage
-const zzVersion = `0.0.9`
+const zzVersion = `0.1.0`
