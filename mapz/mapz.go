@@ -20,3 +20,13 @@ func SortedKeys[M ~map[K]V, K constraints.Ordered, V any](m M) []K {
 	slices.Sort(keys)
 	return keys
 }
+
+func SortedKeysAndValues[M ~map[K]V, K constraints.Ordered, V any](m M) ([]K, []V) {
+	keys := maps.Keys(m)
+	slices.Sort(keys)
+	values := make([]V, len(keys))
+	for i, key := range keys {
+		values[i] = m[key]
+	}
+	return keys, values
+}
