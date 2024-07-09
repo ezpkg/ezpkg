@@ -16,4 +16,8 @@ use (
 	typez
 	unsafez
 	zscripts
+
+	// developing packages
+	z.z/jsonz
+	z.z/jsonz_test
 )
