@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"ezpkg.io/-/codez_test/tests/logging"
+	"ezpkg.io/-/codez_test/testdata/logging"
 )
 
 var logger = logging.NewLogger(context.Background())

@@ -4,45 +4,23 @@ package codez // import "ezpkg.io/codez"
 import (
 	"golang.org/x/tools/go/packages"
 
+	"ezpkg.io/errorz"
 	"ezpkg.io/slicez"
 )
 
-type Config struct {
-	packages.Config
-}
-
-func Cfg() *Config {
-	return &Config{
-		Config: packages.Config{
-			Mode: 0 |
-				packages.NeedName |
-				packages.NeedFiles |
-				packages.NeedCompiledGoFiles |
-				packages.NeedImports |
-				packages.NeedDeps |
-				packages.NeedExportFile |
-				packages.NeedTypes |
-				packages.NeedSyntax |
-				packages.NeedTypesInfo |
-				packages.NeedTypesSizes |
-				packages.NeedModule |
-				packages.NeedEmbedFiles |
-				packages.NeedEmbedPatterns,
-		},
-	}
-}
-
-func (c *Config) Unwrap() *packages.Config {
-	return &c.Config
-}
-
-func LoadPackages(pattern ...string) (Packages, error) {
+func LoadPackages(pattern ...string) (_ *Packages, err error) {
 	cfg := Cfg()
 	pkgs, err := packages.Load(&cfg.Config, pattern...)
 	if err != nil {
 		return nil, err
 	}
-	return slicez.MapFunc(pkgs, func(pkg *packages.Package) *Package {
+	zPkgs := slicez.MapFunc(pkgs, func(pkg *packages.Package) *Package {
+		if len(pkg.Errors) > 0 {
+			// only store the first error message, user can use .Errors() to get all
+			errorz.NoStack().AppendTo(&err, pkg.Errors[0])
+		}
 		return &Package{Package: pkg}
-	}), nil
+	})
+	err = errorz.Wrap(err, "failed to load packages (use .Errors() to get all errors)")
+	return newPackages(zPkgs), err
 }
