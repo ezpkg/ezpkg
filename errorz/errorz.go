@@ -9,13 +9,13 @@ import (
 
 func Must[T any](v T, err error) T {
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("%+v", err))
 	}
 	return v
 }
 func MustZ(err error) {
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("%+v", err))
 	}
 }
 func Must2[A, B any](a A, b B, err error) (A, B) {
@@ -112,19 +112,19 @@ func (e *zError) Error() string {
 	return sprintf("%s", e)
 }
 
-func (e *zError) Format(s0 fmt.State, v rune) {
+func (e *zError) Format(s0 fmt.State, verb rune) {
 	s := fmtz.WrapState(s0)
 	if e == nil {
 		s.WriteStringZ("<nil>")
 		return
 	}
-	switch v {
+	switch verb {
 	case 's', 'v':
-		e.writeMessage(s)
+		e.writeMessage(s, verb)
 		if (s.Flag('+') || s.Flag('#')) && e.stack != nil {
 			s.WriteStringZ("\n")
 			if e.stack != nil {
-				e.stack.Format(s, v)
+				e.stack.Format(s, verb)
 			}
 		}
 	case 'q':
@@ -132,22 +132,23 @@ func (e *zError) Format(s0 fmt.State, v rune) {
 		case e.msg != "":
 			s.Printf("%q", e.msg)
 		case e.cause != nil:
-			s.Printf("%q", e.cause)
+			s.Format(verb, e.cause)
 		default:
 			s.WriteStringZ("<empty>")
 		}
 	}
 }
 
-func (e *zError) writeMessage(s0 fmt.State) {
-	s := fmtz.WrapState(s0)
+func (e *zError) writeMessage(s fmtz.State, verb rune) {
 	switch {
 	case e.msg != "" && e.cause != nil:
-		s.Printf("%s: %v", e.msg, e.cause)
+		s.WriteStringZ(e.msg)
+		s.WriteStringZ(": ")
+		s.Format(verb, e.cause)
+	case e.cause != nil:
+		s.Format(verb, e.cause)
 	case e.msg != "":
 		s.WriteStringZ(e.msg)
-	case e.cause != nil:
-		s.Printf("%v", e.cause)
 	default:
 		s.WriteStringZ("<empty>")
 	}
