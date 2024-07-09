@@ -18,6 +18,8 @@ use (
 	zscripts
 
 	// developing packages
+	z.z/codez
+	z.z/codez_test
 	z.z/jsonz
 	z.z/jsonz_test
 )
