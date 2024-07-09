@@ -52,6 +52,12 @@ func (b State) Println(args ...any) {
 func (b State) Print(args ...any) {
 	_, _ = fmt.Fprint(b.State, args...)
 }
+func (b State) Format(verb rune, value any) {
+	b.Printf(b.FormatString(verb), value)
+}
+func (b State) FormatString(verb rune) string {
+	return fmt.FormatString(b.State, verb)
+}
 
 type MustState struct {
 	fmt.State
@@ -95,4 +101,10 @@ func (b MustState) Println(args ...any) {
 }
 func (b MustState) Print(args ...any) {
 	must(fmt.Fprint(b.State, args...))
+}
+func (b MustState) Format(verb rune, value any) {
+	b.Printf(b.FormatString(verb), value)
+}
+func (b MustState) FormatString(verb rune) string {
+	return fmt.FormatString(b.State, verb)
 }
