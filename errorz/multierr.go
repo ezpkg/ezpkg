@@ -14,6 +14,7 @@ var _ stacktracez.StackTracerZ = (*zErrors)(nil)
 type Errors interface {
 	error
 	Errors() []error
+	Unwrap() []error
 }
 
 func Append(err0 error, errs ...error) error {
@@ -237,6 +238,13 @@ func (es *zErrors) Errors() []error {
 	return es.errors[:len(es.errors)]
 }
 
+func (es *zErrors) Unwrap() []error {
+	if es == nil {
+		return nil
+	}
+	return es.Errors()
+}
+
 func (es *zErrors) StackTraceZ() *stacktracez.Frames {
 	if es == nil {
 		return nil
@@ -252,6 +260,10 @@ func (es *zErrors) Append(errs ...error) {
 		case *zErrors:
 			if err != nil {
 				es.errors = append(es.errors, err.errors...)
+			}
+		case interface{ Unwrap() []error }:
+			if err != nil {
+				es.errors = append(es.errors, err.Unwrap()...)
 			}
 		case interface{ Errors() []error }:
 			// uber-go/multierr, tailscale.com/util/multierr
