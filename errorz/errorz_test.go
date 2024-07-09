@@ -54,7 +54,7 @@ testing/testing.go:████ · tRunner
 		})
 	})
 	t.Run("NoStack", func(t *testing.T) {
-		err := errorz.Newf("foo/%v", "zero")
+		err := errorz.NoStack().Newf("foo/%v", "zero")
 		zErr := errorz.NoStack().Wrapf(err, "bar/%v", "one")
 		t.Run("printf:%s", func(t *testing.T) {
 			str := fmt.Sprintf("%s", zErr)

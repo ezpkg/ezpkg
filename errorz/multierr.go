@@ -15,6 +15,7 @@ type Errors interface {
 	error
 	Errors() []error
 	Unwrap() []error
+	stacktracez.StackTracerZ
 }
 
 func Append(err0 error, errs ...error) error {
@@ -70,28 +71,28 @@ func Validate(condition bool, msgArgs ...any) error {
 	if condition {
 		return nil
 	}
-	return New(formatValidate(msgArgs))
+	return CallersSkip(1).New(formatValidate(msgArgs))
 }
 
 func Validatef(condition bool, msg string, args ...any) error {
 	if condition {
 		return nil
 	}
-	return Newf(msg, args...)
+	return CallersSkip(1).Newf(msg, args...)
 }
 
 func ValidateX[T any](value T, condition bool, msgArgs ...any) (T, error) {
 	if condition {
 		return value, nil
 	}
-	return value, New(formatValidate(msgArgs))
+	return value, CallersSkip(1).New(formatValidate(msgArgs))
 }
 
 func ValidateXf[T any](value T, condition bool, msgArgs ...any) (T, error) {
 	if condition {
 		return value, nil
 	}
-	return value, New(formatValidate(msgArgs))
+	return value, CallersSkip(1).New(formatValidate(msgArgs))
 }
 
 func MustValidate(condition bool, msgArgs ...any) {

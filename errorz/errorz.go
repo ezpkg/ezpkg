@@ -132,7 +132,7 @@ func (e *zError) Format(s0 fmt.State, verb rune) {
 		case e.msg != "":
 			s.Printf("%q", e.msg)
 		case e.cause != nil:
-			s.Format(verb, e.cause)
+			e.formatCause(s, verb)
 		default:
 			s.WriteStringZ("<empty>")
 		}
@@ -144,13 +144,23 @@ func (e *zError) writeMessage(s fmtz.State, verb rune) {
 	case e.msg != "" && e.cause != nil:
 		s.WriteStringZ(e.msg)
 		s.WriteStringZ(": ")
-		s.Format(verb, e.cause)
+		e.formatCause(s, verb)
 	case e.cause != nil:
-		s.Format(verb, e.cause)
+		e.formatCause(s, verb)
 	case e.msg != "":
 		s.WriteStringZ(e.msg)
 	default:
 		s.WriteStringZ("<empty>")
+	}
+}
+
+func (e *zError) formatCause(s fmtz.State, verb rune) {
+	if _, ok := e.cause.(stacktracez.StackTracerZ); ok {
+		s.Format(verb, e.cause)
+	} else if s.Flag('+') {
+		s.Printf("%+v", e.cause)
+	} else {
+		s.Printf("%v", e.cause)
 	}
 }
 

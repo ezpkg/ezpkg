@@ -18,6 +18,11 @@ func CallersSkip(n int) Option {
 	return Option{CallersSkip: n}
 }
 
+func (opt Option) AddSkip(n int) Option {
+	opt.CallersSkip += n
+	return opt
+}
+
 func (opt Option) New(msg string) error {
 	zErr := &zError{
 		msg: msg,
@@ -102,9 +107,34 @@ func (opt Option) Append(pErr *error, errs ...error) {
 	appendErrs(opt, pErr, errs...)
 }
 
+func (opt Option) AppendTo(pErr *error, errs ...error) {
+	appendErrs(opt, pErr, errs...)
+}
+
 func (opt Option) Appendf(pErr *error, err error, msgArgs ...any) {
 	err = formatErrorMsg(err, msgArgs)
 	if err != nil {
 		appendErrs(opt, pErr, err)
 	}
+}
+
+func (opt Option) AppendTof(pErr *error, err error, msgArgs ...any) {
+	err = formatErrorMsg(err, msgArgs)
+	if err != nil {
+		appendErrs(opt, pErr, err)
+	}
+}
+
+func (opt Option) Validate(condition bool, msgArgs ...any) error {
+	if !condition {
+		return opt.AddSkip(1).New(formatValidate(msgArgs))
+	}
+	return nil
+}
+
+func (opt Option) Validatef(condition bool, msg string, args ...any) error {
+	if condition {
+		return nil
+	}
+	return CallersSkip(1).Newf(msg, args...)
 }
