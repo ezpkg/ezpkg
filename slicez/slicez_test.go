@@ -56,5 +56,8 @@ func Test(t *testing.T) {
 				Ω(x).To(Equal("C"))
 			})
 		})
+		Convey("Concat", func() {
+			Ω(Concat([]int{1, 2}, []int{3, 4})).To(Equal([]int{1, 2, 3, 4}))
+		})
 	})
 }

@@ -125,3 +125,22 @@ func MapFilterFunc[S ~[]E, E, R any](s S, fn func(E) (R, bool)) (outs []R) {
 func FilterMapFunc[S ~[]E, E any](s S, fn func(E) (E, bool)) (outs []E) {
 	return MapFilterFunc(s, fn)
 }
+
+// Concat appends multiple slices to a slice.
+func Concat[S ~[]E, E any](slices ...S) []E {
+	return AppendSlice(nil, slices...)
+}
+
+// AppendSlice appends multiple slices to a slice.
+func AppendSlice[S ~[]E, E any](s S, slices ...S) []E {
+	N := len(s)
+	for _, slice := range slices {
+		N += len(slice)
+	}
+	outs := make([]E, 0, N)
+	outs = append(outs, s...)
+	for _, slice := range slices {
+		outs = append(outs, slice...)
+	}
+	return outs
+}
