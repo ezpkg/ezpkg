@@ -254,31 +254,33 @@ func (es *zErrors) StackTraceZ() *stacktracez.Frames {
 
 func (es *zErrors) Append(errs ...error) {
 	for _, err := range errs {
-		switch err := err.(type) {
+		switch err0 := err.(type) {
 		case nil:
 			// continue
 		case *zErrors:
-			if err != nil {
-				es.errors = append(es.errors, err.errors...)
+			if err0 != nil {
+				es.errors = append(es.errors, err0.errors...)
 			}
 		case interface{ Unwrap() []error }:
-			if err != nil {
-				es.errors = append(es.errors, err.Unwrap()...)
+			if err0 != nil {
+				es.errors = append(es.errors, err0.Unwrap()...)
 			}
 		case interface{ Errors() []error }:
 			// uber-go/multierr, tailscale.com/util/multierr
-			if err != nil {
-				es.errors = append(es.errors, err.Errors()...)
+			if err0 != nil {
+				es.errors = append(es.errors, err0.Errors()...)
 			}
 		case interface{ WrappedErrors() []error }:
 			// hashicorp/go-multierror
-			if err != nil {
-				es.errors = append(es.errors, err.WrappedErrors()...)
+			if err0 != nil {
+				es.errors = append(es.errors, err0.WrappedErrors()...)
 			}
 		default:
-			if !reflect.ValueOf(err).IsNil() {
-				es.errors = append(es.errors, err)
+			v := reflect.ValueOf(err)
+			if v.IsValid() && v.Kind() == reflect.Ptr && v.IsNil() {
+				continue
 			}
+			es.errors = append(es.errors, err)
 		}
 	}
 }
