@@ -18,6 +18,17 @@ type Errors interface {
 	stacktracez.StackTracerZ
 }
 
+func ToErrors(err error) Errors {
+	switch err0 := err.(type) {
+	case nil:
+		return nil
+	case Errors:
+		return err0
+	default:
+		return Append(err0).(Errors)
+	}
+}
+
 func Append(err0 error, errs ...error) error {
 	appendErrs(Option{}, &err0, errs...)
 	return err0
