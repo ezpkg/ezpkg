@@ -1,0 +1,203 @@
+WARNING:(encoder) sonic only supports Go1.16~1.22 && CPU amd64, but your environment is not suitable
+goos: darwin
+goarch: arm64
+pkg: github.com/iOliverNguyen/jsonz/test
+BenchmarkParse
+BenchmarkParse/ujson/small.json
+BenchmarkParse/ujson/small.json-10         	 2329142	       519.7 ns/op	 365.57 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/stdjson/small.json
+BenchmarkParse/stdjson/small.json-10       	  437415	      2668 ns/op	  71.21 MB/s	    2001 B/op	      31 allocs/op
+BenchmarkParse/pkgjson/small.json
+BenchmarkParse/pkgjson/small.json-10       	 2296413	       523.9 ns/op	 362.68 MB/s	     136 B/op	       3 allocs/op
+BenchmarkParse/fastjson/small.json
+BenchmarkParse/fastjson/small.json-10      	 4031440	       296.6 ns/op	 640.54 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/jsonparser/small.json
+BenchmarkParse/jsonparser/small.json-10    	 3618201	       330.2 ns/op	 575.47 MB/s	      33 B/op	       3 allocs/op
+BenchmarkParse/jsoniter/small.json
+BenchmarkParse/jsoniter/small.json-10      	  648714	      1845 ns/op	 102.98 MB/s	    1961 B/op	      37 allocs/op
+BenchmarkParse/sonic/small.json
+BenchmarkParse/sonic/small.json-10         	  444182	      2650 ns/op	  71.71 MB/s	    2001 B/op	      31 allocs/op
+BenchmarkParse/ujson/medium.json
+BenchmarkParse/ujson/medium.json-10        	  200990	      5951 ns/op	 391.35 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/stdjson/medium.json
+BenchmarkParse/stdjson/medium.json-10      	   45796	     26148 ns/op	  89.07 MB/s	   16780 B/op	     212 allocs/op
+BenchmarkParse/pkgjson/medium.json
+BenchmarkParse/pkgjson/medium.json-10      	  269444	      4436 ns/op	 525.04 MB/s	     136 B/op	       3 allocs/op
+BenchmarkParse/fastjson/medium.json
+BenchmarkParse/fastjson/medium.json-10     	  507654	      2338 ns/op	 995.95 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/jsonparser/medium.json
+BenchmarkParse/jsonparser/medium.json-10   	  396998	      3043 ns/op	 765.48 MB/s	      35 B/op	       5 allocs/op
+BenchmarkParse/jsoniter/medium.json
+BenchmarkParse/jsoniter/medium.json-10     	   75681	     15649 ns/op	 148.83 MB/s	   11970 B/op	     276 allocs/op
+BenchmarkParse/sonic/medium.json
+BenchmarkParse/sonic/medium.json-10        	   46332	     26137 ns/op	  89.11 MB/s	   16779 B/op	     212 allocs/op
+BenchmarkParse/ujson/large.json
+BenchmarkParse/ujson/large.json-10         	   16190	     73609 ns/op	 381.99 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/stdjson/large.json
+BenchmarkParse/stdjson/large.json-10       	    3392	    342376 ns/op	  82.13 MB/s	  273157 B/op	    2793 allocs/op
+BenchmarkParse/pkgjson/large.json
+BenchmarkParse/pkgjson/large.json-10       	   18774	     63820 ns/op	 440.59 MB/s	     136 B/op	       3 allocs/op
+BenchmarkParse/fastjson/large.json
+BenchmarkParse/fastjson/large.json-10      	   44493	     27994 ns/op	1004.45 MB/s	      22 B/op	       1 allocs/op
+BenchmarkParse/jsonparser/large.json
+BenchmarkParse/jsonparser/large.json-10    	   38640	     31357 ns/op	 896.70 MB/s	      35 B/op	       5 allocs/op
+BenchmarkParse/jsoniter/large.json
+BenchmarkParse/jsoniter/large.json-10      	    4339	    266855 ns/op	 105.37 MB/s	  232170 B/op	    4015 allocs/op
+BenchmarkParse/sonic/large.json
+BenchmarkParse/sonic/large.json-10         	    3386	    343100 ns/op	  81.95 MB/s	  273171 B/op	    2794 allocs/op
+BenchmarkParse/ujson/canada.json.gz
+BenchmarkParse/ujson/canada.json.gz-10     	     183	   6526757 ns/op	 344.90 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/stdjson/canada.json.gz
+BenchmarkParse/stdjson/canada.json.gz-10   	      37	  30860043 ns/op	  72.94 MB/s	18970519 B/op	  392533 allocs/op
+BenchmarkParse/pkgjson/canada.json.gz
+BenchmarkParse/pkgjson/canada.json.gz-10   	     241	   4975491 ns/op	 452.43 MB/s	     136 B/op	       3 allocs/op
+BenchmarkParse/fastjson/canada.json.gz
+BenchmarkParse/fastjson/canada.json.gz-10  	     375	   2950227 ns/op	 763.01 MB/s	      19 B/op	       1 allocs/op
+BenchmarkParse/jsonparser/canada.json.gz
+BenchmarkParse/jsonparser/canada.json.gz-10         	     370	   3221685 ns/op	 698.72 MB/s	      34 B/op	       4 allocs/op
+BenchmarkParse/jsoniter/canada.json.gz
+BenchmarkParse/jsoniter/canada.json.gz-10           	      30	  37816064 ns/op	  59.53 MB/s	15829849 B/op	  666033 allocs/op
+BenchmarkParse/sonic/canada.json.gz
+BenchmarkParse/sonic/canada.json.gz-10              	      37	  30841667 ns/op	  72.99 MB/s	18970450 B/op	  392533 allocs/op
+BenchmarkParse/ujson/citm_catalog.json.gz
+BenchmarkParse/ujson/citm_catalog.json.gz-10        	     268	   4445581 ns/op	 388.52 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/stdjson/citm_catalog.json.gz
+BenchmarkParse/stdjson/citm_catalog.json.gz-10      	      70	  16562596 ns/op	 104.28 MB/s	 9316606 B/op	   95391 allocs/op
+BenchmarkParse/pkgjson/citm_catalog.json.gz
+BenchmarkParse/pkgjson/citm_catalog.json.gz-10      	     574	   2084618 ns/op	 828.55 MB/s	     136 B/op	       3 allocs/op
+BenchmarkParse/fastjson/citm_catalog.json.gz
+BenchmarkParse/fastjson/citm_catalog.json.gz-10     	     808	   1451711 ns/op	1189.77 MB/s	   24634 B/op	      38 allocs/op
+BenchmarkParse/jsonparser/citm_catalog.json.gz
+BenchmarkParse/jsonparser/citm_catalog.json.gz-10   	     504	   2366946 ns/op	 729.72 MB/s	     406 B/op	     376 allocs/op
+BenchmarkParse/jsoniter/citm_catalog.json.gz
+BenchmarkParse/jsoniter/citm_catalog.json.gz-10     	     153	   7797384 ns/op	 221.51 MB/s	 5586073 B/op	  119705 allocs/op
+BenchmarkParse/sonic/citm_catalog.json.gz
+BenchmarkParse/sonic/citm_catalog.json.gz-10        	      72	  16362781 ns/op	 105.56 MB/s	 9316484 B/op	   95390 allocs/op
+BenchmarkParse/ujson/twitter.json.gz
+BenchmarkParse/ujson/twitter.json.gz-10             	     735	   1628533 ns/op	 387.78 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/stdjson/twitter.json.gz
+BenchmarkParse/stdjson/twitter.json.gz-10           	     190	   6270464 ns/op	 100.71 MB/s	 4247968 B/op	   31279 allocs/op
+BenchmarkParse/pkgjson/twitter.json.gz
+BenchmarkParse/pkgjson/twitter.json.gz-10           	    1188	   1005618 ns/op	 627.99 MB/s	     152 B/op	       4 allocs/op
+BenchmarkParse/fastjson/twitter.json.gz
+BenchmarkParse/fastjson/twitter.json.gz-10          	    2352	    496238 ns/op	1272.60 MB/s	    2247 B/op	       3 allocs/op
+BenchmarkParse/jsonparser/twitter.json.gz
+BenchmarkParse/jsonparser/twitter.json.gz-10        	    1507	    792399 ns/op	 796.96 MB/s	      34 B/op	       4 allocs/op
+BenchmarkParse/jsoniter/twitter.json.gz
+BenchmarkParse/jsoniter/twitter.json.gz-10          	     301	   3970803 ns/op	 159.04 MB/s	 2579429 B/op	   47485 allocs/op
+BenchmarkParse/sonic/twitter.json.gz
+BenchmarkParse/sonic/twitter.json.gz-10             	     192	   6263691 ns/op	 100.82 MB/s	 4248013 B/op	   31279 allocs/op
+BenchmarkParse/ujson/rapid.json.gz
+BenchmarkParse/ujson/rapid.json.gz-10               	     662	   1806861 ns/op	 380.49 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/stdjson/rapid.json.gz
+BenchmarkParse/stdjson/rapid.json.gz-10             	     231	   5182848 ns/op	 132.65 MB/s	 2650510 B/op	    7528 allocs/op
+BenchmarkParse/pkgjson/rapid.json.gz
+BenchmarkParse/pkgjson/rapid.json.gz-10             	    1820	    657179 ns/op	1046.13 MB/s	    1144 B/op	       9 allocs/op
+BenchmarkParse/fastjson/rapid.json.gz
+BenchmarkParse/fastjson/rapid.json.gz-10            	    1801	    654971 ns/op	1049.65 MB/s	 4536525 B/op	    1216 allocs/op
+    bench_test.go:92:   fastjson: error cannot parse JSON: cannot parse object: cannot par ... x94E嚉c樱㬇1a綑\u1756DḾ䝩\": null\n }\n}\n"
+BenchmarkParse/jsonparser/rapid.json.gz
+BenchmarkParse/jsonparser/rapid.json.gz-10          	    1428	    839605 ns/op	 818.83 MB/s	     643 B/op	      11 allocs/op
+BenchmarkParse/jsoniter/rapid.json.gz
+BenchmarkParse/jsoniter/rapid.json.gz-10            	     607	   1983238 ns/op	 346.65 MB/s	  777386 B/op	   15150 allocs/op
+BenchmarkParse/sonic/rapid.json.gz
+BenchmarkParse/sonic/rapid.json.gz-10               	     231	   5159981 ns/op	 133.24 MB/s	 2650530 B/op	    7528 allocs/op
+BenchmarkParse/parallel/ujson/small.json
+BenchmarkParse/parallel/ujson/small.json-10         	16232402	        83.85 ns/op	2265.96 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/stdjson/small.json
+BenchmarkParse/parallel/stdjson/small.json-10       	 1821591	       652.8 ns/op	 291.04 MB/s	    2001 B/op	      31 allocs/op
+BenchmarkParse/parallel/pkgjson/small.json
+BenchmarkParse/parallel/pkgjson/small.json-10       	12201068	        93.43 ns/op	2033.65 MB/s	     136 B/op	       3 allocs/op
+BenchmarkParse/parallel/fastjson/small.json
+BenchmarkParse/parallel/fastjson/small.json-10      	13620073	        87.76 ns/op	2165.00 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/jsonparser/small.json
+BenchmarkParse/parallel/jsonparser/small.json-10    	19759102	        57.93 ns/op	3280.01 MB/s	      33 B/op	       3 allocs/op
+BenchmarkParse/parallel/jsoniter/small.json
+BenchmarkParse/parallel/jsoniter/small.json-10      	 2056934	       588.1 ns/op	 323.08 MB/s	    1961 B/op	      37 allocs/op
+BenchmarkParse/parallel/sonic/small.json
+BenchmarkParse/parallel/sonic/small.json-10         	 1809156	       673.4 ns/op	 282.13 MB/s	    2001 B/op	      31 allocs/op
+BenchmarkParse/parallel/ujson/medium.json
+BenchmarkParse/parallel/ujson/medium.json-10        	 1636246	       727.0 ns/op	3203.44 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/stdjson/medium.json
+BenchmarkParse/parallel/stdjson/medium.json-10      	  193861	      6079 ns/op	 383.14 MB/s	   16779 B/op	     212 allocs/op
+BenchmarkParse/parallel/pkgjson/medium.json
+BenchmarkParse/parallel/pkgjson/medium.json-10      	 2044426	       593.1 ns/op	3927.13 MB/s	     136 B/op	       3 allocs/op
+BenchmarkParse/parallel/fastjson/medium.json
+BenchmarkParse/parallel/fastjson/medium.json-10     	 3444908	       337.4 ns/op	6903.57 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/jsonparser/medium.json
+BenchmarkParse/parallel/jsonparser/medium.json-10   	 3166702	       394.9 ns/op	5897.57 MB/s	      35 B/op	       5 allocs/op
+BenchmarkParse/parallel/jsoniter/medium.json
+BenchmarkParse/parallel/jsoniter/medium.json-10     	  293683	      4158 ns/op	 560.12 MB/s	   11972 B/op	     276 allocs/op
+BenchmarkParse/parallel/sonic/medium.json
+BenchmarkParse/parallel/sonic/medium.json-10        	  196694	      5989 ns/op	 388.85 MB/s	   16780 B/op	     212 allocs/op
+BenchmarkParse/parallel/ujson/large.json
+BenchmarkParse/parallel/ujson/large.json-10         	  140050	      8544 ns/op	3290.95 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/stdjson/large.json
+BenchmarkParse/parallel/stdjson/large.json-10       	   14624	     81965 ns/op	 343.05 MB/s	  273152 B/op	    2793 allocs/op
+BenchmarkParse/parallel/pkgjson/large.json
+BenchmarkParse/parallel/pkgjson/large.json-10       	  151592	      8255 ns/op	3405.98 MB/s	     136 B/op	       3 allocs/op
+BenchmarkParse/parallel/fastjson/large.json
+BenchmarkParse/parallel/fastjson/large.json-10      	  347607	      3333 ns/op	8436.15 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/jsonparser/large.json
+BenchmarkParse/parallel/jsonparser/large.json-10    	  314823	      3722 ns/op	7555.33 MB/s	      35 B/op	       5 allocs/op
+BenchmarkParse/parallel/jsoniter/large.json
+BenchmarkParse/parallel/jsoniter/large.json-10      	   16522	     72050 ns/op	 390.26 MB/s	  232166 B/op	    4015 allocs/op
+BenchmarkParse/parallel/sonic/large.json
+BenchmarkParse/parallel/sonic/large.json-10         	   14509	     83408 ns/op	 337.12 MB/s	  273147 B/op	    2793 allocs/op
+BenchmarkParse/parallel/ujson/canada.json.gz
+BenchmarkParse/parallel/ujson/canada.json.gz-10     	    1530	    731756 ns/op	3076.23 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/stdjson/canada.json.gz
+BenchmarkParse/parallel/stdjson/canada.json.gz-10   	     208	   5549753 ns/op	 405.61 MB/s	18970402 B/op	  392533 allocs/op
+BenchmarkParse/parallel/pkgjson/canada.json.gz
+BenchmarkParse/parallel/pkgjson/canada.json.gz-10   	    1894	    608247 ns/op	3700.88 MB/s	     136 B/op	       3 allocs/op
+BenchmarkParse/parallel/fastjson/canada.json.gz
+BenchmarkParse/parallel/fastjson/canada.json.gz-10  	    3121	    469941 ns/op	4790.07 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/jsonparser/canada.json.gz
+BenchmarkParse/parallel/jsonparser/canada.json.gz-10         	    3189	    371882 ns/op	6053.12 MB/s	      34 B/op	       4 allocs/op
+BenchmarkParse/parallel/jsoniter/canada.json.gz
+BenchmarkParse/parallel/jsoniter/canada.json.gz-10           	     152	   7392071 ns/op	 304.52 MB/s	15829785 B/op	  666033 allocs/op
+BenchmarkParse/parallel/sonic/canada.json.gz
+BenchmarkParse/parallel/sonic/canada.json.gz-10              	     212	   5463142 ns/op	 412.04 MB/s	18970394 B/op	  392533 allocs/op
+BenchmarkParse/parallel/ujson/citm_catalog.json.gz
+BenchmarkParse/parallel/ujson/citm_catalog.json.gz-10        	    2071	    507394 ns/op	3404.07 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/stdjson/citm_catalog.json.gz
+BenchmarkParse/parallel/stdjson/citm_catalog.json.gz-10      	     424	   2767008 ns/op	 624.21 MB/s	 9316415 B/op	   95390 allocs/op
+BenchmarkParse/parallel/pkgjson/citm_catalog.json.gz
+BenchmarkParse/parallel/pkgjson/citm_catalog.json.gz-10      	    4430	    254123 ns/op	6796.74 MB/s	     136 B/op	       3 allocs/op
+BenchmarkParse/parallel/fastjson/citm_catalog.json.gz
+BenchmarkParse/parallel/fastjson/citm_catalog.json.gz-10     	    6828	    173516 ns/op	9954.17 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/jsonparser/citm_catalog.json.gz
+BenchmarkParse/parallel/jsonparser/citm_catalog.json.gz-10   	    3970	    281282 ns/op	6140.46 MB/s	     406 B/op	     376 allocs/op
+BenchmarkParse/parallel/jsoniter/citm_catalog.json.gz
+BenchmarkParse/parallel/jsoniter/citm_catalog.json.gz-10     	     624	   1820654 ns/op	 948.67 MB/s	 5586033 B/op	  119705 allocs/op
+BenchmarkParse/parallel/sonic/citm_catalog.json.gz
+BenchmarkParse/parallel/sonic/citm_catalog.json.gz-10        	     400	   2789376 ns/op	 619.21 MB/s	 9316317 B/op	   95389 allocs/op
+BenchmarkParse/parallel/ujson/twitter.json.gz
+BenchmarkParse/parallel/ujson/twitter.json.gz-10             	    5893	    187583 ns/op	3366.59 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/stdjson/twitter.json.gz
+BenchmarkParse/parallel/stdjson/twitter.json.gz-10           	    1032	   1118163 ns/op	 564.78 MB/s	 4247910 B/op	   31279 allocs/op
+BenchmarkParse/parallel/pkgjson/twitter.json.gz
+BenchmarkParse/parallel/pkgjson/twitter.json.gz-10           	    9736	    122268 ns/op	5164.99 MB/s	     152 B/op	       4 allocs/op
+BenchmarkParse/parallel/fastjson/twitter.json.gz
+BenchmarkParse/parallel/fastjson/twitter.json.gz-10          	   19857	     61992 ns/op	10187.07 MB/s	     280 B/op	       1 allocs/op
+BenchmarkParse/parallel/jsonparser/twitter.json.gz
+BenchmarkParse/parallel/jsonparser/twitter.json.gz-10        	   12870	     93857 ns/op	6728.48 MB/s	      34 B/op	       4 allocs/op
+BenchmarkParse/parallel/jsoniter/twitter.json.gz
+BenchmarkParse/parallel/jsoniter/twitter.json.gz-10          	    1350	    853448 ns/op	 739.96 MB/s	 2579174 B/op	   47484 allocs/op
+BenchmarkParse/parallel/sonic/twitter.json.gz
+BenchmarkParse/parallel/sonic/twitter.json.gz-10             	    1045	   1109223 ns/op	 569.33 MB/s	 4247945 B/op	   31279 allocs/op
+BenchmarkParse/parallel/ujson/rapid.json.gz
+BenchmarkParse/parallel/ujson/rapid.json.gz-10               	    5560	    201748 ns/op	3407.68 MB/s	      16 B/op	       1 allocs/op
+BenchmarkParse/parallel/stdjson/rapid.json.gz
+BenchmarkParse/parallel/stdjson/rapid.json.gz-10             	    1416	    798400 ns/op	 861.09 MB/s	 2650499 B/op	    7528 allocs/op
+BenchmarkParse/parallel/pkgjson/rapid.json.gz
+BenchmarkParse/parallel/pkgjson/rapid.json.gz-10             	   15026	     79386 ns/op	8660.12 MB/s	    1144 B/op	       9 allocs/op
+BenchmarkParse/parallel/fastjson/rapid.json.gz
+BenchmarkParse/parallel/fastjson/rapid.json.gz-10            	    2587	    453463 ns/op	1516.09 MB/s	 4542932 B/op	    1221 allocs/op
+    bench_test.go:92:   fastjson: error cannot parse JSON: cannot parse object: cannot par ... x94E嚉c樱㬇1a綑\u1756DḾ䝩\": null\n }\n}\n"
+BenchmarkParse/parallel/jsonparser/rapid.json.gz
+BenchmarkParse/parallel/jsonparser/rapid.json.gz-10          	   12177	     98938 ns/op	6948.73 MB/s	     643 B/op	      11 allocs/op
+BenchmarkParse/parallel/jsoniter/rapid.json.gz
+BenchmarkParse/parallel/jsoniter/rapid.json.gz-10            	    3031	    378853 ns/op	1814.67 MB/s	  777373 B/op	   15150 allocs/op
+BenchmarkParse/parallel/sonic/rapid.json.gz
+BenchmarkParse/parallel/sonic/rapid.json.gz-10               	    1448	    822194 ns/op	 836.17 MB/s	 2650514 B/op	    7528 allocs/op
