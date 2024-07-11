@@ -8,7 +8,7 @@ import (
 	"ezpkg.io/-/codez_test/testdata/logging"
 )
 
-var logger = logging.NewLogger(context.Background())
+var logger, _ = logging.NewLogger(context.Background())
 
 func main() {
 	fmt.Println("Hello, World!")
@@ -16,13 +16,18 @@ func main() {
 	bar()
 }
 
-func foo() {
+func foo() error {
 	logger.Log("Hello %v!", "foo")
+	return nil
 }
 
-func bar() {
-	l := logging.NewLogger(context.Background())
+func bar() (string, error) {
+	l, err := logging.NewLogger(context.Background())
+	if err != nil {
+		return "", err
+	}
 	l.Log("Goodbye %v!", "bar")
 
 	l.LogX(context.Background(), "Hello %v!", "bar")
+	return "bar", nil
 }

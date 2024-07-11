@@ -24,4 +24,15 @@ func main() {
 	for _, pkg := range pkgs.AllPackages("ezpkg.io/...", "golang.org/...") {
 		fmt.Printf("\t%v\n", pkg.PkgPath)
 	}
+
+	// search for all functions that return error as the last result
+	sr := codez.NewSearch("func $foo(...) (..., error)").
+		WithIdent("$foo").
+		InPackages("ezpkg.io/-/codez_test/testdata/logging/...")
+	result, err := sr.Exec(pkgs)
+	if err != nil {
+		fmt.Printf("%+v\n", err)
+		return
+	}
+	fmt.Println(result)
 }

@@ -20,7 +20,7 @@ alias cd.typez='cd $EZPKG_DIR/typez'
 alias cd.unsafez='cd $EZPKG_DIR/unsafez'
 alias cd.zscripts='cd $EZPKG_DIR/zscripts'
 
-alias zz.codez='cd $EZPKG_DIR/codez'
+alias zz.codez='cd $EZPKG_DIR/z.z/codez'
 alias zz.codeztest='cd $EZPKG_DIR/z.z/codez_test'
 alias zz.jsonz='cd $EZPKG_DIR/z.z/jsonz'
 alias zz.jsonztest='cd $EZPKG_DIR/z.z/jsonz_test'
