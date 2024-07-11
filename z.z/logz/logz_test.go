@@ -1,0 +1,129 @@
+package logz
+
+import (
+	"fmt"
+	"log"
+	"log/slog"
+	"strings"
+	"testing"
+
+	. "github.com/onsi/gomega"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
+
+	. "ezpkg.io/conveyz"
+	"ezpkg.io/stringz"
+)
+
+var (
+	_ LoggerP    = (*log.Logger)(nil)
+	_ LoggerI    = (*slog.Logger)(nil)
+	_ logger0ctx = (*slog.Logger)(nil)
+	_ Loggerw    = (*zap.SugaredLogger)(nil)
+	_ Loggerf    = (*zap.SugaredLogger)(nil)
+)
+
+func Test(t *testing.T) {
+	Ω := GomegaExpect
+	Convey("Test", t, func() {
+		var b stringz.Builder
+
+		Convey("slog", func() {
+			opt := &slog.HandlerOptions{Level: slog.LevelDebug}
+			handler := slog.NewTextHandler(&b, opt)
+			logger := slog.New(handler)
+			loggerz := FromLoggerI(logger)
+
+			assert := func() {
+				s := b.String()
+				printLog(s)
+				Ω(strings.HasPrefix(s, "time=")).To(BeTrue())
+				Ω(strings.HasSuffix(s, `level=INFO msg="Hello, World!" name=Alice age=18`))
+			}
+			Convey("slog.Info", func() {
+				logger.Info("Hello, World!", "name", "Alice", "age", "18")
+
+				assert()
+			})
+			Convey("logz.Info", func() {
+				loggerz.Infow("Hello, World!", "name", "Alice", "age", 18)
+
+				assert()
+			})
+		})
+
+		Convey("zap+", func() {
+			core, obsLogs := observer.New(zap.DebugLevel)
+			logger := zap.New(core).Sugar()
+
+			getAndFormatZap := func() string {
+				s := formatZap(obsLogs.All())
+				fmt.Printf("\n%s\n", s)
+				return s
+			}
+			Convey("zap", func() {
+				assert := func() {
+					s := getAndFormatZap()
+					Ω(s).To(Equal("[INFO] Hello, World! name=Alice alias=A."))
+				}
+
+				Convey("zap.Infow", func() {
+					logger.Infow("Hello, World!", "name", "Alice", "alias", "A.")
+
+					assert()
+				})
+
+				loggerz := FromLoggerx(logger)
+				Convey("loggerz.Infow", func() {
+					loggerz.Infow("Hello, World!", "name", "Alice", "alias", "A.")
+
+					assert()
+				})
+			})
+
+			Convey("FromLoggerf", func() {
+				logger := (*zapLoggerf)(logger)
+				loggerz := FromLoggerf(logger)
+				loggerz.Infow("Hello, World!", "name", "Alice", "alias", "A.")
+
+				s := getAndFormatZap()
+				fmt.Printf("\n%s\n", s)
+				Ω(s).To(Equal(`[INFO] Hello, World! name="Alice" alias="A."`))
+			})
+		})
+	})
+}
+
+type zapLoggerf zap.SugaredLogger
+
+func (z *zapLoggerf) zap() *zap.SugaredLogger {
+	return (*zap.SugaredLogger)(z)
+}
+func (z *zapLoggerf) Debugf(format string, args ...any) {
+	z.zap().Debugf(format, args...)
+}
+func (z *zapLoggerf) Infof(format string, args ...any) {
+	z.zap().Infof(format, args...)
+}
+func (z *zapLoggerf) Warnf(format string, args ...any) {
+	z.zap().Warnf(format, args...)
+}
+func (z *zapLoggerf) Errorf(format string, args ...any) {
+	z.zap().Errorf(format, args...)
+}
+
+func printLog(s string) {
+	fmt.Printf("\n%s\n", strings.TrimSpace(s))
+}
+
+func formatZap(entries []observer.LoggedEntry) string {
+	var b stringz.Builder
+	for _, entry := range entries {
+		b.Printf("[%v] %v", entry.Level.CapitalString(), entry.Message)
+		for _, field := range entry.Context {
+			b.Printf(" %v=%v", field.Key, field.String)
+		}
+		b.Println()
+	}
+	return strings.TrimSpace(b.String())
+}
