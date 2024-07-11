@@ -22,4 +22,5 @@ use (
 	z.z/codez_test
 	z.z/jsonz
 	z.z/jsonz_test
+	z.z/logz
 )
