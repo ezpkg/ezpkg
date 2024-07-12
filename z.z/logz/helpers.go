@@ -25,36 +25,40 @@ type zKV struct {
 	val any
 }
 
-func formatWf(msg string, level strLevel, kv []any) string {
-	var b stringz.Builder
-	if level != "" {
-		b.WriteStringZ(string(level))
-		b.WriteStringZ(": ")
-	}
-	b.WriteStringZ(msg)
-	for i, N := 0, len(kv); i < N; i++ {
-		if key, ok := kv[i].(string); ok && i < N-1 {
-			b.Printf(" %v=%q", key, kv[i+1])
-			i++
-		} else {
-			b.Printf(" [%d]=%q", i, kv[i])
+func formatWf(msg string, level strLevel, kv []any) stringz.StringFunc {
+	return func() string {
+		var b stringz.Builder
+		if level != "" {
+			b.WriteStringZ(string(level))
+			b.WriteStringZ(": ")
 		}
+		b.WriteStringZ(msg)
+		for i, N := 0, len(kv); i < N; i++ {
+			if key, ok := kv[i].(string); ok && i < N-1 {
+				b.Printf(" %v=%q", key, kv[i+1])
+				i++
+			} else {
+				b.Printf(" [%d]=%q", i, kv[i])
+			}
+		}
+		if level != "" {
+			b.Println()
+		}
+		return b.String()
 	}
-	if level != "" {
-		b.Println()
-	}
-	return b.String()
 }
 
-func formatf(format string, level strLevel, args []any) string {
-	var b stringz.Builder
-	if level != "" {
-		b.WriteStringZ(string(level))
-		b.WriteStringZ(": ")
+func formatf(format string, level strLevel, args []any) stringz.StringFunc {
+	return func() string {
+		var b stringz.Builder
+		if level != "" {
+			b.WriteStringZ(string(level))
+			b.WriteStringZ(": ")
+		}
+		b.Printf(format, args...)
+		if level != "" {
+			b.Println()
+		}
+		return b.String()
 	}
-	b.Printf(format, args...)
-	if level != "" {
-		b.Println()
-	}
-	return b.String()
 }

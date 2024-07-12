@@ -24,7 +24,7 @@ type Logger interface {
 
 // LoggerP is implemented by stdlib log.Logger.
 type LoggerP interface {
-	Printf(msg string, args ...any)
+	Printf(format string, args ...any)
 }
 
 // LoggerI is implemented by stdlib slog.Logger.
