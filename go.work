@@ -15,7 +15,6 @@ use (
 	testingz
 	typez
 	unsafez
-	zscripts
 
 	// developing packages
 	z.z/codez
@@ -23,4 +22,5 @@ use (
 	z.z/jsonz
 	z.z/jsonz_test
 	z.z/logz
+	zscripts
 )

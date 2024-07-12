@@ -1,15 +1,3 @@
-ezpkg.io/bytez v0.0.5 h1:kLb8wCuY9G/Gs9klf2pvET8hyl0B2Rj85ZE3yAonjWs=
-ezpkg.io/bytez v0.0.5/go.mod h1:/2sJxzX10sxcQ5URBaomxkrOAh0OfmFlVDqeucm/q7Y=
-ezpkg.io/colorz v0.0.5 h1:+0QregJZmuYS31dFBG5E10Gq/ecnNKs4Cool/HKSH9k=
-ezpkg.io/colorz v0.0.5/go.mod h1:sPqvQQPtWcaudtkC9CZWK10ojLSNo//A/4gknrSgRKg=
-ezpkg.io/errorz v0.0.5 h1:OhvuUEdQQZJ/8fOyRkiWOD8gImUU7WsOvtSHnrDVotc=
-ezpkg.io/errorz v0.0.5/go.mod h1:U0DPQJSuyAthQpa4t47esiWiyPsmjUYDgMxh/U1ciWk=
-ezpkg.io/mapz v0.0.5 h1:xgRUgRgbGvkhG+IKuFcNo9akIm8jCf3hqdqWjaxl1HI=
-ezpkg.io/mapz v0.0.5/go.mod h1:5Fvfo6NOel/ZjQPeu88/ZsGZf2KV2l8S0uHdpEcvGRs=
-ezpkg.io/stacktracez v0.0.5 h1:+iAFTXjs5GQ1FxhoMR71zLXCXQFDeia/ZfoFu8TQUig=
-ezpkg.io/stacktracez v0.0.5/go.mod h1:qXBWAhOX1UVtg6bMPXeb5zJo1QI7CZKlHe4Kra+sYbU=
-ezpkg.io/unsafez v0.0.5 h1:XtGeZ4a4b0VevahFRvRTZ69DaSn2loqCW0YAojlR1Dc=
-ezpkg.io/unsafez v0.0.5/go.mod h1:NrcubvQVbC6p15oGZBKchlZEL3cUtjaOdrY3L7l1row=
 github.com/cpuguy83/go-md2man/v2 v2.0.4 h1:wfIWP927BUkWJb2NmU/kNDYIBTh/ziUX91+lVfRxZq4=
 github.com/cpuguy83/go-md2man/v2 v2.0.4/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/lucasb-eyer/go-colorful v1.2.0 h1:1nnpGOrhyZZuNyfu1QjKiUICQ74+3FNCN69Aj6K7nkY=
