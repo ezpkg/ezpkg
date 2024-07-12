@@ -1,11 +1,5 @@
 package logz
 
-import (
-	"fmt"
-
-	"ezpkg.io/stringz"
-)
-
 type xLogger struct {
 	w  Loggerw
 	f  Loggerf
@@ -16,84 +10,59 @@ func (l *xLogger) Debugw(msg string, keyVals ...any) {
 	if l.w != nil {
 		l.w.Debugw(msg, keyVals...)
 	} else {
-		l.f.Debugf(formatWf(msg, keyVals))
+		l.f.Debugf(formatWf(msg, "", keyVals))
 	}
 }
 func (l *xLogger) Infow(msg string, keyVals ...any) {
 	if l.w != nil {
 		l.w.Infow(msg, keyVals...)
 	} else {
-		l.f.Infof(formatWf(msg, keyVals))
+		l.f.Infof(formatWf(msg, "", keyVals))
 	}
 }
 func (l *xLogger) Warnw(msg string, keyVals ...any) {
 	if l.w != nil {
 		l.w.Warnw(msg, keyVals...)
 	} else {
-		l.f.Warnf(formatWf(msg, keyVals))
+		l.f.Warnf(formatWf(msg, "", keyVals))
 	}
 }
 func (l *xLogger) Errorw(msg string, keyVals ...any) {
 	if l.w != nil {
 		l.w.Errorw(msg, keyVals...)
 	} else {
-		l.f.Errorf(formatWf(msg, keyVals))
+		l.f.Errorf(formatWf(msg, "", keyVals))
 	}
 }
 func (l *xLogger) Debugf(format string, args ...any) {
 	if l.f != nil {
 		l.f.Debugf(format, args...)
 	} else {
-		l.w.Debugw(formatf(format, args))
+		l.w.Debugw(formatf(format, "", args))
 	}
 }
 func (l *xLogger) Infof(format string, args ...any) {
 	if l.f != nil {
 		l.f.Infof(format, args...)
 	} else {
-		l.w.Infow(formatf(format, args))
+		l.w.Infow(formatf(format, "", args))
 	}
 }
 func (l *xLogger) Warnf(format string, args ...any) {
 	if l.f != nil {
 		l.f.Warnf(format, args...)
 	} else {
-		l.w.Warnw(formatf(format, args))
+		l.w.Warnw(formatf(format, "", args))
 	}
 }
 func (l *xLogger) Errorf(format string, args ...any) {
 	if l.f != nil {
 		l.f.Errorf(format, args...)
 	} else {
-		l.w.Errorw(formatf(format, args))
+		l.w.Errorw(formatf(format, "", args))
 	}
 }
 func (l *xLogger) With(keyVals ...any) Logger {
 	kv := append(l.kv[:], keyVals...)
 	return &xLogger{w: l.w, f: l.f, kv: kv}
-}
-
-type wrapW struct{ LoggerI }
-
-func (w wrapW) Debugw(msg string, keyValues ...any) { w.LoggerI.Debug(msg, keyValues...) }
-func (w wrapW) Infow(msg string, keyValues ...any)  { w.LoggerI.Info(msg, keyValues...) }
-func (w wrapW) Warnw(msg string, keyValues ...any)  { w.LoggerI.Warn(msg, keyValues...) }
-func (w wrapW) Errorw(msg string, keyValues ...any) { w.LoggerI.Error(msg, keyValues...) }
-
-func formatWf(msg string, kv []any) string {
-	var b stringz.Builder
-	b.WriteStringZ(msg)
-	for i, N := 0, len(kv); i < N; i++ {
-		if key, ok := kv[i].(string); ok && i < N-1 {
-			b.Printf(" %v=%q", key, kv[i+1])
-			i++
-		} else {
-			b.Printf(" [%d]=%q", i, kv[i])
-		}
-	}
-	return b.String()
-}
-
-func formatf(format string, args []any) string {
-	return fmt.Sprintf(format, args...)
 }

@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap/zaptest/observer"
 
 	. "ezpkg.io/conveyz"
+	"ezpkg.io/diffz"
 	"ezpkg.io/stringz"
 )
 
@@ -51,7 +52,6 @@ func Test(t *testing.T) {
 				assert()
 			})
 		})
-
 		Convey("zap+", func() {
 			core, obsLogs := observer.New(zap.DebugLevel)
 			logger := zap.New(core).Sugar()
@@ -90,6 +90,28 @@ func Test(t *testing.T) {
 				fmt.Printf("\n%s\n", s)
 				Ω(s).To(Equal(`[INFO] Hello, World! name="Alice" alias="A."`))
 			})
+		})
+		Convey("log.Printf", func() {
+			var b stringz.Builder
+			logger := log.New(&b, "", 0)
+			loggerz := FromLoggerP(logger)
+
+			loggerz.Debugw("zero", "one", "1", "two", "2")
+			loggerz.Infow("zero", "one", "1", "two", "2")
+			loggerz.Infof("zero %v %v", "one", "two")
+			loggerz.Warnf("zero %v %v", "one", "two")
+
+			s := b.String()
+			fmt.Printf("\n%s\n", s)
+			expected := `
+DEBUG: zero one="1" two="2"
+ INFO: zero one="1" two="2"
+ INFO: zero one two
+ WARN: zero one two
+`[1:]
+			diffs := diffz.ByLine(s, expected)
+			fmt.Println(diffs)
+			Ω(diffs.IsDiff()).To(BeFalse())
 		})
 	})
 }
