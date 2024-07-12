@@ -1,4 +1,5 @@
 package stringz // import "ezpkg.io/stringz"
+
 import (
 	"strings"
 )
