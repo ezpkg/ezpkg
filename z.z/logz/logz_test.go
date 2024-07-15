@@ -113,6 +113,24 @@ DEBUG: zero one="1" two="2"
 			fmt.Println(diffs)
 			Ω(diffs.IsDiff()).To(BeFalse())
 		})
+		Convey("keyValues", func() {
+			var b stringz.Builder
+			logger := log.New(&b, "", 0)
+			loggerz := FromLoggerP(logger)
+
+			loggerz.Debugw("zero", "one", "1", "two", "2")
+			loggerz.Infow("extra", 0, "one", "two", 3, 4, "five")
+
+			s := b.String()
+			fmt.Printf("\n%s\n", s)
+			expected := `
+DEBUG: zero one="1" two="2"
+ INFO: extra [0]=0 one="two" [1]=3 [2]=4 [3]="five"
+`[1:]
+			diffs := diffz.ByLine(s, expected)
+			fmt.Println(diffs)
+			Ω(diffs.IsDiff()).To(BeFalse())
+		})
 	})
 }
 
