@@ -15,7 +15,7 @@ Packages [testingz](https://pkg.go.dev/ezpkg.io/testingz) provides utilities for
 ## Installation
 
 ```sh
-go get -u ezpkg.io/testingz@v0.1.0
+go get -u ezpkg.io/testingz@v0.1.1
 ```
 
 ## Examples

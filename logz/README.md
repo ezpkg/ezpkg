@@ -15,7 +15,7 @@ Package [logz](https://pkg.go.dev/ezpkg.io/logz) provides common interfaces and 
 ## Installation
 
 ```sh
-go get -u ezpkg.io/logz@v0.1.0
+go get -u ezpkg.io/logz@v0.1.1
 ```
 
 ## Examples
