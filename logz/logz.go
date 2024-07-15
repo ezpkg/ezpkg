@@ -1,4 +1,4 @@
-// Package logz provides interfaces and utilities for working with other log packages, including [log/slog] and [zap].
+// Package logz provides common interfaces and utilities for working with other log packages, including [log/slog] and [zap].
 //
 // [log/slog]: https://pkg.go.dev/log/slog
 // [zap]: https://pkg.go.dev/go.uber.org/zap
