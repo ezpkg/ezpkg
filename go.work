@@ -8,6 +8,7 @@ use (
 	diffz
 	errorz
 	fmtz
+	logz
 	mapz
 	slicez
 	stacktracez
@@ -21,6 +22,5 @@ use (
 	z.z/codez_test
 	z.z/jsonz
 	z.z/jsonz_test
-	z.z/logz
 	zscripts
 )
