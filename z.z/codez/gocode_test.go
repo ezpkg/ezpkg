@@ -60,6 +60,12 @@ func TestParse(t *testing.T) {
 				Ω(ident).ToNot(BeNil())
 				Ω(out.ident).ToNot(BeNil())
 			})
+			Convey("file", func() {
+				out, err := parseSearch(log, "package main")
+				Ω(err).ToNot(HaveOccurred())
+
+				Ω(out.file).ToNot(BeNil())
+			})
 		})
 	})
 }

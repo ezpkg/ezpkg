@@ -11,6 +11,7 @@ const (
 	zExpr
 	zStmt
 	zDecl
+	zFile
 )
 
 type zSearch = Search

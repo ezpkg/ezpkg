@@ -13,6 +13,7 @@ import (
 )
 
 type parseOutput struct {
+	file  *ast.File
 	ident *ast.Ident
 	expr  ast.Expr
 	stmt  ast.Stmt
@@ -66,6 +67,14 @@ func parseSearch(log logz.Logger, code string) (output parseOutput, _ error) {
 		}
 		return output, nil
 
+	case zFile:
+		file, err := parseSrc(token.NewFileSet(), code)
+		if err != nil {
+			return output, err
+		}
+		output.file = file
+		return output, nil
+
 	default:
 		return output, nil // empty
 	}
@@ -96,6 +105,8 @@ func detectCode(code string) (maybe zKind) {
 	switch {
 	case tok == token.EOF:
 		return 0
+	case tok == token.PACKAGE:
+		return zFile
 	case stmtStart[tok]:
 		return zStmt
 	case declStart[tok]:
@@ -105,8 +116,8 @@ func detectCode(code string) (maybe zKind) {
 	}
 }
 
-func parseExpr(log logz.Logger, x string) (ast.Expr, error) {
-	expr, err := parser.ParseExpr(x)
+func parseExpr(log logz.Logger, code string) (ast.Expr, error) {
+	expr, err := parser.ParseExpr(code)
 	if err != nil {
 		return nil, err
 	}
@@ -166,6 +177,9 @@ func parseDecl(log logz.Logger, code string) (ast.Decl, error) {
 }
 
 func parseSrc(fset *token.FileSet, src string) (*ast.File, error) {
+	if fset == nil {
+		fset = token.NewFileSet()
+	}
 	fset.AddFile("", fset.Base(), len(src))
 	return parser.ParseFile(fset, "", []byte(src), 0)
 }
