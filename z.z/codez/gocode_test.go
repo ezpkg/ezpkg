@@ -22,6 +22,11 @@ func TestParse(t *testing.T) {
 			Ω(err).ToNot(HaveOccurred())
 			printAst("stmt", nil, stmt)
 		})
+		Convey("decl", func() {
+			decl, err := parseDecl(log, "var a = 42")
+			Ω(err).ToNot(HaveOccurred())
+			printAst("decl", nil, decl)
+		})
 	})
 }
 
