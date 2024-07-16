@@ -30,7 +30,10 @@ func Test(t *testing.T) {
 		var b stringz.Builder
 
 		Convey("slog", func() {
-			opt := &slog.HandlerOptions{Level: slog.LevelDebug}
+			lv := &slog.LevelVar{}
+			lv.Set(slog.LevelDebug)
+
+			opt := &slog.HandlerOptions{Level: lv}
 			handler := slog.NewTextHandler(&b, opt)
 			logger := slog.New(handler)
 			loggerz := FromLoggerI(logger)
@@ -50,6 +53,45 @@ func Test(t *testing.T) {
 				loggerz.Infow("Hello, World!", "name", "Alice", "age", 18)
 
 				assert()
+			})
+			Convey("enabler", func() {
+				Convey("default", func() {
+					// default to info
+					Ω(loggerz.Enabled(LevelDebug)).To(BeFalse())
+					Ω(loggerz.Enabled(LevelInfo)).To(BeTrue())
+
+					SetDefaultEnableLevel(LevelDebug)
+					Ω(loggerz.Enabled(LevelDebug)).To(BeTrue())
+					Ω(loggerz.Enabled(LevelInfo)).To(BeTrue())
+
+					SetDefaultEnableLevel(LevelInfo)
+					Ω(loggerz.Enabled(LevelDebug)).To(BeFalse())
+					Ω(loggerz.Enabled(LevelInfo)).To(BeTrue())
+				})
+				Convey("option", func() {
+					loggerz := WithEnabler(func(level Level) bool {
+						return level.ToInt() >= int(lv.Level())
+					}).FromLoggerI(logger)
+
+					lv.Set(slog.LevelDebug)
+					Ω(loggerz.Enabled(LevelDebug)).To(BeTrue())
+					Ω(loggerz.Enabled(LevelInfo)).To(BeTrue())
+					Ω(loggerz.Enabled(LevelWarn)).To(BeTrue())
+					Ω(loggerz.Enabled(LevelError)).To(BeTrue())
+
+					lv.Set(slog.LevelInfo)
+					Ω(loggerz.Enabled(LevelDebug)).To(BeFalse())
+					Ω(loggerz.Enabled(LevelInfo)).To(BeTrue())
+					Ω(loggerz.Enabled(LevelWarn)).To(BeTrue())
+					Ω(loggerz.Enabled(LevelError)).To(BeTrue())
+
+					lv.Set(slog.LevelError)
+					Ω(loggerz.Enabled(LevelDebug)).To(BeFalse())
+					Ω(loggerz.Enabled(LevelInfo)).To(BeFalse())
+					Ω(loggerz.Enabled(LevelWarn)).To(BeFalse())
+					Ω(loggerz.Enabled(LevelError)).To(BeTrue())
+				})
+
 			})
 		})
 		Convey("zap+", func() {

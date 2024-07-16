@@ -19,6 +19,7 @@ type Logger interface {
 	Warnf(format string, args ...any)
 	Errorf(format string, args ...any)
 
+	Enabled(level Level) bool
 	With(keyValues ...any) Logger
 }
 
@@ -64,40 +65,17 @@ type logger0ctx interface {
 }
 
 func FromLoggerP(logger LoggerP) Logger {
-	return &pLogger{l: logger}
+	return Option{}.FromLoggerP(logger)
 }
-
 func FromLoggerI(logger LoggerI) Logger {
-	return &xLogger{w: wrapW{logger}}
+	return Option{}.FromLoggerI(logger)
 }
-
 func FromLoggerw(logger Loggerw) Logger {
-	switch logger := logger.(type) {
-	case Logger:
-		return logger
-	case Loggerx:
-		return &xLogger{w: logger, f: logger}
-	default:
-		return &xLogger{w: logger}
-	}
+	return Option{}.FromLoggerw(logger)
 }
-
 func FromLoggerf(logger Loggerf) Logger {
-	switch logger := logger.(type) {
-	case Logger:
-		return logger
-	case Loggerx:
-		return &xLogger{w: logger, f: logger}
-	default:
-		return &xLogger{f: logger}
-	}
+	return Option{}.FromLoggerf(logger)
 }
-
 func FromLoggerx(logger Loggerx) Logger {
-	switch logger := logger.(type) {
-	case Logger:
-		return logger
-	default:
-		return &xLogger{w: logger, f: logger}
-	}
+	return Option{}.FromLoggerx(logger)
 }
