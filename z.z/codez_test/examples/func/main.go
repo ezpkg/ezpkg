@@ -25,7 +25,35 @@ func main() {
 		fmt.Printf("\t%v\n", pkg.PkgPath)
 	}
 
-	// search for all functions that return error as the last result
+	searchError(pkgs)
+}
+
+func searchError(pkgs *codez.Packages) {
+	sr := codez.NewSearch("error").
+		InPackages("ezpkg.io/-/codez_test/testdata/logging/...")
+	result, err := sr.Exec(pkgs)
+	if err != nil {
+		fmt.Printf("%+v\n", err)
+		return
+	}
+
+	fmt.Println(result)
+}
+
+func searchContext(pkgs *codez.Packages) {
+	sr := codez.NewSearch("context.Context").
+		Import("context", "context").
+		InPackages("ezpkg.io/-/codez_test/testdata/logging/...")
+	result, err := sr.Exec(pkgs)
+	if err != nil {
+		fmt.Printf("%+v\n", err)
+		return
+	}
+	fmt.Println(result)
+}
+
+// search for all functions that return error as the last result
+func searchFuncReturningError(pkgs *codez.Packages) {
 	sr := codez.NewSearch("func $foo(...) (..., error)").
 		WithIdent("$foo").
 		InPackages("ezpkg.io/-/codez_test/testdata/logging/...")

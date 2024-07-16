@@ -17,8 +17,8 @@ type Search struct {
 	pats []codePattern
 	pkgs []string
 
-	dirty bool
-	errs  errorz.Errors
+	compiled bool
+	errs     errorz.Errors
 }
 
 type codePattern struct {
@@ -28,51 +28,54 @@ type codePattern struct {
 
 func NewSearch(pattern string) *Search {
 	return &Search{
-		pats:  []codePattern{{id: 0, pat: pattern}},
-		dirty: true,
+		pats: []codePattern{{id: 0, pat: pattern}},
 	}
 }
 
+func (s *Search) mustNotCompiled() {
+	if s.compiled {
+		panic("unexpected: search is already compiled, changes are not accepted")
+	}
+}
+
+func (s *Search) Clone() *Search {
+	return &Search{}
+}
+
 func (s *Search) Import(alias, pkg string) *Search {
+	s.mustNotCompiled()
 	return s
 }
 
 func (s *Search) WithIdent(name string) *SearchIdent {
+	s.mustNotCompiled()
 	return &SearchIdent{zSearch: s, zVar: name}
 }
 
 func (s *Search) WithExpr(name string) *SearchExpr {
+	s.mustNotCompiled()
 	return &SearchExpr{zSearch: s, zVar: name}
 }
 
 func (s *Search) WithStmt(name string) *SearchStmt {
+	s.mustNotCompiled()
 	return &SearchStmt{zSearch: s, zVar: name}
 }
 
 func (s *Search) AddPattern(id int, pattern string) *Search {
-	s.dirty = true
+	s.mustNotCompiled()
 	s.pats = append(s.pats, codePattern{id: id, pat: pattern})
 	return s
 }
 
 func (s *Search) InPackages(pkgs ...string) *Search {
-	s.dirty = true
+	s.mustNotCompiled()
 	s.pkgs = append(s.pkgs, pkgs...)
 	return s
 }
 
-func (s *Search) Validate(pkgs *Packages) (warns, errs errorz.Errors) {
-	s.dirty = false
-	return nil, nil
-}
-
-func (s *Search) Exec(pkgs *Packages) (*SearchResult, errorz.Errors) {
-	if s.dirty {
-		_, err := s.Validate(pkgs)
-		if err != nil {
-			return nil, err
-		}
-	}
+func (s *Search) Exec(pkgs *Packages) (_ *SearchResult, errs errorz.Errors) {
+	s.compiled = true
 	return &SearchResult{}, nil
 }
 

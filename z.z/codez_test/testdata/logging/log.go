@@ -1,10 +1,9 @@
 package logging
 
 import (
+	"context"
 	"errors"
 	"fmt"
-
-	"golang.org/x/net/context"
 )
 
 type Logger struct {
