@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/parser"
+	"go/scanner"
 	"go/token"
 
 	"ezpkg.io/colorz"
@@ -11,12 +12,108 @@ import (
 	"ezpkg.io/logz"
 )
 
-func parseSearch(code string) {
-	panic("TODO")
+type parseOutput struct {
+	ident *ast.Ident
+	expr  ast.Expr
+	stmt  ast.Stmt
+	decl  ast.Decl
+	stmts []ast.Stmt
+	decls []ast.Decl
 }
 
-func parseExpr(x string) (ast.Expr, error) {
-	return parser.ParseExpr(x)
+func (p parseOutput) IsEmpty() bool {
+	return p.ident == nil && p.expr == nil &&
+		p.stmt == nil && p.decl == nil &&
+		len(p.stmts) == 0 && len(p.decls) == 0
+}
+
+func parseSearch(log logz.Logger, code string) (output parseOutput, _ error) {
+	maybeKind := detectCode(code)
+	switch maybeKind {
+	case zExpr:
+		expr, err := parseExpr(log, code)
+		if err != nil {
+			return output, err
+		}
+		output.expr = expr
+		if ident, ok := expr.(*ast.Ident); ok {
+			output.ident = ident
+		}
+		return output, nil
+
+	case zStmt:
+		stmts, err := parseStmts(log, code)
+		if err != nil {
+			return output, err
+		}
+		output.stmts = stmts
+		if len(stmts) == 1 {
+			output.stmt = stmts[0]
+			if decl, ok := output.stmt.(*ast.DeclStmt); ok {
+				output.decl = decl.Decl
+			}
+		}
+		return output, nil
+
+	case zDecl:
+		decls, err := parseDecls(log, code)
+		if err != nil {
+			return output, err
+		}
+		output.decls = decls
+		if len(decls) == 1 {
+			output.decl = decls[0]
+		}
+		return output, nil
+
+	default:
+		return output, nil // empty
+	}
+}
+
+func detectCode(code string) (maybe zKind) {
+	fset := token.NewFileSet()
+	file := fset.AddFile("", fset.Base(), len(code))
+	sc := scanner.Scanner{}
+	sc.Init(file, []byte(code), nil, 0)
+
+	nextToken := func() token.Token {
+		for {
+			_, tok, _ := sc.Scan()
+			switch tok {
+			case token.EOF:
+				return token.EOF
+			case token.COMMENT:
+				continue
+			case token.ILLEGAL:
+				return token.ILLEGAL
+			default:
+				return tok
+			}
+		}
+	}
+	tok := nextToken()
+	switch {
+	case tok == token.EOF:
+		return 0
+	case stmtStart[tok]:
+		return zStmt
+	case declStart[tok]:
+		return zDecl
+	default:
+		return zExpr
+	}
+}
+
+func parseExpr(log logz.Logger, x string) (ast.Expr, error) {
+	expr, err := parser.ParseExpr(x)
+	if err != nil {
+		return nil, err
+	}
+	if log.Enabled(logz.LevelDebug) {
+		printAst("parseExpr", nil, expr)
+	}
+	return expr, nil
 }
 
 func parseStmts(log logz.Logger, code string) ([]ast.Stmt, error) {

@@ -1,6 +1,7 @@
 package codez
 
 import (
+	"go/ast"
 	"log/slog"
 	"os"
 	"testing"
@@ -26,6 +27,39 @@ func TestParse(t *testing.T) {
 			decl, err := parseDecl(log, "var a = 42")
 			Ω(err).ToNot(HaveOccurred())
 			printAst("decl", nil, decl)
+		})
+		Convey("parseSearch", func() {
+			Convey("empty", func() {
+				out, err := parseSearch(log, "")
+				Ω(err).ToNot(HaveOccurred())
+				Ω(out.IsEmpty()).To(BeTrue())
+			})
+			Convey("comment", func() {
+				out, err := parseSearch(log, "// hello")
+				Ω(err).ToNot(HaveOccurred())
+				Ω(out.IsEmpty()).To(BeTrue())
+			})
+			Convey("invalid", func() {
+				_, err := parseSearch(log, "#")
+				Ω(err.Error()).To(ContainSubstring("illegal character"))
+			})
+			Convey("decl", func() {
+				out, err := parseSearch(log, "var a int = 42")
+				Ω(err).ToNot(HaveOccurred())
+
+				stmt, _ := out.stmt.(*ast.DeclStmt)
+				Ω(stmt).ToNot(BeNil())
+
+				Ω(out.decl).ToNot(BeNil())
+			})
+			Convey("ident", func() {
+				out, err := parseSearch(log, "error")
+				Ω(err).ToNot(HaveOccurred())
+
+				ident, _ := out.expr.(*ast.Ident)
+				Ω(ident).ToNot(BeNil())
+				Ω(out.ident).ToNot(BeNil())
+			})
 		})
 	})
 }

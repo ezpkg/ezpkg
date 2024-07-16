@@ -10,6 +10,7 @@ const (
 	zIdent zKind = iota + 1
 	zExpr
 	zStmt
+	zDecl
 )
 
 type zSearch = Search
