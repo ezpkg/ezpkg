@@ -1,6 +1,10 @@
 package codez
 
 import (
+	"fmt"
+	"slices"
+	"strings"
+
 	"ezpkg.io/errorz"
 )
 
@@ -16,26 +20,30 @@ const (
 
 type zSearch = Search
 type Search struct {
-	pats []codePattern
+	pats []*codePattern
 	pkgs []string
+	errs errorz.Errors
+	cs   *compiledSearch
+}
 
-	compiled bool
-	errs     errorz.Errors
+type compiledSearch struct {
 }
 
 type codePattern struct {
 	id  int
 	pat string
+
+	compiled Matcher
 }
 
 func NewSearch(pattern string) *Search {
 	return &Search{
-		pats: []codePattern{{id: 0, pat: pattern}},
+		pats: []*codePattern{{id: 0, pat: pattern}},
 	}
 }
 
 func (s *Search) mustNotCompiled() {
-	if s.compiled {
+	if s.cs != nil {
 		panic("unexpected: search is already compiled, changes are not accepted")
 	}
 }
@@ -66,7 +74,7 @@ func (s *Search) WithStmt(name string) *SearchStmt {
 
 func (s *Search) AddPattern(id int, pattern string) *Search {
 	s.mustNotCompiled()
-	s.pats = append(s.pats, codePattern{id: id, pat: pattern})
+	s.pats = append(s.pats, &codePattern{id: id, pat: pattern})
 	return s
 }
 
@@ -77,8 +85,40 @@ func (s *Search) InPackages(pkgs ...string) *Search {
 }
 
 func (s *Search) Exec(pkgs *Packages) (_ *SearchResult, errs errorz.Errors) {
-	s.compiled = true
+	s.cs = &compiledSearch{}
+
+	var filteredPkgs []*Package
+	if s.pkgs == nil {
+		filteredPkgs = slices.Clone(pkgs.pkgs)
+	} else {
+		filteredPkgs = filterPackages(pkgs.allPkgs, s.pkgs...)
+	}
+	if len(filteredPkgs) == 0 {
+		return nil, errorz.ToErrors(errorz.New("no matching packages"))
+	}
+	slices.SortFunc(filteredPkgs, func(a, b *Package) int {
+		return strings.Compare(a.PkgPath, b.PkgPath)
+	})
+
+	for _, pat := range s.pats {
+		fmt.Printf("-- pat --\n%v\n", pat)
+	}
+
+	fmt.Println("")
+	for _, pkg := range filteredPkgs {
+		fmt.Println("pkg:", pkg.PkgPath)
+	}
+	for _, pkg := range filteredPkgs {
+		for _, file := range pkg.Syntax {
+			printAst("file", pkg.Fset, file)
+		}
+	}
+
 	return &SearchResult{}, nil
+}
+
+func (s *Search) match() {
+
 }
 
 type SearchIdent struct {

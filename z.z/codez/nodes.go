@@ -8,6 +8,8 @@ var otherNodes = []ast.Node{
 	&ast.File{},
 	&ast.Comment{},
 	&ast.CommentGroup{},
+	&ast.Field{},
+	&ast.FieldList{},
 }
 var allSpecs = []ast.Spec{
 	&ast.ImportSpec{},

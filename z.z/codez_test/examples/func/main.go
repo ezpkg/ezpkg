@@ -25,7 +25,29 @@ func main() {
 		fmt.Printf("\t%v\n", pkg.PkgPath)
 	}
 
-	searchError(pkgs)
+	matchContext(pkgs)
+}
+
+func matchContext(pkgs *codez.Packages) {
+	m0 := &codez.SelectorExprMatcher{
+		X: &codez.IdentMatcher{
+			Name: "stdctx",
+		},
+		Sel: &codez.IdentMatcher{
+			Name: "Context",
+		},
+	}
+	m1 := &codez.IdentMatcher{Name: "ctx"}
+	_, _ = m0, m1
+
+	_pkgs := pkgs.AllPackages("ezpkg.io/-/codez_test/testdata/logging/...")
+	for _, pkg := range _pkgs {
+		nodes := codez.Match(m0, pkg)
+		fmt.Printf("\n👉 %v: found %v nodes\n", pkg.PkgPath, len(nodes))
+		for _, node := range nodes {
+			PrintAst(pkg.Fset, node)
+		}
+	}
 }
 
 func searchError(pkgs *codez.Packages) {
