@@ -11,6 +11,8 @@ import (
 	"sync"
 
 	"golang.org/x/tools/go/packages"
+
+	"ezpkg.io/errorz"
 )
 
 type Positioner interface {
@@ -218,7 +220,7 @@ func (ng *wrapEngine) GenerateEachPackage(
 	for _, pkg := range ng.generatingPackages() {
 		prt := pkg.GetPrinter()
 		if err := fn(ng, pkg.Package, prt); err != nil {
-			return Errorf(err, "generating package %v: %v", pkg.PkgPath, err)
+			return errorz.Wrapf(err, "generating package %v: %v", pkg.PkgPath, err)
 		}
 		if len(prt.Bytes()) == 0 {
 			continue
@@ -271,7 +273,7 @@ func generateFileName(ng *engine, plugin *pluginStruct) string {
 
 func (ng *wrapEngine) GeneratePackage(pkg *packages.Package, fileName string) (Printer, error) {
 	if strings.Contains(fileName, "/") {
-		return nil, Errorf(nil, "invalid filename: file must not contain / (filename=%v)", fileName)
+		return nil, errorz.Wrapf(nil, "invalid filename: file must not contain / (filename=%v)", fileName)
 	}
 	if fileName == "" {
 		fileName = generateFileName(ng.engine, ng.plugin)
@@ -284,7 +286,7 @@ func (ng *wrapEngine) GeneratePackage(pkg *packages.Package, fileName string) (P
 func (ng *wrapEngine) GenerateFile(pkgName string, filePath string) (Printer, error) {
 	var pkg *types.Package
 	if filePath == "" {
-		return nil, Errorf(nil, "empty file path")
+		return nil, errorz.Wrapf(nil, "empty file path")
 	}
 	dir := filepath.Dir(filePath)
 	if pkg0 := ng.dir2pkg[dir]; pkg0 != nil {
@@ -292,7 +294,7 @@ func (ng *wrapEngine) GenerateFile(pkgName string, filePath string) (Printer, er
 		pkgName = pkg0.Name
 	}
 	if pkgName == "" {
-		return nil, Errorf(nil, "empty package name")
+		return nil, errorz.Wrapf(nil, "empty package name")
 	}
 
 	if strings.HasSuffix(filePath, "/") {
@@ -302,15 +304,15 @@ func (ng *wrapEngine) GenerateFile(pkgName string, filePath string) (Printer, er
 	{
 		err := os.MkdirAll(dir, 0755)
 		if err != nil {
-			return nil, Errorf(err, "create directory %q: %v", dir, err)
+			return nil, errorz.Wrapf(err, "create directory %q: %v", dir, err)
 		}
 		file, err := os.Open(dir)
 		if err != nil {
-			return nil, Errorf(err, "can not read dir %q: %v", dir, err)
+			return nil, errorz.Wrapf(err, "can not read dir %q: %v", dir, err)
 		}
 		names, err := file.Readdirnames(-1)
 		if err != nil {
-			return nil, Errorf(err, "can not read dir %q: %v", dir, err)
+			return nil, errorz.Wrapf(err, "can not read dir %q: %v", dir, err)
 		}
 		found := false
 		for _, name := range names {
@@ -325,7 +327,7 @@ func (ng *wrapEngine) GenerateFile(pkgName string, filePath string) (Printer, er
 			docFile := filepath.Join(dir, "doc.go")
 			err = os.WriteFile(docFile, []byte("package "+pkgName), 0644)
 			if err != nil {
-				return nil, Errorf(err, "can not write file %v: %v", docFile, err)
+				return nil, errorz.Wrapf(err, "can not write file %v: %v", docFile, err)
 			}
 		}
 	}

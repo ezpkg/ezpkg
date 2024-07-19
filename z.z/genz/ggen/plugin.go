@@ -2,6 +2,8 @@ package ggen
 
 import (
 	"go/types"
+
+	"ezpkg.io/errorz"
 )
 
 type Filterer interface {
@@ -41,13 +43,13 @@ type pluginStruct struct {
 func (ng *engine) registerPlugin(plugin Plugin) error {
 	name := plugin.Name()
 	if name == "" {
-		return Errorf(nil, "empty name")
+		return errorz.Wrapf(nil, "empty name")
 	}
 	if plugin == nil {
-		return Errorf(nil, "nil plugin")
+		return errorz.Wrapf(nil, "nil plugin")
 	}
 	if ng.pluginsMap[name] != nil {
-		return Errorf(nil, "duplicated pluginStruct name: %v", name)
+		return errorz.Wrapf(nil, "duplicated pluginStruct name: %v", name)
 	}
 
 	pl := &pluginStruct{name: name, plugin: plugin, index: len(ng.plugins)}

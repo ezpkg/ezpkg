@@ -12,8 +12,7 @@ import (
 
 	"golang.org/x/tools/go/packages"
 
-	"github.com/pkg/errors"
-
+	"ezpkg.io/errorz"
 	_ "ezpkg.io/genz/builtin"
 )
 
@@ -188,7 +187,7 @@ func ParseDirectiveFromFile(filename string) (directives, inlineDirective []Dire
 // ParseDirectiveFromBody reads directives from body and returns the parsed directives.
 func ParseDirectiveFromBody(body []byte) (directives, inlineDirective []Directive, err error) {
 	errs := parseDirectivesFromBody(body, &directives, &inlineDirective)
-	err = Errors("can not parse directive", errs)
+	err = errorz.Wrap(errorz.Combine(errs...), "can not parse directive")
 	return
 }
 
@@ -201,7 +200,7 @@ func ParseDirective(line string) (result Directive, _ error) {
 
 	result, err := parsePlusDirective(line)
 	if err != nil {
-		return result, Errorf(err, "%v (%v)", err, line)
+		return result, errorz.Wrapf(err, "%v (%v)", err, line)
 	}
 	return result, nil
 }
@@ -228,7 +227,7 @@ func parsePlusDirective(line string) (result Directive, err error) {
 		result.Cmd = line
 	}
 	if reAlphabet.MatchString(result.Cmd) && !reCommand.MatchString(result.Cmd) {
-		return result, errors.New("invalid directive")
+		return result, errorz.NoStack().New("invalid directive")
 	}
 	return result, nil
 }
