@@ -34,6 +34,11 @@ func Append(err0 error, errs ...error) error {
 	return err0
 }
 
+func Combine(errs ...error) (err error) {
+	appendErrs(Option{}, &err, errs...)
+	return err
+}
+
 func AppendTo(pErr *error, errs ...error) {
 	appendErrs(Option{}, pErr, errs...)
 }
