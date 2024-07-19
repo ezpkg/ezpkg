@@ -1,6 +1,7 @@
 package errorz_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -123,6 +124,54 @@ testing/testing.go:████ · tRunner
 ezpkg.io/errorz_test/multierr_test.go:███ · TestErrors.func█
 testing/testing.go:████ · tRunner
 `)
+		})
+	})
+	t.Run("wrap many", func(t *testing.T) {
+		errs0 := errorz.Append(
+			errors.New("one"),
+			errors.New("two"),
+			errors.New("three"))
+		wErr1 := errorz.Wrap(errs0, "first wrap")
+		wErr0 := errorz.Wrapf(wErr1, "outer wrap")
+
+		t.Run("Unwrap", func(t *testing.T) {
+			x, ok := errs0.(interface{ Unwrap() []error })
+			assert(t, ok).Errorf("❌ expect ok")
+			errs := x.Unwrap()
+			assert(t, len(errs) == 3).Errorf("❌ expect len(errs) == 3")
+			assert(t, fmt.Sprint(errs[0]) == "one").Errorf("❌ expect errs[0] == one")
+			assert(t, fmt.Sprint(errs[1]) == "two").Errorf("❌ expect errs[0] == two")
+			assert(t, fmt.Sprint(errs[2]) == "three").Errorf("❌ expect errs[0] == three")
+		})
+		t.Run("GetErrors (nil)", func(t *testing.T) {
+			err1 := errorz.GetErrors(nil)
+			assert(t, err1 == nil).Errorf("❌ expect err1 == nil")
+
+			err2 := errorz.GetErrors(fmt.Errorf("wrap: %w", errors.New("one")))
+			assert(t, err2 == nil).Errorf("❌ expect err2 == nil")
+		})
+		t.Run("GetErrors", func(t *testing.T) {
+			errs := errorz.GetErrors(wErr0)
+			fmt.Println(errs)
+			assert(t, len(errs) == 3).Errorf("❌ expect len(errs) == 3")
+		})
+		t.Run("format", func(t *testing.T) {
+			t.Run("err0", func(t *testing.T) {
+				str := fmt.Sprintf("%#v", errs0)
+				fmt.Println(str)
+			})
+			t.Run("plus", func(t *testing.T) {
+				str := fmt.Sprintf("%+v", wErr0)
+				fmt.Println(str)
+			})
+			t.Run("alt", func(t *testing.T) {
+				str := fmt.Sprintf("%#v", wErr0)
+				fmt.Println(str)
+			})
+			t.Run("%q", func(t *testing.T) {
+				str := fmt.Sprintf("%q", wErr0)
+				fmt.Println(str)
+			})
 		})
 	})
 }

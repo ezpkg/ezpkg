@@ -112,6 +112,13 @@ func (e *zError) Error() string {
 	return sprintf("%s", e)
 }
 
+func (e *zError) Unwrap() error {
+	if e != nil {
+		return e.cause
+	}
+	return nil
+}
+
 func (e *zError) Format(s0 fmt.State, verb rune) {
 	s := fmtz.WrapState(s0)
 	if e == nil {
@@ -122,20 +129,19 @@ func (e *zError) Format(s0 fmt.State, verb rune) {
 	case 's', 'v':
 		e.writeMessage(s, verb)
 		if (s.Flag('+') || s.Flag('#')) && e.stack != nil {
-			s.WriteStringZ("\n")
+			if st, ok := e.cause.(stacktracez.StackTracerZ); ok &&
+				st.StackTraceZ() == e.stack {
+				// do not print stack if the wrapped error has the same stack
+				return
+			}
+			s.Println()
 			if e.stack != nil {
 				e.stack.Format(s, verb)
+				s.Println()
 			}
 		}
 	case 'q':
-		switch {
-		case e.msg != "":
-			s.Printf("%q", e.msg)
-		case e.cause != nil:
-			e.formatCause(s, verb)
-		default:
-			s.WriteStringZ("<empty>")
-		}
+		s.Printf("%q", e.msg)
 	}
 }
 

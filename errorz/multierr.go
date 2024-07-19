@@ -51,7 +51,8 @@ func appendErrs(opt Option, pErr *error, errs ...error) {
 
 	default:
 		var zErrs zErrors
-		zErrs.errors = make([]error, len(errs))
+		zErrs.errors = make([]error, 0, len(errs)+1)
+		zErrs.errors = append(zErrs.errors, err0)
 		zErrs.Append(errs...)
 		*pErr = zErrs.process(opt)
 	}
@@ -164,16 +165,27 @@ func ValidateToXf[T any](pErr *error, value T, condition bool, msg string, args 
 	return out
 }
 
+// GetErrors unwraps the error and return the list of errors.
 func GetErrors(err error) []error {
-	switch err := err.(type) {
-	case interface{ Errors() []error }:
-		if err != nil {
-			return err.Errors()
+	for i := 0; i < 10; i++ {
+		switch err0 := err.(type) {
+		case zUnwrapI:
+			err = err0.Unwrap()
+			continue
+		case zUnwraps:
+			if err0 != nil {
+				return err0.Unwrap()
+			}
+		case zErrorsI:
+			if err0 != nil {
+				return err0.Errors()
+			}
+		case zWrErrorsI:
+			if err0 != nil {
+				return err0.WrappedErrors()
+			}
 		}
-	case interface{ WrappedErrors() []error }:
-		if err != nil {
-			return err.WrappedErrors()
-		}
+		return nil
 	}
 	return nil
 }
@@ -235,6 +247,7 @@ func (es *zErrors) Format(s0 fmt.State, verb rune) {
 				s.Printf("%v", err)
 			}
 			if isPlus && es.stack != nil {
+				s.Println()
 				es.stack.Format(s, verb)
 			}
 		}
