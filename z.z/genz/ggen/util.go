@@ -14,7 +14,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	_ "github.com/iolivernguyen/ggen/builtin"
+	_ "ezpkg.io/genz/builtin"
 )
 
 const defaultGeneratedFileNameTpl = "zz_generated.%v.go"

@@ -1,6 +1,6 @@
 package decorator
 
-import "github.com/iolivernguyen/ggen/ggen"
+import "ezpkg.io/genz/ggen"
 
 func New() ggen.Plugin {
 	return plugin{}

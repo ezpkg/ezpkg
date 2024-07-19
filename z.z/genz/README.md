@@ -3,7 +3,7 @@
 ## Install
 
 ```
-go get github.com/iolivernguyen/ggen
+go get ezpkg.io/genz
 ```
 
 ## Usage
@@ -36,4 +36,4 @@ type Plugin interface {
 
 ## LICENSE
 
-[MIT](https://github.com/iolivernguyen/ggen/blob/master/LICENSE)
+[MIT](https://ezpkg.io/genz/blob/master/LICENSE)

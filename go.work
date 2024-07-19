@@ -20,6 +20,7 @@ use (
 	// developing packages
 	z.z/codez
 	z.z/codez_test
+	z.z/genz
 	z.z/jsonz
 	z.z/jsonz_test
 	zscripts

@@ -1,4 +1,4 @@
-module github.com/iolivernguyen/ggen
+module ezpkg.io/genz
 
 go 1.21
 

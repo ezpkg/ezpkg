@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	log "github.com/iolivernguyen/ggen/ggen/logging"
+	log "ezpkg.io/genz/ggen/logging"
 )
 
 type Logger = log.Logger

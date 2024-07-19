@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/iolivernguyen/ggen/ggen"
+	"ezpkg.io/genz/ggen"
 
 	"github.com/stretchr/testify/require"
 )
 
-const testPath = "github.com/iolivernguyen/ggen/tests"
+const testPath = "ezpkg.io/genz/tests"
 const testPatterns = testPath + "/..."
 
 type mockPlugin struct {

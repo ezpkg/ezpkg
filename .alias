@@ -23,5 +23,6 @@ alias ez.zscripts='cd $EZPKG_DIR/zscripts'
 
 alias zz.codez='cd $EZPKG_DIR/z.z/codez'
 alias zz.codeztest='cd $EZPKG_DIR/z.z/codez_test'
+alias zz.genz='cd $EZPKG_DIR/z.z/genz'
 alias zz.jsonz='cd $EZPKG_DIR/z.z/jsonz'
 alias zz.jsonztest='cd $EZPKG_DIR/z.z/jsonz_test'

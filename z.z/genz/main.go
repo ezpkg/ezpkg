@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/iolivernguyen/ggen/ggen"
-	"github.com/iolivernguyen/ggen/plugins/sample"
+	"ezpkg.io/genz/ggen"
+	"ezpkg.io/genz/plugins/sample"
 )
 
 var flClean = flag.Bool("clean", false, "clean generated files without generating new files")
