@@ -12,7 +12,7 @@ This library helps write your own code generator script.
 
 ### Plugin Structure
 
-Plugin must implement the `ggen.Plugin` interface:
+Plugin must implement the `genz.Plugin` interface:
 
 ```go
 type Plugin interface {

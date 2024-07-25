@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"ezpkg.io/genz/ggen"
+	"ezpkg.io/genz"
 
 	"github.com/stretchr/testify/require"
 )

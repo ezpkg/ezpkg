@@ -1,7 +1,7 @@
 package sample
 
 import (
-	"ezpkg.io/genz/ggen"
+	"ezpkg.io/genz"
 )
 
 func New() ggen.Plugin {

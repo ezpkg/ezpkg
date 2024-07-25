@@ -3,7 +3,7 @@ package ggen
 import (
 	"os"
 
-	"ezpkg.io/genz/ggen/logging"
+	"ezpkg.io/genz/logging"
 )
 
 type GenerateFileNameInput struct {

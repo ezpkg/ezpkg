@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"ezpkg.io/genz/ggen"
+	"ezpkg.io/genz"
 	"ezpkg.io/genz/plugins/sample"
 )
 
