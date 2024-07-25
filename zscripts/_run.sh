@@ -7,23 +7,23 @@ cyan=$(tput setaf 6)
 purple=$(tput setaf 177)
 reset=$(tput sgr0)
 
-p_debug()    { printf "${purple}%s${reset}\n" "$@"; }
-p_info()     { printf "${cyan}%s${reset}\n" "$@"; }
-p_warn()     { printf "${yellow}%s${reset}\n" "$@"; }
-p_error()    { printf "${red}%s${reset}\n" "$@"; }
-p_success()  { printf "${green}%s${reset}\n" "$@"; }
+p-debug()    { printf "${purple}%s${reset}\n" "$@"; }
+p-info()     { printf "${cyan}%s${reset}\n" "$@"; }
+p-warn()     { printf "${yellow}%s${reset}\n" "$@"; }
+p-error()    { printf "${red}%s${reset}\n" "$@"; }
+p-success()  { printf "${green}%s${reset}\n" "$@"; }
 
-p_debugf()   { printf "${purple}$*${reset}" ; }
-p_infof()    { printf "${cyan}$*${reset}" ; }
-p_warnf()    { printf "${yellow}$*${reset}" ; }
-p_errorf()   { printf "${red}$*${reset}" ; }
-p_successf() { printf "${green}$*${reset}" ; }
+p-debugf()   { printf "${purple}$*${reset}" ; }
+p-infof()    { printf "${cyan}$*${reset}" ; }
+p-warnf()    { printf "${yellow}$*${reset}" ; }
+p-errorf()   { printf "${red}$*${reset}" ; }
+p-successf() { printf "${green}$*${reset}" ; }
 
-task_help(){
-    task_list="$(compgen -A "function" | grep "task_" | grep -v "task_help" | sed "s/task_//")"
+show-help(){
+    items="$(compgen -A "function" | grep "run-" | sed "s/run-//")"
 
     tasks=()
-    while IFS= read -r task; do tasks+=("$task"); done<<<"$task_list"
+    while IFS= read -r task; do tasks+=("$task"); done<<<"$items"
 
     cmd="$(basename "$0")"
     usage=""
@@ -35,22 +35,22 @@ task_help(){
         usage+="Usage: $cmd TASK [ARGUMENTS]\n\nTasks:"
     ;;
     esac
-    p_infof "$usage\n"
-    for task in "${tasks[@]}"; do p_infof "\t$task\n"; done
+    p-infof "$usage\n"
+    for task in "${tasks[@]}"; do p-infof "\t$task\n"; done
 }
 
 task=$1
 case "$task" in
     "" | "-h" | "--help" | "--helpz")
-        task_help $1
+        show-help $1
         if [[ "$1" && "$PWD" != "$REPO_ROOT" ]]; then
             bash -c "cd $REPO_ROOT && $REPO_ROOT/run --helpz"
         fi
         ;;
     *)
         shift
-        if compgen -A "function" | grep "task_$task" >/dev/null ; then
-            task_"${task}" "$@"
+        if compgen -A "function" | grep "run-$task" >/dev/null ; then
+            run-"${task}" "$@"
         elif [[ "$PWD" != "$REPO_ROOT" ]]; then
             bash -c "cd $REPO_ROOT && $REPO_ROOT/run $task $*"
         else

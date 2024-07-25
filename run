@@ -3,7 +3,7 @@ set -eo pipefail
 
 ZTARGET_DIR="${EZPKG_ROOT_DIR}/ztarget"
 
-task_godoc() {
+run-godoc() {
     if ! which godoc; then
         go install golang.org/x/tools/cmd/godoc
     fi
@@ -11,7 +11,7 @@ task_godoc() {
     godoc -http=:6060
 }
 
-task_all() {
+run-all() {
     find $EZPKG_DIR/*z -path $EZPKG_DIR/z.z -prune -o -name go.mod  -execdir bash -c "
 export PKGNAME=\$(basename \$PWD)
 echo 👉 \$PWD
@@ -19,25 +19,25 @@ $*
 " \;
 }
 
-task_list() {
+run-list() {
     go run "${EZPKG_DIR}/zscripts/ezrun" list "$@"
 }
 
-task_testall() {
-    task_all go test ./...
+run-testall() {
+    run-all go test ./...
 }
 
-task_docall() {
+run-docall() {
     go run "${EZPKG_DIR}/zscripts/ezrun" doc --all
 }
 
-task_pkgall() {
+run-pkgall() {
     go run "${EZPKG_DIR}/zscripts/ezrun" doc --all
     go run "${EZPKG_DIR}/zscripts/ezrun" pkg --all
-    task_ztarget_finalize
+    run-ztarget_finalize
 }
 
-task_ztarget() {
+run-ztarget() {
     find "$ZTARGET_DIR" -name go.local.mod -execdir bash -c "
 export PKGNAME=\$(basename \$PWD)
 echo 👉 \$PWD
@@ -45,7 +45,7 @@ $*
 " \;
 }
 
-task_ztarget_finalize() {
+run-ztarget-finalize() {
     find "$ZTARGET_DIR" -name go.local.mod -execdir bash -c "
 echo 👉 \$PWD
 go get  -modfile=go.local.mod ./...

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eo pipefail
 
-task_colors() {
+run-colors() {
     color(){
         for c; do
             printf '\e[48;5;%dm %03d ' $c $c
@@ -17,18 +17,18 @@ task_colors() {
     color {232..255}
 }
 
-task_true_colors() {
+run-true-colors() {
     # https://github.com/termstandard/colors
     awk 'BEGIN{
         s="⏺⏺⏺⏺⏺⏺⏺⏺⏺⏺⏺⏺⏺⏺⏺"; s=s s s s s s s s;
-        for (colnum = 0; colnum<77; colnum++) {
-            r = 255-(colnum*255/76);
-            g = (colnum*510/76);
-            b = (colnum*255/76);
+        for (col = 0; col<77; col++) {
+            r = 255-(col*255/76);
+            g = (col*510/76);
+            b = (col*255/76);
             if (g>255) g = 510-g;
             printf "\x1b[48;2;%d;%d;%dm", r,g,b;
             printf "\x1b[38;2;%d;%d;%dm", 255-r,255-g,255-b;
-            printf "%s\x1b[0m", substr(s,colnum+1,1);
+            printf "%s\x1b[0m", substr(s,col+1,1);
         }
         printf "\n";
     }'
