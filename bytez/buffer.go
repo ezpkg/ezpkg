@@ -51,12 +51,13 @@ func (b *Buffer) WriteStringZ(s string) int {
 func (b *Buffer) PrintBytes(p []byte) {
 	_, _ = b.Write(p)
 }
+func (b *Buffer) Print(args ...any) {
+	_, _ = fmt.Fprint(b.unwrap(), args...)
+}
+
 func (b *Buffer) Printf(format string, args ...any) {
 	_, _ = fmt.Fprintf(b.unwrap(), format, args...)
 }
 func (b *Buffer) Println(args ...any) {
 	_, _ = fmt.Fprintln(b.unwrap(), args...)
-}
-func (b *Buffer) Print(args ...any) {
-	_, _ = fmt.Fprint(b.unwrap(), args...)
 }

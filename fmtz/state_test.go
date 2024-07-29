@@ -14,6 +14,7 @@ import (
 var _ WriterZ = fmtz.State{}
 var _ WriterZ = fmtz.MustState{}
 var _ WriterZ = &bytez.Buffer{}
+var _ WriterZ = &bytez.Bytes{}
 var _ WriterZ = &stringz.Builder{}
 
 type WriterZ interface {
@@ -26,9 +27,9 @@ type WriterZ interface {
 	WriteRuneZ(r rune) int
 	WriteStringZ(s string) int
 	PrintBytes(p []byte)
+	Print(args ...any)
 	Printf(format string, args ...any)
 	Println(args ...any)
-	Print(args ...any)
 }
 
 type CodeStd Code
