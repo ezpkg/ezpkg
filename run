@@ -34,7 +34,7 @@ run-docall() {
 run-pkgall() {
     go run "${EZPKG_DIR}/zscripts/ezrun" doc --all
     go run "${EZPKG_DIR}/zscripts/ezrun" pkg --all
-    run-ztarget_finalize
+    run-ztarget-finalize
 }
 
 run-ztarget() {

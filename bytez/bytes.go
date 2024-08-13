@@ -30,7 +30,7 @@ func (b *Bytes) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 func (b *Bytes) WriteString(s string) (n int, err error) {
-	*b = append(*b, []byte(s)...)
+	*b = append(*b, s...)
 	return len(s), nil
 }
 func (b Bytes) WriteTo(w io.Writer) (n int64, err error) {
@@ -59,7 +59,7 @@ func (b *Bytes) WriteRuneZ(r rune) int {
 	return len(*b) - L
 }
 func (b *Bytes) WriteStringZ(s string) int {
-	*b = append(*b, []byte(s)...)
+	*b = append(*b, s...)
 	return len(s)
 }
 func (b *Bytes) PrintBytes(p []byte) {

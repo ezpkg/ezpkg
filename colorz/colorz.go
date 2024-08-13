@@ -28,7 +28,7 @@ type Color byte
 var cachedCodes = initCodes()
 
 func initCodes() (codes [_N]string) {
-	for c := Black; c < White; c++ {
+	for c := Black; c <= White; c++ {
 		codes[c-Black] = fmt.Sprintf("\x1b[%dm", byte(c))
 	}
 	return codes

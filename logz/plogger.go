@@ -1,9 +1,13 @@
 package logz
 
+import (
+	"context"
+)
+
 type pLogger struct {
 	l  LoggerP
 	kv []zKV
-	fn EnablerFunc
+	fn CtxEnablerFunc
 }
 
 func (l *pLogger) Debugw(msg string, keyValues ...any) {
@@ -30,8 +34,8 @@ func (l *pLogger) Warnf(format string, args ...any) {
 func (l *pLogger) Errorf(format string, args ...any) {
 	l.l.Printf("%v", formatf(strError, format, args, l.kv))
 }
-func (l *pLogger) Enabled(level Level) bool {
-	return l.fn(level)
+func (l *pLogger) Enabled(ctx context.Context, level Level) bool {
+	return l.fn(ctx, level)
 }
 func (l *pLogger) With(keyValues ...any) Logger {
 	cloned := *l

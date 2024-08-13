@@ -6,7 +6,12 @@ package logz // import ezpkg.io/logz
 
 import (
 	"context"
+	"io"
+	"log/slog"
 )
+
+type Handler = slog.Handler
+type Attr = slog.Attr
 
 type Logger interface {
 	Debugw(msg string, keyValues ...any)
@@ -19,7 +24,7 @@ type Logger interface {
 	Warnf(format string, args ...any)
 	Errorf(format string, args ...any)
 
-	Enabled(level Level) bool
+	Enabled(ctx context.Context, level Level) bool
 	With(keyValues ...any) Logger
 }
 
@@ -62,6 +67,20 @@ type logger0ctx interface {
 	InfoContext(ctx context.Context, msg string, args ...any)
 	WarnContext(ctx context.Context, msg string, args ...any)
 	ErrorContext(ctx context.Context, msg string, args ...any)
+}
+
+func New(h Handler) Logger {
+	opt := Option{
+		enabler: func(ctx context.Context, level Level) bool {
+			return h.Enabled(ctx, level)
+		},
+	}
+	sl := slog.New(h)
+	return opt.FromLoggerI(sl)
+}
+
+func DefaultLogger(w io.Writer) Logger {
+	return New(NewTextHandler(w, nil))
 }
 
 func FromLoggerP(logger LoggerP) Logger {

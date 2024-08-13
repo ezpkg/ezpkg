@@ -1,10 +1,14 @@
 package logz
 
+import (
+	"context"
+)
+
 type xLogger struct {
 	w  Loggerw
 	f  Loggerf
 	kv []zKV
-	fn EnablerFunc
+	fn CtxEnablerFunc
 }
 
 func (l *xLogger) Debugw(msg string, keyVals ...any) {
@@ -63,8 +67,8 @@ func (l *xLogger) Errorf(format string, args ...any) {
 		l.w.Errorw(formatf("", format, args, l.kv)())
 	}
 }
-func (l *xLogger) Enabled(level Level) bool {
-	return l.fn(level)
+func (l *xLogger) Enabled(ctx context.Context, level Level) bool {
+	return l.fn(ctx, level)
 }
 func (l *xLogger) With(keyVals ...any) Logger {
 	cloned := *l
