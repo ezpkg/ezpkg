@@ -74,7 +74,7 @@ type FilterEngine interface {
 var _ FilterEngine = &filterEngine{}
 
 type filterEngine struct {
-	embededLogger
+	zLogger
 
 	ng       *engine
 	plugin   *pluginStruct
@@ -84,7 +84,7 @@ type filterEngine struct {
 }
 
 func (ng *filterEngine) Logger() Logger {
-	return ng.embededLogger
+	return ng.zLogger
 }
 
 // IncludePackage indicates that the given package will be included for generating. It will be returned later in

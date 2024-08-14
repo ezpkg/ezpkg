@@ -117,6 +117,8 @@ type declaration struct {
 }
 
 type extendedInfo struct {
+	logger Logger
+
 	// FileSet
 	Fset *token.FileSet
 
@@ -127,8 +129,9 @@ type extendedInfo struct {
 	Positions map[token.Pos]*ast.Ident
 }
 
-func newExtendedInfo(fset *token.FileSet) *extendedInfo {
+func newExtendedInfo(logger Logger, fset *token.FileSet) *extendedInfo {
 	return &extendedInfo{
+		logger:       logger,
 		Fset:         fset,
 		Declarations: make(map[*ast.Ident]*declaration),
 		Positions:    make(map[token.Pos]*ast.Ident),
@@ -157,7 +160,7 @@ func (x *extendedInfo) addFile(pkg *packages.Package, file *ast.File) error {
 		}
 		comment, err := processDoc(doc, cmt)
 		if err != nil {
-			logger.Debug("error while processing doc", "err", err)
+			x.logger.Debugw("error while processing doc", "error", err)
 		}
 		return &declaration{
 			Pkg:     pkg,
@@ -174,7 +177,7 @@ func (x *extendedInfo) addFile(pkg *packages.Package, file *ast.File) error {
 		case a == b:
 			return a
 		default:
-			logger.Warn("conflicting comments", nil, "a", a.Text(), "b", b.Text())
+			x.logger.Warnw("conflicting comments", "a", a.Text(), "b", b.Text())
 			a.List = append(a.List, b.List...)
 			return a
 		}
@@ -187,7 +190,7 @@ func (x *extendedInfo) addFile(pkg *packages.Package, file *ast.File) error {
 		}
 		prev := x.Declarations[ident]
 		if prev.Pkg != decl.Pkg {
-			logger.Warn("conflicting declarations", nil, ident.Name, "prev", prev.Pkg.PkgPath, "new", decl.Pkg.PkgPath)
+			x.logger.Warnw("conflicting declarations", ident.Name, "prev", prev.Pkg.PkgPath, "new", decl.Pkg.PkgPath)
 		}
 		prev.Comment.Doc = mergeCmt(prev.Comment.Doc, decl.Comment.Doc)
 		prev.Comment.Comment = mergeCmt(prev.Comment.Comment, decl.Comment.Comment)

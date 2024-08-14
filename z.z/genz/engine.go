@@ -113,7 +113,7 @@ type engine struct {
 }
 
 type wrapEngine struct {
-	embededLogger
+	zLogger
 	*engine
 
 	plugin *pluginStruct
@@ -342,7 +342,7 @@ func (ng *wrapEngine) GetDirectivesByPackage(pkg *packages.Package) Directives {
 			body, err := os.ReadFile(file)
 			if err != nil {
 				if os.IsNotExist(err) {
-					ng.Error("ignore not found file", nil, "file", file)
+					ng.Errorw("ignore not found file", "file", file)
 					continue
 				}
 				panic(err)
@@ -351,7 +351,7 @@ func (ng *wrapEngine) GetDirectivesByPackage(pkg *packages.Package) Directives {
 			// only parse package level directives
 			errs := parseDirectivesFromBody(body, &directives, nil)
 			for _, err = range errs {
-				ng.Error("invalid directive from file", err, "file", file)
+				ng.Errorw("invalid directive from file", "error", err, "file", file)
 			}
 		}
 		ng.engine.mapPkgDirectives[pkg.PkgPath] = directives

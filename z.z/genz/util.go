@@ -14,6 +14,7 @@ import (
 
 	"ezpkg.io/errorz"
 	_ "ezpkg.io/genz/builtin"
+	"ezpkg.io/logz"
 )
 
 const defaultGeneratedFileNameTpl = "zz_generated.%v.go"
@@ -24,6 +25,9 @@ const startDirectiveStr2 = "//go:" //   //go:build ggen
 
 var reAlphabet = regexp.MustCompile(`[a-z]`)
 var reCommand = regexp.MustCompile(`^[a-z]([a-z0-9.:-]*[a-z0-9])?$`)
+
+type Logger = logz.Logger
+type zLogger struct{ Logger }
 
 func FilterByCommand(command string) CommandFilter {
 	return CommandFilter(command)

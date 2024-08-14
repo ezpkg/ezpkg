@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -8,16 +9,18 @@ import (
 
 	"ezpkg.io/genz"
 	"ezpkg.io/genz/plugins/sample"
+	"ezpkg.io/logz"
+	"ezpkg.io/typez"
 )
 
 var flClean = flag.Bool("clean", false, "clean generated files without generating new files")
 var flPlugin = flag.String("plugin", "", "comma separated list of plugins for generating (default to all plugins)")
 var flNamespace = flag.String("namespace", "", "github.com/myproject")
-var flVerbose = flag.Int("verbose", 0, "enable verbosity (0: info, 4: debug, 8: more debug)")
+var flVerbose = flag.Int("v", -4, "enable verbosity (-4: warn, 0: info, 4: debug, 8: more debug)")
 
 func usage() {
 	const text = `
-Usage: ggen [OPTION] PATTERN ...
+Usage: genz [OPTION] PATTERN ...
 
 Options:
 `
@@ -39,8 +42,14 @@ func Start(plugins ...ggen.Plugin) {
 		os.Exit(2)
 	}
 
+	opt := &logz.TextHandlerOptions{
+		Level:       logz.Level(-typez.Deptr(flVerbose)),
+		FormatLevel: logz.FormatLevelColor(nil),
+	}
+	logger := logz.New(logz.NewTextHandler(os.Stderr, opt))
+
 	cfg := ggen.Config{
-		LogLevel:      -ggen.LogLevel(*flVerbose),
+		Logger:        logger,
 		CleanOnly:     *flClean,
 		Namespace:     *flNamespace,
 		GoimportsArgs: []string{}, // example: -local github.com/foo
@@ -53,7 +62,8 @@ func Start(plugins ...ggen.Plugin) {
 		}
 	}
 
-	must(ggen.Start(cfg, patterns...))
+	ctx := context.Background()
+	must(ggen.Start(ctx, cfg, patterns...))
 }
 
 func must(err error) {

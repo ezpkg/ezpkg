@@ -1,9 +1,10 @@
 package ggen
 
 import (
+	"context"
 	"os"
 
-	"ezpkg.io/genz/logging"
+	"ezpkg.io/logz"
 )
 
 type GenerateFileNameInput struct {
@@ -27,8 +28,7 @@ type Config struct {
 
 	BuildTags []string
 
-	LogLevel   LogLevel
-	LogHandler LogHandler
+	Logger Logger
 }
 
 func (c *Config) RegisterPlugin(plugins ...Plugin) {
@@ -44,20 +44,12 @@ func (c *Config) EnablePlugin(names ...string) {
 	}
 }
 
-func (c *Config) defaultLogHandler() LogHandler {
-	handler := defaultLogHandler{
-		w:     os.Stderr,
-		level: c.LogLevel,
+func Start(ctx context.Context, cfg Config, patterns ...string) error {
+	logger := cfg.Logger
+	if logger == nil {
+		logger = logz.DefaultLogger(os.Stderr)
 	}
-	return handler
-}
 
-func Start(cfg Config, patterns ...string) error {
-	if cfg.LogHandler == nil {
-		cfg.LogHandler = cfg.defaultLogHandler()
-	}
-	logger = logging.NewLogger(cfg.LogHandler)
-
-	ng := newEngine(logger)
-	return ng.start(cfg, patterns...)
+	ng := newEngine(cfg.Logger)
+	return ng.start(ctx, cfg, patterns...)
 }

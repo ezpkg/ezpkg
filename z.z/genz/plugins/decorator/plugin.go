@@ -14,7 +14,7 @@ func (p plugin) Name() string { return "decorator" }
 
 func (p plugin) Filter(ft ggen.FilterEngine) error {
 	for _, pkg := range ft.ParsingPackages() {
-		ft.Debug("directives", "pkg", pkg.PkgPath, "directives", pkg.Directives)
+		ft.Debugw("directives", "pkg", pkg.PkgPath, "directives", pkg.Directives)
 	}
 	return nil
 }
@@ -22,10 +22,10 @@ func (p plugin) Filter(ft ggen.FilterEngine) error {
 func (p plugin) Generate(ng ggen.Engine) error {
 	pkgs := ng.GeneratingPackages()
 	for _, gpkg := range pkgs {
-		ng.Debug("generate package", "pkg", gpkg.Package.PkgPath)
+		ng.Debugw("generate package", "pkg", gpkg.Package.PkgPath)
 		objects := gpkg.GetObjects()
 		for _, obj := range objects {
-			ng.Debug("  object", "name", obj.Name(), "type", obj.Type())
+			ng.Debugw("  object", "name", obj.Name(), "type", obj.Type())
 		}
 	}
 	return nil

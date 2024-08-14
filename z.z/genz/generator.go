@@ -2,6 +2,7 @@ package ggen
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -15,9 +16,10 @@ import (
 	"golang.org/x/tools/go/packages"
 
 	"ezpkg.io/errorz"
+	"ezpkg.io/logz"
 )
 
-func (ng *engine) start(cfg Config, patterns ...string) (_err error) {
+func (ng *engine) start(ctx context.Context, cfg Config, patterns ...string) (_err error) {
 	{
 		for _, plugin := range cfg.Plugins {
 			if err := ng.registerPlugin(plugin); err != nil {
@@ -63,7 +65,7 @@ func (ng *engine) start(cfg Config, patterns ...string) (_err error) {
 		for _, pkg := range pkgs {
 			pkgDir := getPackageDir(pkg)
 			if pkgDir == "" {
-				ng.logger.Info("no Go files found in package", "pkg", pkg)
+				ng.logger.Infow("no Go files found in package", "pkg", pkg)
 				continue
 			}
 			availablePkgs = append(availablePkgs, pkg)
@@ -81,9 +83,9 @@ func (ng *engine) start(cfg Config, patterns ...string) (_err error) {
 			return err
 		}
 
-		if ng.logger.Enabled(DebugLevel) {
+		if ng.logger.Enabled(ctx, logz.LevelDebug) {
 			for _, pkg := range ng.collectedPackages {
-				ng.logger.Debug("collected package", "pkg", pkg.PkgPath)
+				ng.logger.Debugw("collected package", "pkg", pkg.PkgPath)
 			}
 		}
 	}
@@ -99,9 +101,9 @@ func (ng *engine) start(cfg Config, patterns ...string) (_err error) {
 		})
 		ng.sortedIncludedPackages = sortedIncludedPackages
 
-		if ng.logger.Enabled(DebugLevel) {
+		if ng.logger.Enabled(ctx, logz.LevelDebug) {
 			for _, pkg := range sortedIncludedPackages {
-				ng.logger.Debug("included package", "pkg", pkg.PkgPath)
+				ng.logger.Debugw("included package", "pkg", pkg.PkgPath)
 			}
 		}
 	}
@@ -111,10 +113,10 @@ func (ng *engine) start(cfg Config, patterns ...string) (_err error) {
 		for _, pkg := range ng.sortedIncludedPackages {
 			pkgPatterns = append(pkgPatterns, pkg.PkgPath)
 		}
-		if ng.logger.Enabled(DebugLevel) {
-			ng.logger.Debug("load all syntax from:")
+		if ng.logger.Enabled(ctx, logz.LevelDebug) {
+			ng.logger.Debugw("load all syntax from:")
 			for _, p := range pkgPatterns {
-				ng.logger.Debug("  " + p)
+				ng.logger.Debugw("  " + p)
 			}
 		}
 		if len(pkgPatterns) == 0 {
@@ -134,7 +136,7 @@ func (ng *engine) start(cfg Config, patterns ...string) (_err error) {
 		}
 
 		// populate xinfo
-		ng.xinfo = newExtendedInfo(ng.pkgcfg.Fset)
+		ng.xinfo = newExtendedInfo(ng.logger, ng.pkgcfg.Fset)
 		packages.Visit(pkgs,
 			func(pkg *packages.Package) bool {
 				if cfg.Namespace != "" && !strings.HasPrefix(pkg.PkgPath, cfg.Namespace) {
@@ -166,9 +168,9 @@ func (ng *engine) start(cfg Config, patterns ...string) (_err error) {
 		// populate generatedFiles
 		for _, pl := range ng.enabledPlugins {
 			wrapNg := &wrapEngine{
-				embededLogger: embededLogger{ng.logger.With("plugin", pl.name)},
-				engine:        ng,
-				plugin:        pl,
+				zLogger: zLogger{Logger: ng.logger.With("plugin", pl.name)},
+				engine:  ng,
+				plugin:  pl,
 			}
 			if err := pl.plugin.Generate(wrapNg); err != nil {
 				return errorz.Wrapf(err, "%v: %v", pl.name, err)
@@ -213,12 +215,12 @@ func (ng *engine) collectPackages(pkgs []*packages.Package) error {
 	pkgMap := map[string][]bool{}
 	for _, pl := range ng.enabledPlugins {
 		filterNg := &filterEngine{
-			embededLogger: embededLogger{ng.logger.With("plugin", pl.name)},
-			ng:            ng,
-			plugin:        pl,
-			pkgs:          collectedPackages,
-			pkgMap:        pkgMap,
-			patterns:      &ng.includedPatterns,
+			zLogger:  zLogger{ng.logger.With("plugin", pl.name)},
+			ng:       ng,
+			plugin:   pl,
+			pkgs:     collectedPackages,
+			pkgMap:   pkgMap,
+			patterns: &ng.includedPatterns,
 		}
 		if err = pl.plugin.Filter(filterNg); err != nil {
 			return errorz.Wrapf(err, "plugin %v: %v", pl.name, err)
@@ -339,8 +341,8 @@ func parseDirectivesFromPackage(logger Logger, fileCh chan<- fileContent, pkg *p
 		errs := parseDirectivesFromBody(body, &directives, &inlineDirectives)
 		if len(errs) != 0 {
 			// ignore unknown directives
-			for _, e := range errs {
-				logger.Warn("ignored directive", "err", e)
+			for _, err0 := range errs {
+				logger.Warnf("ignored directive", "error", err0)
 			}
 		}
 	}
@@ -463,7 +465,7 @@ func (ng *engine) execGoimport(files []string) error {
 	args = append(args, "-w")
 	args = append(args, files...)
 	cmd := exec.Command("goimports", args...)
-	ng.logger.Debug("goimports", "args", args)
+	ng.logger.Debugw("goimports", "args", args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return errorz.Wrapf(err, "goimports: %s\n\n%s\n", err, out)
