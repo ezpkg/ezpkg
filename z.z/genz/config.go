@@ -1,4 +1,4 @@
-package ggen
+package genz
 
 import (
 	"context"
@@ -50,6 +50,6 @@ func Start(ctx context.Context, cfg Config, patterns ...string) error {
 		logger = logz.DefaultLogger(os.Stderr)
 	}
 
-	ng := newEngine(cfg.Logger)
+	ng := newEngine(logger)
 	return ng.start(ctx, cfg, patterns...)
 }

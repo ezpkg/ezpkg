@@ -1,4 +1,4 @@
-# ggen - Code generation for Go
+# genz - Code generation for Go
 
 ## Install
 

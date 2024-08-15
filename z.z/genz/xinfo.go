@@ -1,4 +1,4 @@
-package ggen
+package genz
 
 import (
 	"go/ast"
@@ -57,13 +57,13 @@ func (d Directive) IsPackageLevel() bool {
 
 // ParseArgs parse directive argument using the standard "flag" package format. Example:
 //
-// // +ggen:sample -name=Alice DoSomething
+// // +genz:sample -name=Alice DoSomething
 func (d Directive) GetArgs() ([]string, error) {
 	if d.Arg == "" {
 		return nil, nil
 	}
 	// TODO(iolivernguyen): handle escape
-	// // +ggen:sample -name="Alice M"
+	// // +genz:sample -name="Alice M"
 	return strings.Split(d.Arg, " "), nil
 }
 
@@ -88,11 +88,11 @@ func (ds Directives) GetArg(cmd string) string {
 }
 
 // FilterBy returns list of directives that have the given command.
-// Examples of accepted directives with input "+ggen:sample" or "ggen:sample"
+// Examples of accepted directives with input "+genz:sample" or "genz:sample"
 //
-// // +ggen:sample
-// // +ggen:sample:foo
-// // +ggen:sample:foo argument
+// // +genz:sample
+// // +genz:sample:foo
+// // +genz:sample:foo argument
 func (ds Directives) FilterBy(prefix string) Directives {
 	if strings.HasPrefix(prefix, "+") {
 		prefix = prefix[1:]

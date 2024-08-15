@@ -1,6 +1,7 @@
 package tests_test
 
 import (
+	"context"
 	"go/types"
 	"io"
 	"os/exec"
@@ -16,17 +17,17 @@ const testPath = "ezpkg.io/genz/tests"
 const testPatterns = testPath + "/..."
 
 type mockPlugin struct {
-	ng ggen.Engine
+	ng genz.Engine
 
-	filter   func(ggen.FilterEngine) error
-	generate func(ggen.Engine) error
+	filter   func(genz.FilterEngine) error
+	generate func(genz.Engine) error
 	imAlias  func(string, string) string
 }
 
 func (m *mockPlugin) Name() string    { return "mock" }
 func (m *mockPlugin) Command() string { return "gen:mock" }
 
-func (m *mockPlugin) Filter(ng ggen.FilterEngine) error {
+func (m *mockPlugin) Filter(ng genz.FilterEngine) error {
 	if m.filter != nil {
 		return m.filter(ng)
 	}
@@ -36,7 +37,7 @@ func (m *mockPlugin) Filter(ng ggen.FilterEngine) error {
 	return nil
 }
 
-func (m *mockPlugin) Generate(ng ggen.Engine) error {
+func (m *mockPlugin) Generate(ng genz.Engine) error {
 	m.ng = ng
 	if m.generate != nil {
 		return m.generate(ng)
@@ -64,9 +65,9 @@ func reset() {
 
 func TestObjects(t *testing.T) {
 	reset()
-	cfg := ggen.Config{}
+	cfg := genz.Config{}
 	cfg.RegisterPlugin(mock)
-	err := ggen.Start(cfg, testPatterns)
+	err := genz.Start(context.Background(), cfg, testPatterns)
 	require.NoError(t, err)
 
 	ng := mock.ng
@@ -81,19 +82,19 @@ func TestObjects(t *testing.T) {
 	{
 		directives := ng.GetDirectives(objects[0])
 		require.Len(t, directives, 1)
-		require.Equal(t, "ggen:a", directives[0].Cmd)
+		require.Equal(t, "genz:a", directives[0].Cmd)
 	}
 	{
 		directives := ng.GetDirectives(objects[1])
 		require.Len(t, directives, 1)
-		require.Equal(t, "ggen:b", directives[0].Cmd)
+		require.Equal(t, "genz:b", directives[0].Cmd)
 	}
 	{
 		objA := objects[0]
 		cmt := ng.GetComment(objA)
 		require.Equal(t, "this is comment of A\n", cmt.Text())
 		require.Len(t, cmt.Directives, 1)
-		require.Equal(t, "ggen:a", cmt.Directives[0].Cmd)
+		require.Equal(t, "genz:a", cmt.Directives[0].Cmd)
 
 		st, ok := objA.Type().Underlying().(*types.Struct)
 		require.True(t, ok, "should be *types.Struct")
@@ -110,8 +111,8 @@ func TestObjects(t *testing.T) {
 
 func TestGenerate(t *testing.T) {
 	reset()
-	var pkgs []*ggen.GeneratingPackage
-	mock.generate = func(ng ggen.Engine) error {
+	var pkgs []*genz.GeneratingPackage
+	mock.generate = func(ng genz.Engine) error {
 		pkgs = ng.GeneratingPackages()
 		for _, pkg := range pkgs {
 			// skip package "two"
@@ -126,9 +127,9 @@ func TestGenerate(t *testing.T) {
 		return nil
 	}
 
-	cfg := ggen.Config{}
+	cfg := genz.Config{}
 	cfg.RegisterPlugin(mock)
-	err := ggen.Start(cfg, testPatterns)
+	err := genz.Start(context.Background(), cfg, testPatterns)
 	require.NoError(t, err)
 
 	output, err := exec.Command("sh", "-c", `find . | grep zz | sort`).
@@ -145,9 +146,9 @@ func TestGenerate(t *testing.T) {
 
 func TestClean(t *testing.T) {
 	reset()
-	cfg := ggen.Config{CleanOnly: true}
+	cfg := genz.Config{CleanOnly: true}
 	cfg.RegisterPlugin(mock)
-	err := ggen.Start(cfg, testPatterns)
+	err := genz.Start(context.Background(), cfg, testPatterns)
 	require.NoError(t, err)
 
 	output, err := exec.Command("sh", "-c", `find . | grep zz | sort`).
@@ -160,15 +161,15 @@ func TestInclude(t *testing.T) {
 	reset()
 
 	parentPath := filepath.Dir(testPath)
-	mock.filter = func(ng ggen.FilterEngine) error {
+	mock.filter = func(ng genz.FilterEngine) error {
 		ng.IncludePackage(testPath + "/two")
 		ng.IncludePackage(parentPath) // parentPath is outside of testPatterns
 		return nil
 	}
 
-	cfg := ggen.Config{}
+	cfg := genz.Config{}
 	cfg.RegisterPlugin(mock)
-	err := ggen.Start(cfg, testPatterns)
+	err := genz.Start(context.Background(), cfg, testPatterns)
 	require.NoError(t, err)
 
 	expecteds := []string{

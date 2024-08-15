@@ -4,17 +4,17 @@ import (
 	"ezpkg.io/genz"
 )
 
-func New() ggen.Plugin {
+func New() genz.Plugin {
 	return plugin{}
 }
 
-var _ ggen.Filterer = plugin{}
+var _ genz.Filterer = plugin{}
 
 type plugin struct{}
 
 func (p plugin) Name() string { return "sample" }
 
-func (p plugin) Filter(ft ggen.FilterEngine) error {
+func (p plugin) Filter(ft genz.FilterEngine) error {
 	for _, pkg := range ft.ParsingPackages() {
 		ft.IncludePackage(pkg.PkgPath)
 		ft.Debugw("include package", "pkg", pkg.PkgPath)
@@ -22,7 +22,7 @@ func (p plugin) Filter(ft ggen.FilterEngine) error {
 	return nil
 }
 
-func (p plugin) Generate(ng ggen.Engine) error {
+func (p plugin) Generate(ng genz.Engine) error {
 	pkgs := ng.GeneratingPackages()
 	for _, gpkg := range pkgs {
 		ng.Infow("generate package", "pkg", gpkg.Package.PkgPath)

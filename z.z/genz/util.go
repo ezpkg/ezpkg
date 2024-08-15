@@ -1,4 +1,4 @@
-package ggen
+package genz
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ const defaultGeneratedFileNameTpl = "zz_generated.%v.go"
 const defaultBufSize = 1024 * 4
 const startDirectiveStr0 = "//+"   //   //+directive
 const startDirectiveStr1 = "// +"  //   //+directive
-const startDirectiveStr2 = "//go:" //   //go:build ggen
+const startDirectiveStr2 = "//go:" //   //go:build genz
 
 var reAlphabet = regexp.MustCompile(`[a-z]`)
 var reCommand = regexp.MustCompile(`^[a-z]([a-z0-9.:-]*[a-z0-9])?$`)
@@ -104,8 +104,8 @@ func defaultFileNameGenerator(tpl string) func(GenerateFileNameInput) string {
 	}
 }
 
-var ggenPath = reflect.TypeOf((*Engine)(nil)).Elem().PkgPath()
-var builtinPath = filepath.Dir(ggenPath) + "/builtin"
+var genzPath = reflect.TypeOf((*Engine)(nil)).Elem().PkgPath()
+var builtinPath = genzPath + "/builtin"
 
 func parseBuiltinTypes(pkg *packages.Package) map[string]types.Type {
 	if pkg.PkgPath != builtinPath {

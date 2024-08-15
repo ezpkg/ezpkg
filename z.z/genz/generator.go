@@ -1,4 +1,4 @@
-package ggen
+package genz
 
 import (
 	"bytes"
@@ -214,8 +214,9 @@ func (ng *engine) collectPackages(pkgs []*packages.Package) error {
 	})
 	pkgMap := map[string][]bool{}
 	for _, pl := range ng.enabledPlugins {
+		logger := ng.logger.With("plugin", pl.name)
 		filterNg := &filterEngine{
-			zLogger:  zLogger{ng.logger.With("plugin", pl.name)},
+			zLogger:  zLogger{Logger: logger},
 			ng:       ng,
 			plugin:   pl,
 			pkgs:     collectedPackages,
@@ -242,7 +243,7 @@ func (ng *engine) collectPackages(pkgs []*packages.Package) error {
 }
 
 func getBuildFlags(buildTags []string) []string {
-	var buildFlags = "-tags ggen"
+	var buildFlags = "-tags genz"
 	if len(buildTags) > 0 {
 		buildFlags += "," + strings.Join(buildTags, ",")
 	}

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"ezpkg.io/errorz"
 	"ezpkg.io/genz"
 	"ezpkg.io/genz/plugins/sample"
 	"ezpkg.io/logz"
@@ -34,7 +35,7 @@ func main() {
 	)
 }
 
-func Start(plugins ...ggen.Plugin) {
+func Start(plugins ...genz.Plugin) {
 	flag.Parse()
 	patterns := flag.Args()
 	if len(patterns) == 0 {
@@ -48,7 +49,7 @@ func Start(plugins ...ggen.Plugin) {
 	}
 	logger := logz.New(logz.NewTextHandler(os.Stderr, opt))
 
-	cfg := ggen.Config{
+	cfg := genz.Config{
 		Logger:        logger,
 		CleanOnly:     *flClean,
 		Namespace:     *flNamespace,
@@ -63,12 +64,5 @@ func Start(plugins ...ggen.Plugin) {
 	}
 
 	ctx := context.Background()
-	must(ggen.Start(ctx, cfg, patterns...))
-}
-
-func must(err error) {
-	if err != nil {
-		fmt.Printf("%+v\n", err)
-		os.Exit(1)
-	}
+	errorz.MustZ(genz.Start(ctx, cfg, patterns...))
 }

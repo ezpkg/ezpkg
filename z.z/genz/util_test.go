@@ -1,4 +1,4 @@
-package ggen
+package genz
 
 import (
 	"go/types"
@@ -31,13 +31,13 @@ func TestParseGoBuild(t *testing.T) {
 			Arg: "",
 		}, directive)
 	})
-	t.Run("go:build ggen", func(t *testing.T) {
-		directive, err := ParseDirective("go:build ggen")
+	t.Run("go:build genz", func(t *testing.T) {
+		directive, err := ParseDirective("go:build genz")
 		require.NoError(t, err)
 		require.Equal(t, Directive{
-			Raw: "go:build ggen",
+			Raw: "go:build genz",
 			Cmd: "go:build",
-			Arg: "ggen",
+			Arg: "genz",
 		}, directive)
 	})
 }

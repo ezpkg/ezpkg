@@ -1,4 +1,4 @@
-package ggen
+package genz
 
 import (
 	"golang.org/x/tools/go/packages"
