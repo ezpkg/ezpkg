@@ -1,6 +1,7 @@
 package codez
 
 import (
+	"context"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -121,7 +122,7 @@ func parseExpr(log logz.Logger, code string) (ast.Expr, error) {
 	if err != nil {
 		return nil, err
 	}
-	if log.Enabled(logz.LevelDebug) {
+	if log.Enabled(context.Background(), logz.LevelDebug) {
 		printAst("parseExpr", nil, expr)
 	}
 	return expr, nil
@@ -134,7 +135,7 @@ func parseStmts(log logz.Logger, code string) ([]ast.Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	if log.Enabled(logz.LevelDebug) {
+	if log.Enabled(context.Background(), logz.LevelDebug) {
 		printAst("parseStmts", fset, file)
 	}
 	bodyStmt := file.Decls[0].(*ast.FuncDecl).Body
@@ -159,7 +160,7 @@ func parseDecls(log logz.Logger, code string) ([]ast.Decl, error) {
 	if err != nil {
 		return nil, err
 	}
-	if log.Enabled(logz.LevelDebug) {
+	if log.Enabled(context.Background(), logz.LevelDebug) {
 		printAst("parseDecl", fset, file)
 	}
 	return file.Decls, nil

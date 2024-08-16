@@ -77,6 +77,6 @@ func initLog() logz.Logger {
 	})
 	log := slog.New(h)
 	return logz.WithEnabler(func(level logz.Level) bool {
-		return level.ToInt() >= int(logLevel)
+		return level >= logLevel
 	}).FromLoggerI(log)
 }

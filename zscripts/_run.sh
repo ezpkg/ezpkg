@@ -29,7 +29,7 @@ show-help(){
     usage=""
     case $1 in
     "--helpz")
-        usage+="\nMore tasks:"
+        usage+="\nMore Tasks:"
     ;;
     *)
         usage+="Usage: $cmd TASK [ARGUMENTS]\n\nTasks:"
@@ -43,8 +43,8 @@ task=$1
 case "$task" in
     "" | "-h" | "--help" | "--helpz")
         show-help $1
-        if [[ "$1" && "$PWD" != "$REPO_ROOT" ]]; then
-            bash -c "cd $REPO_ROOT && $REPO_ROOT/run --helpz"
+        if [[ "$PWD" != "$REPO_ROOT" ]]; then
+            ( cd $REPO_ROOT && $REPO_ROOT/run --helpz )
         fi
         ;;
     *)
@@ -52,7 +52,7 @@ case "$task" in
         if compgen -A "function" | grep "run-$task" >/dev/null ; then
             run-"${task}" "$@"
         elif [[ "$PWD" != "$REPO_ROOT" ]]; then
-            bash -c "cd $REPO_ROOT && $REPO_ROOT/run $task $*"
+            ( cd $REPO_ROOT && $REPO_ROOT/run $task "$@" )
         else
             echo "Task $task not found."
             exit 2

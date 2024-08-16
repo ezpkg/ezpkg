@@ -27,6 +27,7 @@ func newPackage(pkg *packages.Package) *Package {
 	}
 }
 
+// Packages returns the loaded packages from input patterns.
 func (p *Packages) Packages() []*Package {
 	return p.pkgs
 }

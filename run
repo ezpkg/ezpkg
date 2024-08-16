@@ -54,4 +54,8 @@ cat go.local.mod | grep -v \"replace ezpkg\.io\" > go.mod
 " bash {} +
 }
 
+run-gen() {
+    go run "${EZPKG_DIR}/zscripts/zgen" "$@"
+}
+
 source "${EZPKG_DIR}/zscripts/_run.sh"
