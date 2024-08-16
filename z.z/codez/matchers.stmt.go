@@ -10,7 +10,7 @@ import (
 )
 
 // AssignStmt
-type AssignStmtMatcher struct {
+type zAssignStmtMatcher struct {
 	_ *ast.AssignStmt
 
 	Lhs    ExprListMatcher
@@ -20,7 +20,7 @@ type AssignStmtMatcher struct {
 }
 
 // BadStmt
-type BadStmtMatcher struct {
+type zBadStmtMatcher struct {
 	_ *ast.BadStmt
 
 	From token.Pos
@@ -28,7 +28,7 @@ type BadStmtMatcher struct {
 }
 
 // BlockStmt
-type BlockStmtMatcher struct {
+type zBlockStmtMatcher struct {
 	_ *ast.BlockStmt
 
 	Lbrace token.Pos
@@ -37,7 +37,7 @@ type BlockStmtMatcher struct {
 }
 
 // BranchStmt
-type BranchStmtMatcher struct {
+type zBranchStmtMatcher struct {
 	_ *ast.BranchStmt
 
 	TokPos token.Pos
@@ -46,7 +46,7 @@ type BranchStmtMatcher struct {
 }
 
 // CaseClause
-type CaseClauseMatcher struct {
+type zCaseClauseMatcher struct {
 	_ *ast.CaseClause
 
 	Case  token.Pos
@@ -56,7 +56,7 @@ type CaseClauseMatcher struct {
 }
 
 // CommClause
-type CommClauseMatcher struct {
+type zCommClauseMatcher struct {
 	_ *ast.CommClause
 
 	Case  token.Pos
@@ -66,14 +66,14 @@ type CommClauseMatcher struct {
 }
 
 // DeclStmt
-type DeclStmtMatcher struct {
+type zDeclStmtMatcher struct {
 	_ *ast.DeclStmt
 
 	Decl DeclMatcher
 }
 
 // DeferStmt
-type DeferStmtMatcher struct {
+type zDeferStmtMatcher struct {
 	_ *ast.DeferStmt
 
 	Defer token.Pos
@@ -81,7 +81,7 @@ type DeferStmtMatcher struct {
 }
 
 // EmptyStmt
-type EmptyStmtMatcher struct {
+type zEmptyStmtMatcher struct {
 	_ *ast.EmptyStmt
 
 	Semicolon token.Pos
@@ -89,14 +89,14 @@ type EmptyStmtMatcher struct {
 }
 
 // ExprStmt
-type ExprStmtMatcher struct {
+type zExprStmtMatcher struct {
 	_ *ast.ExprStmt
 
 	X ExprMatcher
 }
 
 // ForStmt
-type ForStmtMatcher struct {
+type zForStmtMatcher struct {
 	_ *ast.ForStmt
 
 	For  token.Pos
@@ -107,7 +107,7 @@ type ForStmtMatcher struct {
 }
 
 // GoStmt
-type GoStmtMatcher struct {
+type zGoStmtMatcher struct {
 	_ *ast.GoStmt
 
 	Go   token.Pos
@@ -115,7 +115,7 @@ type GoStmtMatcher struct {
 }
 
 // IfStmt
-type IfStmtMatcher struct {
+type zIfStmtMatcher struct {
 	_ *ast.IfStmt
 
 	If   token.Pos
@@ -126,7 +126,7 @@ type IfStmtMatcher struct {
 }
 
 // IncDecStmt
-type IncDecStmtMatcher struct {
+type zIncDecStmtMatcher struct {
 	_ *ast.IncDecStmt
 
 	X      ExprMatcher
@@ -135,7 +135,7 @@ type IncDecStmtMatcher struct {
 }
 
 // LabeledStmt
-type LabeledStmtMatcher struct {
+type zLabeledStmtMatcher struct {
 	_ *ast.LabeledStmt
 
 	Label IdentMatcher
@@ -144,7 +144,7 @@ type LabeledStmtMatcher struct {
 }
 
 // RangeStmt
-type RangeStmtMatcher struct {
+type zRangeStmtMatcher struct {
 	_ *ast.RangeStmt
 
 	For    token.Pos
@@ -158,7 +158,7 @@ type RangeStmtMatcher struct {
 }
 
 // ReturnStmt
-type ReturnStmtMatcher struct {
+type zReturnStmtMatcher struct {
 	_ *ast.ReturnStmt
 
 	Return  token.Pos
@@ -166,7 +166,7 @@ type ReturnStmtMatcher struct {
 }
 
 // SelectStmt
-type SelectStmtMatcher struct {
+type zSelectStmtMatcher struct {
 	_ *ast.SelectStmt
 
 	Select token.Pos
@@ -174,7 +174,7 @@ type SelectStmtMatcher struct {
 }
 
 // SendStmt
-type SendStmtMatcher struct {
+type zSendStmtMatcher struct {
 	_ *ast.SendStmt
 
 	Chan  ExprMatcher
@@ -183,7 +183,7 @@ type SendStmtMatcher struct {
 }
 
 // SwitchStmt
-type SwitchStmtMatcher struct {
+type zSwitchStmtMatcher struct {
 	_ *ast.SwitchStmt
 
 	Switch token.Pos
@@ -193,7 +193,7 @@ type SwitchStmtMatcher struct {
 }
 
 // TypeSwitchStmt
-type TypeSwitchStmtMatcher struct {
+type zTypeSwitchStmtMatcher struct {
 	_ *ast.TypeSwitchStmt
 
 	Switch token.Pos

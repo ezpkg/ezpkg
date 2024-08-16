@@ -10,7 +10,7 @@ import (
 )
 
 // BadDecl
-type BadDeclMatcher struct {
+type zBadDeclMatcher struct {
 	_ *ast.BadDecl
 
 	From token.Pos
@@ -18,7 +18,7 @@ type BadDeclMatcher struct {
 }
 
 // FuncDecl
-type FuncDeclMatcher struct {
+type zFuncDeclMatcher struct {
 	_ *ast.FuncDecl
 
 	Doc  CommentGroupMatcher
@@ -29,7 +29,7 @@ type FuncDeclMatcher struct {
 }
 
 // GenDecl
-type GenDeclMatcher struct {
+type zGenDeclMatcher struct {
 	_ *ast.GenDecl
 
 	Doc    CommentGroupMatcher

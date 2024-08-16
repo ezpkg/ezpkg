@@ -2,60 +2,63 @@ package codez
 
 import (
 	"go/ast"
-	"regexp"
 )
 
 type Matcher interface {
 	Match(node ast.Node) (bool, error)
 }
 
-type StringMatcher struct {
-	Value  string
-	Regexp *regexp.Regexp
+type ExprMatcher interface {
+	Matcher
+	MatchExpr(expr ast.Expr) (bool, error)
 }
 
-type BoolMatcher struct {
-	Value bool
+type StmtMatcher interface {
+	Matcher
+	MatchStmt(stmt ast.Stmt) (bool, error)
 }
 
-type ExprMatcher struct {
+type DeclMatcher interface {
+	Matcher
+	MatchDecl(decl ast.Decl) (bool, error)
 }
 
-type StmtMatcher struct {
+type StringMatcher interface {
 }
 
-type StmtListMatcher struct {
+type BoolMatcher interface {
 }
 
-type DeclMatcher struct {
+type ExprListMatcher interface {
 }
 
-type ExprListMatcher struct {
+type StmtListMatcher interface {
 }
 
-type ChanDirMatcher struct {
-	_ *ast.ChanDir
+type ChanDirMatcher interface {
 }
 
-type ObjectMatcher struct{}
+type ObjectMatcher interface{}
 
-type FieldMatcher struct {
+type FieldMatcher interface {
 }
 
-type FieldListMatcher struct {
+type FieldListMatcher interface {
 }
 
-type CommentGroupMatcher struct {
+type CommentGroupMatcher interface {
 }
 
-type SpecMatcher struct {
+type SpecMatcher interface {
 }
 
-type SpecListMatcher struct {
+type SpecListMatcher interface {
 }
 
 func MatchIdent(name string) IdentMatcher {
-	return IdentMatcher{
-		Name: StringMatcher{Value: name},
-	}
+	panic("todo")
+}
+
+func MatchSelector(x ExprMatcher, sel IdentMatcher) SelectorExprMatcher {
+	panic("todo")
 }

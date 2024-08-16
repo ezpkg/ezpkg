@@ -11,6 +11,7 @@ import (
 
 	"ezpkg.io/errorz"
 	"ezpkg.io/genz"
+	"ezpkg.io/mapz"
 	"ezpkg.io/slicez"
 )
 
@@ -47,17 +48,29 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 	pkgGoAst := ng.GetPackageByPath(pathGoAst)
 	allObjs := getObjs(pkgGoAst)
 
-	{
-		_, astExprI := getIface(pkgGoAst, "Expr")
-		p := errorz.Must(ng.GenerateFile("codez", pkgDir+"/matchers.expr.go"))
-		p.Import("ast", "go/ast")
+	_, astExprI := getIface(pkgGoAst, "Expr")
+	_, astStmtI := getIface(pkgGoAst, "Stmt")
+	_, astDeclI := getIface(pkgGoAst, "Decl")
 
+	matchers := map[string]types.Type{}
+	addMatcher := func(obj types.Object) {
+		if matchers[obj.Name()] == nil {
+			matchers[obj.Name()] = obj.Type()
+		}
+	}
+
+	gen := func(class string, iface *types.Interface) {
+		file := fmt.Sprintf("matchers.%s.go", class)
+		p := errorz.Must(ng.GenerateFile("codez", pkgDir+"/"+file))
+		p.Import("ast", "go/ast")
 		defer func() { errorz.MustZ(p.Close()) }()
 		pr := p.Printf
 
-		for _, x := range allObjs.Implements(astExprI).Structs() {
+		for _, x := range allObjs.Implements(iface).Structs() {
+			addMatcher(x)
+
 			pr("// %s\n", x.Name())
-			pr("type %sMatcher struct {\n", x.Name())
+			pr("type z%sMatcher struct {\n", x.Name())
 			pr("\t_ *%s\n\n", p.TypeString(x.Type()))
 			st := mustStruct(x.Type())
 			for i := 0; i < st.NumFields(); i++ {
@@ -87,82 +100,30 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 			pr("}\n\n")
 		}
 	}
-	{
-		_, astStmtI := getIface(pkgGoAst, "Stmt")
-		p := errorz.Must(ng.GenerateFile("codez", pkgDir+"/matchers.stmt.go"))
-		p.Import("ast", "go/ast")
+	gen("expr", astExprI)
+	gen("stmt", astStmtI)
+	gen("decl", astDeclI)
 
+	{ // 👉 matchers
+		p := errorz.Must(ng.GenerateFile("codez", pkgDir+"/matchers.iface.go"))
+		p.Import("ast", "go/ast")
 		defer func() { errorz.MustZ(p.Close()) }()
 		pr := p.Printf
 
-		for _, x := range allObjs.Implements(astStmtI).Structs() {
-			pr("// %s\n", x.Name())
-			pr("type %sMatcher struct {\n", x.Name())
-			pr("\t_ *%s\n\n", p.TypeString(x.Type()))
-			st := mustStruct(x.Type())
-			for i := 0; i < st.NumFields(); i++ {
-				field := st.Field(i)
-				if typ := asTokenType(field.Type()); typ != nil {
-					pr("\t%s %s\n", field.Name(), p.TypeString(field.Type()))
-					continue
-				}
-				if typ := asAstType(field.Type()); typ != nil {
-					pr("\t%s %sMatcher\n", field.Name(), typ.Obj().Name())
-					continue
-				}
-				if slice := asSlice(field.Type()); slice != nil {
-					typ := asAstType(slice.Elem())
-					if typ == nil {
-						panic(fmt.Sprintf("unsupported slice type %v", field.Type()))
-					}
-					pr("\t%s %sListMatcher\n", field.Name(), typ.Obj().Name())
-					continue
-				}
-				if basic := asBasic(field.Type()); basic != nil {
-					pr("\t%s %sMatcher\n", field.Name(), title(field.Type().String()))
-					continue
-				}
-				pr("\t%s %s // ❌\n", field.Name(), p.TypeString(field.Type()))
+		for _, name := range mapz.SortedKeys(matchers) {
+			matcher := matchers[name]
+
+			pr("// %v\n", name)
+			pr("type %sMatcher interface {\n", name)
+			pr("\tMatch(node ast.Node) (bool, error)\n")
+			if implements(matcher, astExprI) {
+				pr("\tMatchExpr(expr ast.Expr) (bool, error)\n")
 			}
-			pr("}\n\n")
-		}
-	}
-	{
-		_, astDeclI := getIface(pkgGoAst, "Decl")
-		p := errorz.Must(ng.GenerateFile("codez", pkgDir+"/matchers.decl.go"))
-		p.Import("ast", "go/ast")
-
-		defer func() { errorz.MustZ(p.Close()) }()
-		pr := p.Printf
-
-		for _, x := range allObjs.Implements(astDeclI).Structs() {
-			pr("// %s\n", x.Name())
-			pr("type %sMatcher struct {\n", x.Name())
-			pr("\t_ *%s\n\n", p.TypeString(x.Type()))
-			st := mustStruct(x.Type())
-			for i := 0; i < st.NumFields(); i++ {
-				field := st.Field(i)
-				if typ := asTokenType(field.Type()); typ != nil {
-					pr("\t%s %s\n", field.Name(), p.TypeString(field.Type()))
-					continue
-				}
-				if typ := asAstType(field.Type()); typ != nil {
-					pr("\t%s %sMatcher\n", field.Name(), typ.Obj().Name())
-					continue
-				}
-				if slice := asSlice(field.Type()); slice != nil {
-					typ := asAstType(slice.Elem())
-					if typ == nil {
-						panic(fmt.Sprintf("unsupported slice type %v", field.Type()))
-					}
-					pr("\t%s %sListMatcher\n", field.Name(), typ.Obj().Name())
-					continue
-				}
-				if basic := asBasic(field.Type()); basic != nil {
-					pr("\t%s %sMatcher\n", field.Name(), title(field.Type().String()))
-					continue
-				}
-				pr("\t%s %s // ❌\n", field.Name(), p.TypeString(field.Type()))
+			if implements(matcher, astStmtI) {
+				pr("\tMatchStmt(stmt ast.Stmt) (bool, error)\n")
+			}
+			if implements(matcher, astDeclI) {
+				pr("\tMatchDecl(decl ast.Decl) (bool, error)\n")
 			}
 			pr("}\n\n")
 		}
@@ -174,8 +135,7 @@ type Objects []types.Object
 
 func (objs Objects) Implements(iface *types.Interface) (out Objects) {
 	for _, obj := range objs {
-		ptr := types.NewPointer(obj.Type())
-		if types.Implements(obj.Type(), iface) || types.Implements(ptr, iface) {
+		if implements(obj.Type(), iface) {
 			out = append(out, obj)
 		}
 	}
@@ -189,6 +149,11 @@ func (objs Objects) Structs() (out Objects) {
 		}
 	}
 	return out
+}
+
+func implements(typ types.Type, iface *types.Interface) bool {
+	ptr := types.NewPointer(typ)
+	return types.Implements(typ, iface) || types.Implements(ptr, iface)
 }
 
 func getObj(pkg *types.Package, objName string) types.Object {

@@ -10,7 +10,7 @@ import (
 )
 
 // ArrayType
-type ArrayTypeMatcher struct {
+type zArrayTypeMatcher struct {
 	_ *ast.ArrayType
 
 	Lbrack token.Pos
@@ -19,7 +19,7 @@ type ArrayTypeMatcher struct {
 }
 
 // BadExpr
-type BadExprMatcher struct {
+type zBadExprMatcher struct {
 	_ *ast.BadExpr
 
 	From token.Pos
@@ -27,7 +27,7 @@ type BadExprMatcher struct {
 }
 
 // BasicLit
-type BasicLitMatcher struct {
+type zBasicLitMatcher struct {
 	_ *ast.BasicLit
 
 	ValuePos token.Pos
@@ -36,7 +36,7 @@ type BasicLitMatcher struct {
 }
 
 // BinaryExpr
-type BinaryExprMatcher struct {
+type zBinaryExprMatcher struct {
 	_ *ast.BinaryExpr
 
 	X     ExprMatcher
@@ -46,7 +46,7 @@ type BinaryExprMatcher struct {
 }
 
 // CallExpr
-type CallExprMatcher struct {
+type zCallExprMatcher struct {
 	_ *ast.CallExpr
 
 	Fun      ExprMatcher
@@ -57,7 +57,7 @@ type CallExprMatcher struct {
 }
 
 // ChanType
-type ChanTypeMatcher struct {
+type zChanTypeMatcher struct {
 	_ *ast.ChanType
 
 	Begin token.Pos
@@ -67,7 +67,7 @@ type ChanTypeMatcher struct {
 }
 
 // CompositeLit
-type CompositeLitMatcher struct {
+type zCompositeLitMatcher struct {
 	_ *ast.CompositeLit
 
 	Type       ExprMatcher
@@ -78,7 +78,7 @@ type CompositeLitMatcher struct {
 }
 
 // Ellipsis
-type EllipsisMatcher struct {
+type zEllipsisMatcher struct {
 	_ *ast.Ellipsis
 
 	Ellipsis token.Pos
@@ -86,7 +86,7 @@ type EllipsisMatcher struct {
 }
 
 // FuncLit
-type FuncLitMatcher struct {
+type zFuncLitMatcher struct {
 	_ *ast.FuncLit
 
 	Type FuncTypeMatcher
@@ -94,7 +94,7 @@ type FuncLitMatcher struct {
 }
 
 // FuncType
-type FuncTypeMatcher struct {
+type zFuncTypeMatcher struct {
 	_ *ast.FuncType
 
 	Func       token.Pos
@@ -104,7 +104,7 @@ type FuncTypeMatcher struct {
 }
 
 // Ident
-type IdentMatcher struct {
+type zIdentMatcher struct {
 	_ *ast.Ident
 
 	NamePos token.Pos
@@ -113,7 +113,7 @@ type IdentMatcher struct {
 }
 
 // IndexExpr
-type IndexExprMatcher struct {
+type zIndexExprMatcher struct {
 	_ *ast.IndexExpr
 
 	X      ExprMatcher
@@ -123,7 +123,7 @@ type IndexExprMatcher struct {
 }
 
 // IndexListExpr
-type IndexListExprMatcher struct {
+type zIndexListExprMatcher struct {
 	_ *ast.IndexListExpr
 
 	X       ExprMatcher
@@ -133,7 +133,7 @@ type IndexListExprMatcher struct {
 }
 
 // InterfaceType
-type InterfaceTypeMatcher struct {
+type zInterfaceTypeMatcher struct {
 	_ *ast.InterfaceType
 
 	Interface  token.Pos
@@ -142,7 +142,7 @@ type InterfaceTypeMatcher struct {
 }
 
 // KeyValueExpr
-type KeyValueExprMatcher struct {
+type zKeyValueExprMatcher struct {
 	_ *ast.KeyValueExpr
 
 	Key   ExprMatcher
@@ -151,7 +151,7 @@ type KeyValueExprMatcher struct {
 }
 
 // MapType
-type MapTypeMatcher struct {
+type zMapTypeMatcher struct {
 	_ *ast.MapType
 
 	Map   token.Pos
@@ -160,7 +160,7 @@ type MapTypeMatcher struct {
 }
 
 // ParenExpr
-type ParenExprMatcher struct {
+type zParenExprMatcher struct {
 	_ *ast.ParenExpr
 
 	Lparen token.Pos
@@ -169,7 +169,7 @@ type ParenExprMatcher struct {
 }
 
 // SelectorExpr
-type SelectorExprMatcher struct {
+type zSelectorExprMatcher struct {
 	_ *ast.SelectorExpr
 
 	X   ExprMatcher
@@ -177,7 +177,7 @@ type SelectorExprMatcher struct {
 }
 
 // SliceExpr
-type SliceExprMatcher struct {
+type zSliceExprMatcher struct {
 	_ *ast.SliceExpr
 
 	X      ExprMatcher
@@ -190,7 +190,7 @@ type SliceExprMatcher struct {
 }
 
 // StarExpr
-type StarExprMatcher struct {
+type zStarExprMatcher struct {
 	_ *ast.StarExpr
 
 	Star token.Pos
@@ -198,7 +198,7 @@ type StarExprMatcher struct {
 }
 
 // StructType
-type StructTypeMatcher struct {
+type zStructTypeMatcher struct {
 	_ *ast.StructType
 
 	Struct     token.Pos
@@ -207,7 +207,7 @@ type StructTypeMatcher struct {
 }
 
 // TypeAssertExpr
-type TypeAssertExprMatcher struct {
+type zTypeAssertExprMatcher struct {
 	_ *ast.TypeAssertExpr
 
 	X      ExprMatcher
@@ -217,7 +217,7 @@ type TypeAssertExprMatcher struct {
 }
 
 // UnaryExpr
-type UnaryExprMatcher struct {
+type zUnaryExprMatcher struct {
 	_ *ast.UnaryExpr
 
 	OpPos token.Pos

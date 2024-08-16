@@ -29,10 +29,10 @@ func main() {
 }
 
 func matchContext(pkgs *codez.Packages) {
-	m0 := &codez.SelectorExprMatcher{
-		X:   codez.MatchIdent("stdctx"),
-		Sel: codez.MatchIdent("Context"),
-	}
+	m0 := codez.MatchSelector(
+		codez.MatchIdent("stdctx"),
+		codez.MatchIdent("Context"),
+	)
 	m1 := codez.MatchIdent("ctx")
 	_, _ = m0, m1
 
