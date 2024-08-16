@@ -20,24 +20,6 @@ type AssignStmtMatcher interface {
 	MatchStmt(stmt ast.Stmt) (bool, error)
 }
 
-// BadDecl
-type BadDeclMatcher interface {
-	Match(node ast.Node) (bool, error)
-	MatchDecl(decl ast.Decl) (bool, error)
-}
-
-// BadExpr
-type BadExprMatcher interface {
-	Match(node ast.Node) (bool, error)
-	MatchExpr(expr ast.Expr) (bool, error)
-}
-
-// BadStmt
-type BadStmtMatcher interface {
-	Match(node ast.Node) (bool, error)
-	MatchStmt(stmt ast.Stmt) (bool, error)
-}
-
 // BasicLit
 type BasicLitMatcher interface {
 	Match(node ast.Node) (bool, error)

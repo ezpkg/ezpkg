@@ -13,6 +13,7 @@ import (
 	"ezpkg.io/genz"
 	"ezpkg.io/mapz"
 	"ezpkg.io/slicez"
+	"ezpkg.io/typez"
 )
 
 const (
@@ -47,7 +48,11 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 
 	pkgGoAst := ng.GetPackageByPath(pathGoAst)
 	allObjs := getObjs(pkgGoAst)
+	allObjs = slicez.FilterFunc(allObjs, func(obj types.Object) bool {
+		return !typez.In(obj.Name(), "BadDecl", "BadExpr", "BadStmt")
+	})
 
+	_, astNodeI := getIface(pkgGoAst, "Node")
 	_, astExprI := getIface(pkgGoAst, "Expr")
 	_, astStmtI := getIface(pkgGoAst, "Stmt")
 	_, astDeclI := getIface(pkgGoAst, "Decl")
@@ -59,7 +64,30 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 		}
 	}
 
+	type ParsedField struct {
+		isNode bool
+		token  *types.Named
+		astTyp *types.Named
+		slice  *types.Slice
+		basic  *types.Basic
+	}
+	parseField := func(field types.Type) *ParsedField {
+		if named := asNamed(field); named != nil {
+			if typez.In(named.Obj().Name(), "Object") {
+				return nil // ignore deprecated types
+			}
+		}
+		astTyp := asAstType(field)
+		return &ParsedField{
+			isNode: astTyp != nil && implements(astTyp, astNodeI),
+			token:  asTokenType(field),
+			astTyp: astTyp,
+			slice:  asSlice(field),
+			basic:  asBasic(field),
+		}
+	}
 	gen := func(class string, iface *types.Interface) {
+		Class := title(class)
 		file := fmt.Sprintf("matchers.%s.go", class)
 		p := errorz.Must(ng.GenerateFile("codez", pkgDir+"/"+file))
 		p.Import("ast", "go/ast")
@@ -68,35 +96,73 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 
 		for _, x := range allObjs.Implements(iface).Structs() {
 			addMatcher(x)
+			zName := fmt.Sprintf("z%sMatcher", x.Name())
 
 			pr("// %s\n", x.Name())
-			pr("type z%sMatcher struct {\n", x.Name())
+			pr("type %s struct {\n", zName)
 			pr("\t_ *%s\n\n", p.TypeString(x.Type()))
 			st := mustStruct(x.Type())
 			for i := 0; i < st.NumFields(); i++ {
 				field := st.Field(i)
-				if typ := asTokenType(field.Type()); typ != nil {
+				f := parseField(field.Type())
+				if f == nil {
+					continue
+				}
+
+				switch {
+				case f.token != nil:
 					pr("\t%s %s\n", field.Name(), p.TypeString(field.Type()))
-					continue
-				}
-				if typ := asAstType(field.Type()); typ != nil {
-					pr("\t%s %sMatcher\n", field.Name(), typ.Obj().Name())
-					continue
-				}
-				if slice := asSlice(field.Type()); slice != nil {
-					typ := asAstType(slice.Elem())
+
+				case f.astTyp != nil:
+					pr("\t%s %sMatcher\n", field.Name(), f.astTyp.Obj().Name())
+
+				case f.slice != nil:
+					typ := asAstType(f.slice.Elem())
 					if typ == nil {
 						panic(fmt.Sprintf("unsupported slice type %v", field.Type()))
 					}
-					pr("\t%s %sListMatcher\n", field.Name(), typ.Obj().Name())
-					continue
-				}
-				if basic := asBasic(field.Type()); basic != nil {
+					pr("\t%s %sListMatcher[ast.%s]\n", field.Name(), typ.Obj().Name(), typ.Obj().Name())
+
+				case f.basic != nil:
 					pr("\t%s %sMatcher\n", field.Name(), title(field.Type().String()))
+
+				default:
+					pr("\t%s %s ❌\n", field.Name(), p.TypeString(field.Type()))
+				}
+			}
+			pr("}\n\n")
+
+			pr("func (m %s) Match%s(node ast.%s) (ok bool, err error) {\n", zName, Class, Class)
+			pr("\treturn m.Match(node)\n")
+			pr("}\n")
+
+			pr("func (m %s) Match(node ast.Node) (ok bool, err error) {\n", zName)
+			pr("\tx, ok := node.(*ast.%s)\n", x.Name())
+			pr("\tif !ok {\n")
+			pr("\t\treturn false, nil\n")
+			pr("\t}\n")
+
+			for i := 0; i < st.NumFields(); i++ {
+				field := st.Field(i)
+				f := parseField(field.Type())
+				if f == nil {
 					continue
 				}
-				pr("\t%s %s // ❌\n", field.Name(), p.TypeString(field.Type()))
+
+				switch {
+				case f.token != nil:
+					continue
+				case f.basic != nil:
+					pr("\tok, err = matchValue(ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
+				case f.isNode:
+					pr("\tok, err = match(ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
+				case f.slice != nil:
+					pr("\tok, err = matchList(ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
+				default:
+					pr("\tok, err = matchValue(ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
+				}
 			}
+			pr("\treturn ok, err\n")
 			pr("}\n\n")
 		}
 	}
@@ -104,7 +170,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 	gen("stmt", astStmtI)
 	gen("decl", astDeclI)
 
-	{ // 👉 matchers
+	{ // 👉 interfaces
 		p := errorz.Must(ng.GenerateFile("codez", pkgDir+"/matchers.iface.go"))
 		p.Import("ast", "go/ast")
 		defer func() { errorz.MustZ(p.Close()) }()
@@ -173,12 +239,8 @@ func getIface(pkg *packages.Package, iface string) (types.Object, *types.Interfa
 	return obj, typ
 }
 
-func asPtrNamed(typ types.Type) *types.Named {
-	ptr, _ := typ.(*types.Pointer)
-	return asNamed(ptr.Elem())
-}
-
 func asNamed(typ types.Type) *types.Named {
+	typ = skipPtr(typ)
 	named, _ := typ.(*types.Named)
 	return named
 }
@@ -256,4 +318,29 @@ func title(s string) string {
 		return strings.ToUpper(s[:1]) + s[1:]
 	}
 	return ""
+}
+
+func zeroValue(typ types.Type) string {
+	switch typ := typ.(type) {
+	case *types.Basic:
+		switch typ.Kind() {
+		case types.String:
+			return `""`
+		case types.Bool:
+			return `false`
+		default:
+			return `0`
+		}
+	case *types.Named:
+		return zeroValue(typ.Underlying())
+	case *types.Struct:
+		return fmt.Sprintf("%s{}", typ.String())
+	case *types.Interface:
+		return `nil`
+	case *types.Pointer:
+		return `nil`
+	case *types.Slice:
+		return `nil`
+	}
+	return `"❌zero"`
 }

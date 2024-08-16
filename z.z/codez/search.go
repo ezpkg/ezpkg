@@ -33,7 +33,7 @@ type codePattern struct {
 	id  int
 	pat string
 
-	compiled Matcher
+	compiled NodeMatcher
 }
 
 func NewSearch(pattern string) *Search {

@@ -6,7 +6,7 @@ import (
 	"ezpkg.io/errorz"
 )
 
-func Match(m Matcher, pkg *Package) (out []ast.Node, err error) {
+func Match(m NodeMatcher, pkg *Package) (out []ast.Node, err error) {
 	for _, f := range pkg.Syntax {
 		ast.Inspect(f, func(node ast.Node) bool {
 			ok, err0 := m.Match(node)
