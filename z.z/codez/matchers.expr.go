@@ -18,16 +18,16 @@ type zArrayTypeMatcher struct {
 	Elt    ExprMatcher
 }
 
-func (m zArrayTypeMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zArrayTypeMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zArrayTypeMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zArrayTypeMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ArrayType)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Len, x.Len)
-	ok, err = match(ok, err, m.Elt, x.Elt)
+	ok, err = match(cx, ok, err, m.Len, x.Len)
+	ok, err = match(cx, ok, err, m.Elt, x.Elt)
 	return ok, err
 }
 
@@ -40,15 +40,15 @@ type zBasicLitMatcher struct {
 	Value    StringMatcher
 }
 
-func (m zBasicLitMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zBasicLitMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zBasicLitMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zBasicLitMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.BasicLit)
 	if !ok {
 		return false, nil
 	}
-	ok, err = matchValue(ok, err, m.Value, x.Value)
+	ok, err = matchValue(cx, ok, err, m.Value, x.Value)
 	return ok, err
 }
 
@@ -62,16 +62,16 @@ type zBinaryExprMatcher struct {
 	Y     ExprMatcher
 }
 
-func (m zBinaryExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zBinaryExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zBinaryExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zBinaryExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.BinaryExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
-	ok, err = match(ok, err, m.Y, x.Y)
+	ok, err = match(cx, ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.Y, x.Y)
 	return ok, err
 }
 
@@ -86,16 +86,16 @@ type zCallExprMatcher struct {
 	Rparen   token.Pos
 }
 
-func (m zCallExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zCallExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zCallExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zCallExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.CallExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Fun, x.Fun)
-	ok, err = matchList(ok, err, m.Args, x.Args)
+	ok, err = match(cx, ok, err, m.Fun, x.Fun)
+	ok, err = matchList(cx, ok, err, m.Args, x.Args)
 	return ok, err
 }
 
@@ -109,16 +109,16 @@ type zChanTypeMatcher struct {
 	Value ExprMatcher
 }
 
-func (m zChanTypeMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zChanTypeMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zChanTypeMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zChanTypeMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ChanType)
 	if !ok {
 		return false, nil
 	}
-	ok, err = matchValue(ok, err, m.Dir, x.Dir)
-	ok, err = match(ok, err, m.Value, x.Value)
+	ok, err = matchValue(cx, ok, err, m.Dir, x.Dir)
+	ok, err = match(cx, ok, err, m.Value, x.Value)
 	return ok, err
 }
 
@@ -133,17 +133,17 @@ type zCompositeLitMatcher struct {
 	Incomplete BoolMatcher
 }
 
-func (m zCompositeLitMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zCompositeLitMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zCompositeLitMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zCompositeLitMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.CompositeLit)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Type, x.Type)
-	ok, err = matchList(ok, err, m.Elts, x.Elts)
-	ok, err = matchValue(ok, err, m.Incomplete, x.Incomplete)
+	ok, err = match(cx, ok, err, m.Type, x.Type)
+	ok, err = matchList(cx, ok, err, m.Elts, x.Elts)
+	ok, err = matchValue(cx, ok, err, m.Incomplete, x.Incomplete)
 	return ok, err
 }
 
@@ -155,15 +155,15 @@ type zEllipsisMatcher struct {
 	Elt      ExprMatcher
 }
 
-func (m zEllipsisMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zEllipsisMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zEllipsisMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zEllipsisMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.Ellipsis)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Elt, x.Elt)
+	ok, err = match(cx, ok, err, m.Elt, x.Elt)
 	return ok, err
 }
 
@@ -175,16 +175,16 @@ type zFuncLitMatcher struct {
 	Body BlockStmtMatcher
 }
 
-func (m zFuncLitMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zFuncLitMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zFuncLitMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zFuncLitMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.FuncLit)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Type, x.Type)
-	ok, err = match(ok, err, m.Body, x.Body)
+	ok, err = match(cx, ok, err, m.Type, x.Type)
+	ok, err = match(cx, ok, err, m.Body, x.Body)
 	return ok, err
 }
 
@@ -198,17 +198,17 @@ type zFuncTypeMatcher struct {
 	Results    FieldListMatcher
 }
 
-func (m zFuncTypeMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zFuncTypeMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zFuncTypeMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zFuncTypeMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.FuncType)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.TypeParams, x.TypeParams)
-	ok, err = match(ok, err, m.Params, x.Params)
-	ok, err = match(ok, err, m.Results, x.Results)
+	ok, err = match(cx, ok, err, m.TypeParams, x.TypeParams)
+	ok, err = match(cx, ok, err, m.Params, x.Params)
+	ok, err = match(cx, ok, err, m.Results, x.Results)
 	return ok, err
 }
 
@@ -220,15 +220,15 @@ type zIdentMatcher struct {
 	Name    StringMatcher
 }
 
-func (m zIdentMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zIdentMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zIdentMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zIdentMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.Ident)
 	if !ok {
 		return false, nil
 	}
-	ok, err = matchValue(ok, err, m.Name, x.Name)
+	ok, err = matchValue(cx, ok, err, m.Name, x.Name)
 	return ok, err
 }
 
@@ -242,16 +242,16 @@ type zIndexExprMatcher struct {
 	Rbrack token.Pos
 }
 
-func (m zIndexExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zIndexExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zIndexExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zIndexExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.IndexExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
-	ok, err = match(ok, err, m.Index, x.Index)
+	ok, err = match(cx, ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.Index, x.Index)
 	return ok, err
 }
 
@@ -265,16 +265,16 @@ type zIndexListExprMatcher struct {
 	Rbrack  token.Pos
 }
 
-func (m zIndexListExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zIndexListExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zIndexListExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zIndexListExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.IndexListExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
-	ok, err = matchList(ok, err, m.Indices, x.Indices)
+	ok, err = match(cx, ok, err, m.X, x.X)
+	ok, err = matchList(cx, ok, err, m.Indices, x.Indices)
 	return ok, err
 }
 
@@ -287,16 +287,16 @@ type zInterfaceTypeMatcher struct {
 	Incomplete BoolMatcher
 }
 
-func (m zInterfaceTypeMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zInterfaceTypeMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zInterfaceTypeMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zInterfaceTypeMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.InterfaceType)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Methods, x.Methods)
-	ok, err = matchValue(ok, err, m.Incomplete, x.Incomplete)
+	ok, err = match(cx, ok, err, m.Methods, x.Methods)
+	ok, err = matchValue(cx, ok, err, m.Incomplete, x.Incomplete)
 	return ok, err
 }
 
@@ -309,16 +309,16 @@ type zKeyValueExprMatcher struct {
 	Value ExprMatcher
 }
 
-func (m zKeyValueExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zKeyValueExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zKeyValueExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zKeyValueExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.KeyValueExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Key, x.Key)
-	ok, err = match(ok, err, m.Value, x.Value)
+	ok, err = match(cx, ok, err, m.Key, x.Key)
+	ok, err = match(cx, ok, err, m.Value, x.Value)
 	return ok, err
 }
 
@@ -331,16 +331,16 @@ type zMapTypeMatcher struct {
 	Value ExprMatcher
 }
 
-func (m zMapTypeMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zMapTypeMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zMapTypeMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zMapTypeMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.MapType)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Key, x.Key)
-	ok, err = match(ok, err, m.Value, x.Value)
+	ok, err = match(cx, ok, err, m.Key, x.Key)
+	ok, err = match(cx, ok, err, m.Value, x.Value)
 	return ok, err
 }
 
@@ -353,15 +353,15 @@ type zParenExprMatcher struct {
 	Rparen token.Pos
 }
 
-func (m zParenExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zParenExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zParenExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zParenExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ParenExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.X, x.X)
 	return ok, err
 }
 
@@ -373,16 +373,16 @@ type zSelectorExprMatcher struct {
 	Sel IdentMatcher
 }
 
-func (m zSelectorExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zSelectorExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zSelectorExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zSelectorExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.SelectorExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
-	ok, err = match(ok, err, m.Sel, x.Sel)
+	ok, err = match(cx, ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.Sel, x.Sel)
 	return ok, err
 }
 
@@ -399,19 +399,19 @@ type zSliceExprMatcher struct {
 	Rbrack token.Pos
 }
 
-func (m zSliceExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zSliceExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zSliceExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zSliceExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.SliceExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
-	ok, err = match(ok, err, m.Low, x.Low)
-	ok, err = match(ok, err, m.High, x.High)
-	ok, err = match(ok, err, m.Max, x.Max)
-	ok, err = matchValue(ok, err, m.Slice3, x.Slice3)
+	ok, err = match(cx, ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.Low, x.Low)
+	ok, err = match(cx, ok, err, m.High, x.High)
+	ok, err = match(cx, ok, err, m.Max, x.Max)
+	ok, err = matchValue(cx, ok, err, m.Slice3, x.Slice3)
 	return ok, err
 }
 
@@ -423,15 +423,15 @@ type zStarExprMatcher struct {
 	X    ExprMatcher
 }
 
-func (m zStarExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zStarExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zStarExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zStarExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.StarExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.X, x.X)
 	return ok, err
 }
 
@@ -444,16 +444,16 @@ type zStructTypeMatcher struct {
 	Incomplete BoolMatcher
 }
 
-func (m zStructTypeMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zStructTypeMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zStructTypeMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zStructTypeMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.StructType)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Fields, x.Fields)
-	ok, err = matchValue(ok, err, m.Incomplete, x.Incomplete)
+	ok, err = match(cx, ok, err, m.Fields, x.Fields)
+	ok, err = matchValue(cx, ok, err, m.Incomplete, x.Incomplete)
 	return ok, err
 }
 
@@ -467,16 +467,16 @@ type zTypeAssertExprMatcher struct {
 	Rparen token.Pos
 }
 
-func (m zTypeAssertExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zTypeAssertExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zTypeAssertExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zTypeAssertExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.TypeAssertExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
-	ok, err = match(ok, err, m.Type, x.Type)
+	ok, err = match(cx, ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.Type, x.Type)
 	return ok, err
 }
 
@@ -489,14 +489,14 @@ type zUnaryExprMatcher struct {
 	X     ExprMatcher
 }
 
-func (m zUnaryExprMatcher) MatchExpr(node ast.Expr) (ok bool, err error) {
-	return m.Match(node)
+func (m zUnaryExprMatcher) MatchExpr(cx *_MatchContext, node ast.Expr) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zUnaryExprMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zUnaryExprMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.UnaryExpr)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.X, x.X)
 	return ok, err
 }

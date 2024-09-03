@@ -20,19 +20,19 @@ type zFuncDeclMatcher struct {
 	Body BlockStmtMatcher
 }
 
-func (m zFuncDeclMatcher) MatchDecl(node ast.Decl) (ok bool, err error) {
-	return m.Match(node)
+func (m zFuncDeclMatcher) MatchDecl(cx *_MatchContext, node ast.Decl) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zFuncDeclMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zFuncDeclMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.FuncDecl)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Doc, x.Doc)
-	ok, err = match(ok, err, m.Recv, x.Recv)
-	ok, err = match(ok, err, m.Name, x.Name)
-	ok, err = match(ok, err, m.Type, x.Type)
-	ok, err = match(ok, err, m.Body, x.Body)
+	ok, err = match(cx, ok, err, m.Doc, x.Doc)
+	ok, err = match(cx, ok, err, m.Recv, x.Recv)
+	ok, err = match(cx, ok, err, m.Name, x.Name)
+	ok, err = match(cx, ok, err, m.Type, x.Type)
+	ok, err = match(cx, ok, err, m.Body, x.Body)
 	return ok, err
 }
 
@@ -48,15 +48,15 @@ type zGenDeclMatcher struct {
 	Rparen token.Pos
 }
 
-func (m zGenDeclMatcher) MatchDecl(node ast.Decl) (ok bool, err error) {
-	return m.Match(node)
+func (m zGenDeclMatcher) MatchDecl(cx *_MatchContext, node ast.Decl) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zGenDeclMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zGenDeclMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.GenDecl)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Doc, x.Doc)
-	ok, err = matchList(ok, err, m.Specs, x.Specs)
+	ok, err = match(cx, ok, err, m.Doc, x.Doc)
+	ok, err = matchList(cx, ok, err, m.Specs, x.Specs)
 	return ok, err
 }

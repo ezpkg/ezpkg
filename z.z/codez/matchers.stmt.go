@@ -19,16 +19,16 @@ type zAssignStmtMatcher struct {
 	Rhs    ExprListMatcher[ast.Expr]
 }
 
-func (m zAssignStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zAssignStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zAssignStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zAssignStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.AssignStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = matchList(ok, err, m.Lhs, x.Lhs)
-	ok, err = matchList(ok, err, m.Rhs, x.Rhs)
+	ok, err = matchList(cx, ok, err, m.Lhs, x.Lhs)
+	ok, err = matchList(cx, ok, err, m.Rhs, x.Rhs)
 	return ok, err
 }
 
@@ -41,15 +41,15 @@ type zBlockStmtMatcher struct {
 	Rbrace token.Pos
 }
 
-func (m zBlockStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zBlockStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zBlockStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zBlockStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.BlockStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = matchList(ok, err, m.List, x.List)
+	ok, err = matchList(cx, ok, err, m.List, x.List)
 	return ok, err
 }
 
@@ -62,15 +62,15 @@ type zBranchStmtMatcher struct {
 	Label  IdentMatcher
 }
 
-func (m zBranchStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zBranchStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zBranchStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zBranchStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.BranchStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Label, x.Label)
+	ok, err = match(cx, ok, err, m.Label, x.Label)
 	return ok, err
 }
 
@@ -84,16 +84,16 @@ type zCaseClauseMatcher struct {
 	Body  StmtListMatcher[ast.Stmt]
 }
 
-func (m zCaseClauseMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zCaseClauseMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zCaseClauseMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zCaseClauseMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.CaseClause)
 	if !ok {
 		return false, nil
 	}
-	ok, err = matchList(ok, err, m.List, x.List)
-	ok, err = matchList(ok, err, m.Body, x.Body)
+	ok, err = matchList(cx, ok, err, m.List, x.List)
+	ok, err = matchList(cx, ok, err, m.Body, x.Body)
 	return ok, err
 }
 
@@ -107,16 +107,16 @@ type zCommClauseMatcher struct {
 	Body  StmtListMatcher[ast.Stmt]
 }
 
-func (m zCommClauseMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zCommClauseMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zCommClauseMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zCommClauseMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.CommClause)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Comm, x.Comm)
-	ok, err = matchList(ok, err, m.Body, x.Body)
+	ok, err = match(cx, ok, err, m.Comm, x.Comm)
+	ok, err = matchList(cx, ok, err, m.Body, x.Body)
 	return ok, err
 }
 
@@ -127,15 +127,15 @@ type zDeclStmtMatcher struct {
 	Decl DeclMatcher
 }
 
-func (m zDeclStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zDeclStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zDeclStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zDeclStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.DeclStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Decl, x.Decl)
+	ok, err = match(cx, ok, err, m.Decl, x.Decl)
 	return ok, err
 }
 
@@ -147,15 +147,15 @@ type zDeferStmtMatcher struct {
 	Call  CallExprMatcher
 }
 
-func (m zDeferStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zDeferStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zDeferStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zDeferStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.DeferStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Call, x.Call)
+	ok, err = match(cx, ok, err, m.Call, x.Call)
 	return ok, err
 }
 
@@ -167,15 +167,15 @@ type zEmptyStmtMatcher struct {
 	Implicit  BoolMatcher
 }
 
-func (m zEmptyStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zEmptyStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zEmptyStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zEmptyStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.EmptyStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = matchValue(ok, err, m.Implicit, x.Implicit)
+	ok, err = matchValue(cx, ok, err, m.Implicit, x.Implicit)
 	return ok, err
 }
 
@@ -186,15 +186,15 @@ type zExprStmtMatcher struct {
 	X ExprMatcher
 }
 
-func (m zExprStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zExprStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zExprStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zExprStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ExprStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.X, x.X)
 	return ok, err
 }
 
@@ -209,18 +209,18 @@ type zForStmtMatcher struct {
 	Body BlockStmtMatcher
 }
 
-func (m zForStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zForStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zForStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zForStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ForStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Init, x.Init)
-	ok, err = match(ok, err, m.Cond, x.Cond)
-	ok, err = match(ok, err, m.Post, x.Post)
-	ok, err = match(ok, err, m.Body, x.Body)
+	ok, err = match(cx, ok, err, m.Init, x.Init)
+	ok, err = match(cx, ok, err, m.Cond, x.Cond)
+	ok, err = match(cx, ok, err, m.Post, x.Post)
+	ok, err = match(cx, ok, err, m.Body, x.Body)
 	return ok, err
 }
 
@@ -232,15 +232,15 @@ type zGoStmtMatcher struct {
 	Call CallExprMatcher
 }
 
-func (m zGoStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zGoStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zGoStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zGoStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.GoStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Call, x.Call)
+	ok, err = match(cx, ok, err, m.Call, x.Call)
 	return ok, err
 }
 
@@ -255,18 +255,18 @@ type zIfStmtMatcher struct {
 	Else StmtMatcher
 }
 
-func (m zIfStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zIfStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zIfStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zIfStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.IfStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Init, x.Init)
-	ok, err = match(ok, err, m.Cond, x.Cond)
-	ok, err = match(ok, err, m.Body, x.Body)
-	ok, err = match(ok, err, m.Else, x.Else)
+	ok, err = match(cx, ok, err, m.Init, x.Init)
+	ok, err = match(cx, ok, err, m.Cond, x.Cond)
+	ok, err = match(cx, ok, err, m.Body, x.Body)
+	ok, err = match(cx, ok, err, m.Else, x.Else)
 	return ok, err
 }
 
@@ -279,15 +279,15 @@ type zIncDecStmtMatcher struct {
 	Tok    token.Token
 }
 
-func (m zIncDecStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zIncDecStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zIncDecStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zIncDecStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.IncDecStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.X, x.X)
 	return ok, err
 }
 
@@ -300,16 +300,16 @@ type zLabeledStmtMatcher struct {
 	Stmt  StmtMatcher
 }
 
-func (m zLabeledStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zLabeledStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zLabeledStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zLabeledStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.LabeledStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Label, x.Label)
-	ok, err = match(ok, err, m.Stmt, x.Stmt)
+	ok, err = match(cx, ok, err, m.Label, x.Label)
+	ok, err = match(cx, ok, err, m.Stmt, x.Stmt)
 	return ok, err
 }
 
@@ -327,18 +327,18 @@ type zRangeStmtMatcher struct {
 	Body   BlockStmtMatcher
 }
 
-func (m zRangeStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zRangeStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zRangeStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zRangeStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.RangeStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Key, x.Key)
-	ok, err = match(ok, err, m.Value, x.Value)
-	ok, err = match(ok, err, m.X, x.X)
-	ok, err = match(ok, err, m.Body, x.Body)
+	ok, err = match(cx, ok, err, m.Key, x.Key)
+	ok, err = match(cx, ok, err, m.Value, x.Value)
+	ok, err = match(cx, ok, err, m.X, x.X)
+	ok, err = match(cx, ok, err, m.Body, x.Body)
 	return ok, err
 }
 
@@ -350,15 +350,15 @@ type zReturnStmtMatcher struct {
 	Results ExprListMatcher[ast.Expr]
 }
 
-func (m zReturnStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zReturnStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zReturnStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zReturnStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ReturnStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = matchList(ok, err, m.Results, x.Results)
+	ok, err = matchList(cx, ok, err, m.Results, x.Results)
 	return ok, err
 }
 
@@ -370,15 +370,15 @@ type zSelectStmtMatcher struct {
 	Body   BlockStmtMatcher
 }
 
-func (m zSelectStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zSelectStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zSelectStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zSelectStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.SelectStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Body, x.Body)
+	ok, err = match(cx, ok, err, m.Body, x.Body)
 	return ok, err
 }
 
@@ -391,16 +391,16 @@ type zSendStmtMatcher struct {
 	Value ExprMatcher
 }
 
-func (m zSendStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zSendStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zSendStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zSendStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.SendStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Chan, x.Chan)
-	ok, err = match(ok, err, m.Value, x.Value)
+	ok, err = match(cx, ok, err, m.Chan, x.Chan)
+	ok, err = match(cx, ok, err, m.Value, x.Value)
 	return ok, err
 }
 
@@ -414,17 +414,17 @@ type zSwitchStmtMatcher struct {
 	Body   BlockStmtMatcher
 }
 
-func (m zSwitchStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zSwitchStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zSwitchStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zSwitchStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.SwitchStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Init, x.Init)
-	ok, err = match(ok, err, m.Tag, x.Tag)
-	ok, err = match(ok, err, m.Body, x.Body)
+	ok, err = match(cx, ok, err, m.Init, x.Init)
+	ok, err = match(cx, ok, err, m.Tag, x.Tag)
+	ok, err = match(cx, ok, err, m.Body, x.Body)
 	return ok, err
 }
 
@@ -438,16 +438,16 @@ type zTypeSwitchStmtMatcher struct {
 	Body   BlockStmtMatcher
 }
 
-func (m zTypeSwitchStmtMatcher) MatchStmt(node ast.Stmt) (ok bool, err error) {
-	return m.Match(node)
+func (m zTypeSwitchStmtMatcher) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+	return m.Match(cx, node)
 }
-func (m zTypeSwitchStmtMatcher) Match(node ast.Node) (ok bool, err error) {
+func (m zTypeSwitchStmtMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.TypeSwitchStmt)
 	if !ok {
 		return false, nil
 	}
-	ok, err = match(ok, err, m.Init, x.Init)
-	ok, err = match(ok, err, m.Assign, x.Assign)
-	ok, err = match(ok, err, m.Body, x.Body)
+	ok, err = match(cx, ok, err, m.Init, x.Init)
+	ok, err = match(cx, ok, err, m.Assign, x.Assign)
+	ok, err = match(cx, ok, err, m.Body, x.Body)
 	return ok, err
 }

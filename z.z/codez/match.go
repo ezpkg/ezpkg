@@ -7,9 +7,10 @@ import (
 )
 
 func Match(m NodeMatcher, pkg *Package) (out []ast.Node, err error) {
+	cx := newMatchContext(pkg)
 	for _, f := range pkg.Syntax {
 		ast.Inspect(f, func(node ast.Node) bool {
-			ok, err0 := m.Match(node)
+			ok, err0 := m.Match(cx, node)
 			switch {
 			case err0 != nil:
 				errorz.AppendTo(&err, err0)

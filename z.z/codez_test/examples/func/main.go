@@ -30,10 +30,10 @@ func main() {
 
 func matchContext(pkgs *codez.Packages) {
 	m0 := codez.MatchSelector(
-		codez.MatchIdent("stdctx"),
-		codez.MatchIdent("Context"),
+		codez.MatchIdentAny(),
+		codez.MatchIdent(codez.MatchString("Context")),
 	)
-	m1 := codez.MatchIdent("ctx")
+	m1 := codez.MatchIdent(codez.MatchString("ctx"))
 	_, _ = m0, m1
 
 	var err error

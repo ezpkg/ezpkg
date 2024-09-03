@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/onsi/gomega"
+	g "github.com/onsi/gomega"
 
 	. "ezpkg.io/conveyz"
 	"ezpkg.io/logz"
@@ -20,51 +20,51 @@ func TestParse(t *testing.T) {
 	Convey("parse", t, func() {
 		Convey("one", func() {
 			stmt, err := parseStmt(log, "a := 42")
-			Ω(err).ToNot(HaveOccurred())
+			Ω(err).ToNot(g.HaveOccurred())
 			printAst("stmt", nil, stmt)
 		})
 		Convey("decl", func() {
 			decl, err := parseDecl(log, "var a = 42")
-			Ω(err).ToNot(HaveOccurred())
+			Ω(err).ToNot(g.HaveOccurred())
 			printAst("decl", nil, decl)
 		})
 		Convey("parseSearch", func() {
 			Convey("empty", func() {
 				out, err := parseSearch(log, "")
-				Ω(err).ToNot(HaveOccurred())
-				Ω(out.IsEmpty()).To(BeTrue())
+				Ω(err).ToNot(g.HaveOccurred())
+				Ω(out.IsEmpty()).To(g.BeTrue())
 			})
 			Convey("comment", func() {
 				out, err := parseSearch(log, "// hello")
-				Ω(err).ToNot(HaveOccurred())
-				Ω(out.IsEmpty()).To(BeTrue())
+				Ω(err).ToNot(g.HaveOccurred())
+				Ω(out.IsEmpty()).To(g.BeTrue())
 			})
 			Convey("invalid", func() {
 				_, err := parseSearch(log, "#")
-				Ω(err.Error()).To(ContainSubstring("illegal character"))
+				Ω(err.Error()).To(g.ContainSubstring("illegal character"))
 			})
 			Convey("decl", func() {
 				out, err := parseSearch(log, "var a int = 42")
-				Ω(err).ToNot(HaveOccurred())
+				Ω(err).ToNot(g.HaveOccurred())
 
 				stmt, _ := out.stmt.(*ast.DeclStmt)
-				Ω(stmt).ToNot(BeNil())
+				Ω(stmt).ToNot(g.BeNil())
 
-				Ω(out.decl).ToNot(BeNil())
+				Ω(out.decl).ToNot(g.BeNil())
 			})
 			Convey("ident", func() {
 				out, err := parseSearch(log, "error")
-				Ω(err).ToNot(HaveOccurred())
+				Ω(err).ToNot(g.HaveOccurred())
 
 				ident, _ := out.expr.(*ast.Ident)
-				Ω(ident).ToNot(BeNil())
-				Ω(out.ident).ToNot(BeNil())
+				Ω(ident).ToNot(g.BeNil())
+				Ω(out.ident).ToNot(g.BeNil())
 			})
 			Convey("file", func() {
 				out, err := parseSearch(log, "package main")
-				Ω(err).ToNot(HaveOccurred())
+				Ω(err).ToNot(g.HaveOccurred())
 
-				Ω(out.file).ToNot(BeNil())
+				Ω(out.file).ToNot(g.BeNil())
 			})
 		})
 	})

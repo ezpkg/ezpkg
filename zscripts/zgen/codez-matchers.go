@@ -132,11 +132,11 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 			}
 			pr("}\n\n")
 
-			pr("func (m %s) Match%s(node ast.%s) (ok bool, err error) {\n", zName, Class, Class)
-			pr("\treturn m.Match(node)\n")
+			pr("func (m %s) Match%s(cx *_MatchContext, node ast.%s) (ok bool, err error) {\n", zName, Class, Class)
+			pr("\treturn m.Match(cx, node)\n")
 			pr("}\n")
 
-			pr("func (m %s) Match(node ast.Node) (ok bool, err error) {\n", zName)
+			pr("func (m %s) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {\n", zName)
 			pr("\tx, ok := node.(*ast.%s)\n", x.Name())
 			pr("\tif !ok {\n")
 			pr("\t\treturn false, nil\n")
@@ -153,13 +153,13 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 				case f.token != nil:
 					continue
 				case f.basic != nil:
-					pr("\tok, err = matchValue(ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
+					pr("\tok, err = matchValue(cx, ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
 				case f.isNode:
-					pr("\tok, err = match(ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
+					pr("\tok, err = match(cx, ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
 				case f.slice != nil:
-					pr("\tok, err = matchList(ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
+					pr("\tok, err = matchList(cx, ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
 				default:
-					pr("\tok, err = matchValue(ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
+					pr("\tok, err = matchValue(cx, ok, err, m.%s, x.%s)\n", field.Name(), field.Name())
 				}
 			}
 			pr("\treturn ok, err\n")
@@ -181,15 +181,15 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 
 			pr("// %v\n", name)
 			pr("type %sMatcher interface {\n", name)
-			pr("\tMatch(node ast.Node) (bool, error)\n")
+			pr("\tMatch(cx *_MatchContext, node ast.Node) (bool, error)\n")
 			if implements(matcher, astExprI) {
-				pr("\tMatchExpr(expr ast.Expr) (bool, error)\n")
+				pr("\tMatchExpr(cx *_MatchContext, expr ast.Expr) (bool, error)\n")
 			}
 			if implements(matcher, astStmtI) {
-				pr("\tMatchStmt(stmt ast.Stmt) (bool, error)\n")
+				pr("\tMatchStmt(cx *_MatchContext, stmt ast.Stmt) (bool, error)\n")
 			}
 			if implements(matcher, astDeclI) {
-				pr("\tMatchDecl(decl ast.Decl) (bool, error)\n")
+				pr("\tMatchDecl(cx *_MatchContext, decl ast.Decl) (bool, error)\n")
 			}
 			pr("}\n\n")
 		}
