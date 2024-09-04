@@ -55,3 +55,29 @@ func CoalesceX[T any](list ...T) (out T) {
 	}
 	return out
 }
+
+// IsNil reports whether v is nil. Unlike reflect.IsNil(), it won't panic.
+//
+// The Go team decided not to add "zero" to the language.
+// https://github.com/golang/go/issues/61372
+func IsNil(v any) bool {
+	if v == nil {
+		return true
+	}
+	val := reflect.ValueOf(v)
+	switch val.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.UnsafePointer, reflect.Interface, reflect.Slice:
+		return val.IsNil()
+	default:
+		return false
+	}
+}
+
+// IsZero reports whether v is zero. Unlike reflect.IsZero(), it won't panic.
+//
+// The Go team decided not to add "zero" to the language.
+// https://github.com/golang/go/issues/61372
+func IsZero[T comparable](v T) bool {
+	var zero T
+	return v == zero
+}
