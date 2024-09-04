@@ -30,3 +30,27 @@ func SortedKeysAndValues[M ~map[K]V, K constraints.Ordered, V any](m M) ([]K, []
 	}
 	return keys, values
 }
+
+func Append[K comparable, V any](m map[K]V, items map[K]V) map[K]V {
+	if m == nil {
+		m = make(map[K]V, len(items))
+	}
+	for k, v := range items {
+		m[k] = v
+	}
+	return m
+}
+
+func Merge[K comparable, V any](maps ...map[K]V) map[K]V {
+	N := 0
+	for _, x := range maps {
+		N += len(x)
+	}
+	m := make(map[K]V, N)
+	for _, x := range maps {
+		for k, v := range x {
+			m[k] = v
+		}
+	}
+	return m
+}
