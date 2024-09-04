@@ -10,7 +10,7 @@ import (
 )
 
 // FuncDecl
-type zFuncDeclMatcher struct {
+type FuncDeclMatcherB struct {
 	_ *ast.FuncDecl
 
 	Doc  CommentGroupMatcher
@@ -20,10 +20,10 @@ type zFuncDeclMatcher struct {
 	Body BlockStmtMatcher
 }
 
-func (m zFuncDeclMatcher) MatchDecl(cx *_MatchContext, node ast.Decl) (ok bool, err error) {
+func (m FuncDeclMatcherB) MatchDecl(cx *_MatchContext, node ast.Decl) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m zFuncDeclMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m FuncDeclMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.FuncDecl)
 	if !ok {
 		return false, nil
@@ -37,7 +37,7 @@ func (m zFuncDeclMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err 
 }
 
 // GenDecl
-type zGenDeclMatcher struct {
+type GenDeclMatcherB struct {
 	_ *ast.GenDecl
 
 	Doc    CommentGroupMatcher
@@ -48,10 +48,10 @@ type zGenDeclMatcher struct {
 	Rparen token.Pos
 }
 
-func (m zGenDeclMatcher) MatchDecl(cx *_MatchContext, node ast.Decl) (ok bool, err error) {
+func (m GenDeclMatcherB) MatchDecl(cx *_MatchContext, node ast.Decl) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m zGenDeclMatcher) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m GenDeclMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.GenDecl)
 	if !ok {
 		return false, nil

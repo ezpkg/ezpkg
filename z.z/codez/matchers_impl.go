@@ -176,19 +176,19 @@ func (m zExprTypeMatcher) Match(cx *_MatchContext, node ast.Node) (bool, error) 
 }
 
 func MatchIdent(nameMatcher StringMatcher) IdentMatcher {
-	return zIdentMatcher{
+	return IdentMatcherB{
 		Name: nameMatcher,
 	}
 }
 
 func MatchIdentAny() IdentMatcher {
-	return zIdentMatcher{
+	return IdentMatcherB{
 		Name: MatchRegexp(regexp.MustCompile(`.`)),
 	}
 }
 
 func MatchSelector(x ExprMatcher, sel IdentMatcher) SelectorExprMatcher {
-	return zSelectorExprMatcher{X: x, Sel: sel}
+	return SelectorExprMatcherB{X: x, Sel: sel}
 }
 
 func match(cx *_MatchContext, ok bool, err error, m NodeMatcher, node ast.Node) (bool, error) {

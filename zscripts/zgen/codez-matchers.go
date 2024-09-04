@@ -96,10 +96,10 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 
 		for _, x := range allObjs.Implements(iface).Structs() {
 			addMatcher(x)
-			zName := fmt.Sprintf("z%sMatcher", x.Name())
+			nameB := fmt.Sprintf("%sMatcherB", x.Name())
 
 			pr("// %s\n", x.Name())
-			pr("type %s struct {\n", zName)
+			pr("type %s struct {\n", nameB)
 			pr("\t_ *%s\n\n", p.TypeString(x.Type()))
 			st := mustStruct(x.Type())
 			for i := 0; i < st.NumFields(); i++ {
@@ -132,11 +132,11 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 			}
 			pr("}\n\n")
 
-			pr("func (m %s) Match%s(cx *_MatchContext, node ast.%s) (ok bool, err error) {\n", zName, Class, Class)
+			pr("func (m %s) Match%s(cx *_MatchContext, node ast.%s) (ok bool, err error) {\n", nameB, Class, Class)
 			pr("\treturn m.Match(cx, node)\n")
 			pr("}\n")
 
-			pr("func (m %s) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {\n", zName)
+			pr("func (m %s) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {\n", nameB)
 			pr("\tx, ok := node.(*ast.%s)\n", x.Name())
 			pr("\tif !ok {\n")
 			pr("\t\treturn false, nil\n")
