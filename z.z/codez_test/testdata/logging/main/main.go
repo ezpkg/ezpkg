@@ -1,9 +1,8 @@
 package main
 
 import (
+	"context"
 	"fmt"
-
-	"golang.org/x/net/context"
 
 	"ezpkg.io/-/codez_test/testdata/logging"
 )

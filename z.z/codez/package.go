@@ -1,6 +1,7 @@
 package codez
 
 import (
+	"cmp"
 	"go/ast"
 	"go/token"
 	"go/types"
@@ -17,19 +18,31 @@ type Packages struct {
 
 	pkgs []*Package
 
-	mapPkgs map[string]*Package
-	allPkgs []*Package
-	stdPkgs []*Package
+	mapPkgs  map[string]*Package
+	allPkgs  []*Package
+	stdPkgs  []*Package
+	pkgByPos []*Package
 }
 
 type Package struct {
 	*packages.Package
+
+	start, end token.Pos
 }
 
 func newPackage(pkg *packages.Package) *Package {
-	return &Package{
+	p := &Package{
 		Package: pkg,
 	}
+	for _, file := range pkg.Syntax {
+		if p.start == 0 || file.Pos() < p.start {
+			p.start = file.Pos()
+		}
+		if p.end == 0 || file.End() > p.end {
+			p.end = file.End()
+		}
+	}
+	return p
 }
 
 func (p *Package) GetObject(name string) types.Object {
@@ -37,6 +50,23 @@ func (p *Package) GetObject(name string) types.Object {
 }
 func (p *Package) GetType(obj types.Object) types.Type {
 	return obj.Type()
+}
+func (p *Package) Positions() (start, end token.Pos) {
+	return p.start, p.end
+}
+func (p *Package) HasPos(pos token.Pos) bool {
+	if pos < p.start || pos > p.end {
+		return false
+	}
+	for _, file := range p.Syntax {
+		if file.Pos() <= pos && pos <= file.End() {
+			return true
+		}
+	}
+	return false
+}
+func (p *Package) quickHasPos(pos token.Pos) bool {
+	return p.start <= pos && pos <= p.end
 }
 
 // Packages returns the loaded packages from input patterns.
@@ -61,6 +91,48 @@ func (p *Packages) NonStdPackages() []*Package {
 
 func (p *Packages) GetPackageByPath(path string) *Package {
 	return p.mapPkgs[path]
+}
+
+func (p *Packages) GetObject(pkgPath, objName string) types.Object {
+	pkg := p.GetPackageByPath(pkgPath)
+	if pkg == nil {
+		return nil
+	}
+	return pkg.GetObject(objName)
+}
+
+func (p *Packages) GetPackageByPos(pos token.Pos) *Package {
+	pkg := quickSearchPkgByPos(p.pkgByPos, pos)
+	if pkg != nil && pkg.HasPos(pos) {
+		return pkg
+	}
+	// slow path
+	for _, pkg := range p.pkgs {
+		if pkg.HasPos(pos) {
+			return pkg
+		}
+	}
+	return nil
+}
+
+func quickSearchPkgByPos(pkgs []*Package, pos token.Pos) *Package {
+	switch {
+	case len(pkgs) == 0:
+		return nil
+	case len(pkgs) == 1 && pkgs[0].quickHasPos(pos):
+		return pkgs[0]
+	case len(pkgs) == 1:
+		return nil
+	}
+	mid := len(pkgs) / 2
+	if pkgs[mid].quickHasPos(pos) {
+		return pkgs[mid]
+	}
+	if pkgs[mid].start > pos {
+		return quickSearchPkgByPos(pkgs[:mid], pos)
+	} else {
+		return quickSearchPkgByPos(pkgs[mid:], pos)
+	}
 }
 
 func (p *Packages) TypeOf(expr ast.Expr) types.Type {
@@ -93,10 +165,17 @@ func newPackages(pkgs []*Package) *Packages {
 			return strings.Compare(a.PkgPath, b.PkgPath)
 		})
 	}
+	sortPkgsByPos := func(pkgs []*Package) []*Package {
+		slices.SortFunc(pkgs, func(a, b *Package) int {
+			return cmp.Compare(a.start, b.start)
+		})
+		return pkgs
+	}
 
 	if len(pkgs) == 0 {
 		return nil
 	}
+	var allPkgs []*Package
 	p := &Packages{pkgs: pkgs, Fset: pkgs[0].Fset}
 	p.mapPkgs = map[string]*Package{}
 	for _, pkg := range p.pkgs {
@@ -104,14 +183,14 @@ func newPackages(pkgs []*Package) *Packages {
 			if p.mapPkgs[path] == nil {
 				pkg0 := newPackage(impPkg)
 				p.mapPkgs[path] = pkg0
-				p.allPkgs = append(p.allPkgs, pkg0)
+				allPkgs = append(allPkgs, pkg0)
 			}
 		}
 	}
 
 	// filter std packages then sort
 	var goOrgPkgs, otherPkgs []*Package
-	for _, pkg := range p.mapPkgs {
+	for _, pkg := range allPkgs {
 		switch {
 		case isStd(pkg.PkgPath):
 			p.stdPkgs = append(p.stdPkgs, pkg)
@@ -125,6 +204,7 @@ func newPackages(pkgs []*Package) *Packages {
 	sortPkgs(goOrgPkgs)
 	sortPkgs(otherPkgs)
 	p.allPkgs = slicez.Concat(p.stdPkgs, goOrgPkgs, otherPkgs)
+	p.pkgByPos = sortPkgsByPos(allPkgs)
 	return p
 }
 
