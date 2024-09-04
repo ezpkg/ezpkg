@@ -13,6 +13,6 @@ func newMatchContext(pkgs *Packages) *MatchContext {
 	return &MatchContext{pkgs: pkgs}
 }
 
-func (cx *MatchContext) GetType(node ast.Node) types.Type {
-	return nil
+func (cx *MatchContext) TypeOf(expr ast.Expr) types.Type {
+	return cx.pkgs.TypeOf(expr)
 }

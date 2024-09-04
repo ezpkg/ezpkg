@@ -172,7 +172,11 @@ func MatchExprType(t types.Type) NodeMatcher {
 }
 
 func (m zExprTypeMatcher) Match(cx *MatchContext, node ast.Node) (bool, error) {
-	return cx.GetType(node) == m.Type, nil
+	expr, ok := node.(ast.Expr)
+	if !ok {
+		return false, nil
+	}
+	return cx.TypeOf(expr) == m.Type, nil
 }
 
 func MatchIdent(nameMatcher StringMatcher) IdentMatcher {

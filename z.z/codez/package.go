@@ -2,6 +2,7 @@ package codez
 
 import (
 	"cmp"
+	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
@@ -13,6 +14,8 @@ import (
 	"ezpkg.io/slicez"
 )
 
+const builtinPkgPath = "ezpkg.io/codez/builtin"
+
 type Packages struct {
 	Fset *token.FileSet
 
@@ -22,6 +25,7 @@ type Packages struct {
 	allPkgs  []*Package
 	stdPkgs  []*Package
 	pkgByPos []*Package
+	builtin  map[string]types.Type
 }
 
 type Package struct {
@@ -94,11 +98,54 @@ func (p *Packages) GetPackageByPath(path string) *Package {
 }
 
 func (p *Packages) GetObject(pkgPath, objName string) types.Object {
+	if pkgPath == "" {
+		return types.Universe.Lookup(objName)
+	}
 	pkg := p.GetPackageByPath(pkgPath)
 	if pkg == nil {
 		return nil
 	}
 	return pkg.GetObject(objName)
+}
+
+func (p *Packages) MustGetObject(pkgPath, objName string) types.Object {
+	obj := p.GetObject(pkgPath, objName)
+	if obj == nil {
+		panic(fmt.Sprintf("object %v.%v not found", pkgPath, objName))
+	}
+	return obj
+}
+
+func (p *Packages) GetType(pkgPath, objName string) types.Type {
+	obj := p.GetObject(pkgPath, objName)
+	if obj == nil {
+		return nil
+	}
+	return obj.Type()
+}
+
+func (p *Packages) MustGetType(pkgPath, objName string) types.Type {
+	typ := p.GetType(pkgPath, objName)
+	if typ == nil {
+		panic(fmt.Sprintf("type %v.%v not found", pkgPath, objName))
+	}
+	return typ
+}
+
+func (p *Packages) GetBuiltInType(typName string) types.Type {
+	obj := types.Universe.Lookup(typName)
+	if obj == nil {
+		return nil
+	}
+	return obj.Type()
+}
+
+func (p *Packages) MustGetBuiltInType(typName string) types.Type {
+	typ := p.GetBuiltInType(typName)
+	if typ == nil {
+		panic(fmt.Sprintf("type %q not found", typName))
+	}
+	return typ
 }
 
 func (p *Packages) GetPackageByPos(pos token.Pos) *Package {
@@ -136,12 +183,11 @@ func quickSearchPkgByPos(pkgs []*Package, pos token.Pos) *Package {
 }
 
 func (p *Packages) TypeOf(expr ast.Expr) types.Type {
-	for _, pkg := range p.pkgs {
-		if typ := pkg.TypesInfo.TypeOf(expr); typ != nil {
-			return typ
-		}
+	pkg := p.GetPackageByPos(expr.Pos())
+	if pkg == nil {
+		return nil
 	}
-	return nil
+	return pkg.TypesInfo.TypeOf(expr)
 }
 
 func (p *Packages) ObjectOf(ident *ast.Ident) types.Object {

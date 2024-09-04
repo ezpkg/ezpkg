@@ -22,11 +22,26 @@ func TestPackage(t *testing.T) {
 		})
 
 		Convey("GetObject", func() {
-			objContext := pkgs.GetObject("context", "Context")
-			Ω(objContext).ToNot(g.BeNil())
-			Ω(objContext.Name()).To(g.Equal("Context"))
-			Ω(objContext.Pkg().Path()).To(g.Equal("context"))
-			Ω(objContext.Type().String()).To(g.Equal("context.Context"))
+			Convey("context.Context", func() {
+				objContext := pkgs.GetObject("context", "Context")
+				Ω(objContext).ToNot(g.BeNil())
+				Ω(objContext.Name()).To(g.Equal("Context"))
+				Ω(objContext.Pkg().Path()).To(g.Equal("context"))
+				Ω(objContext.Type().String()).To(g.Equal("context.Context"))
+
+				Ω(pkgs.GetType("context", "Context")).To(g.Equal(objContext.Type()))
+			})
+			Convey("builtin: error", func() {
+				objError := pkgs.GetObject("", "error")
+				Ω(objError).ToNot(g.BeNil())
+				Ω(objError.Name()).To(g.Equal("error"))
+
+				typError := pkgs.GetBuiltInType("error")
+				Ω(typError).ToNot(g.BeNil())
+				Ω(typError).To(g.Equal(objError.Type()))
+
+				Ω(pkgs.GetType("", "error")).To(g.Equal(typError))
+			})
 		})
 
 		Convey("GetPackageByPos", func() {
