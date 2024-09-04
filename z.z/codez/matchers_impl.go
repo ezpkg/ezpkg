@@ -8,71 +8,71 @@ import (
 )
 
 type NodeMatcher interface {
-	Match(cx *_MatchContext, node ast.Node) (bool, error)
+	Match(cx *MatchContext, node ast.Node) (bool, error)
 }
 type ListMatcher[NODE ast.Node] interface {
-	Match(cx *_MatchContext, nodes []NODE) (bool, error)
+	Match(cx *MatchContext, nodes []NODE) (bool, error)
 }
 type ValueMatcher[V any] interface {
-	Match(cx *_MatchContext, value V) (bool, error)
+	Match(cx *MatchContext, value V) (bool, error)
 }
 
 type ExprMatcher interface {
 	NodeMatcher
-	MatchExpr(cx *_MatchContext, expr ast.Expr) (bool, error)
+	MatchExpr(cx *MatchContext, expr ast.Expr) (bool, error)
 }
 
 type StmtMatcher interface {
 	NodeMatcher
-	MatchStmt(cx *_MatchContext, stmt ast.Stmt) (bool, error)
+	MatchStmt(cx *MatchContext, stmt ast.Stmt) (bool, error)
 }
 
 type DeclMatcher interface {
 	NodeMatcher
-	MatchDecl(cx *_MatchContext, decl ast.Decl) (bool, error)
+	MatchDecl(cx *MatchContext, decl ast.Decl) (bool, error)
 }
 
 type StringMatcher interface {
-	Match(cx *_MatchContext, value string) (bool, error)
+	Match(cx *MatchContext, value string) (bool, error)
 }
 
 type BoolMatcher interface {
-	Match(cx *_MatchContext, value bool) (bool, error)
+	Match(cx *MatchContext, value bool) (bool, error)
 }
 
 type ExprListMatcher[NODE ast.Node] interface {
-	Match(cx *_MatchContext, nodes []NODE) (bool, error)
+	Match(cx *MatchContext, nodes []NODE) (bool, error)
 }
 
 type StmtListMatcher[NODE ast.Node] interface {
-	Match(cx *_MatchContext, nodes []NODE) (bool, error)
+	Match(cx *MatchContext, nodes []NODE) (bool, error)
 }
 
 type ChanDirMatcher interface {
-	Match(cx *_MatchContext, dir ast.ChanDir) (bool, error)
+	Match(cx *MatchContext, dir ast.ChanDir) (bool, error)
 }
 
 type ObjectMatcher struct{}
 
-func (x ObjectMatcher) Match(cx *_MatchContext, node ast.Node) (bool, error) { return true, nil }
+func (x ObjectMatcher) Match(cx *MatchContext, node ast.Node) (bool, error) { return true, nil }
 
 type FieldMatcher interface {
 }
 
 type FieldListMatcher interface {
-	Match(cx *_MatchContext, node ast.Node) (bool, error)
+	Match(cx *MatchContext, node ast.Node) (bool, error)
 }
 
 type CommentGroupMatcher interface {
-	Match(cx *_MatchContext, node ast.Node) (bool, error)
+	Match(cx *MatchContext, node ast.Node) (bool, error)
 }
 
 type SpecMatcher interface {
-	Match(cx *_MatchContext, node ast.Node) (bool, error)
+	Match(cx *MatchContext, node ast.Node) (bool, error)
 }
 
-type SpecListMatcher[NODE ast.Node] interface {
-	Match(cx *_MatchContext, nodes []NODE) (bool, error)
+type SpecListMatcher[NODE ast.Spec] interface {
+	Match(cx *MatchContext, nodes []NODE) (bool, error)
 }
 
 type zStringMatcher struct {
@@ -80,7 +80,7 @@ type zStringMatcher struct {
 	Regexp *regexp.Regexp
 }
 
-func (m zStringMatcher) Match(cx *_MatchContext, value string) (bool, error) {
+func (m zStringMatcher) Match(cx *MatchContext, value string) (bool, error) {
 	if m.Regexp != nil {
 		return m.Regexp.MatchString(value), nil
 	}
@@ -105,7 +105,7 @@ func Nil[M NodeMatcher](matchers ...M) NodeMatcher {
 	return zNilMatcher[M]{matchers: matchers}
 }
 
-func (m zNilMatcher[NodeMatcher]) Match(cx *_MatchContext, node ast.Node) (bool, error) {
+func (m zNilMatcher[NodeMatcher]) Match(cx *MatchContext, node ast.Node) (bool, error) {
 	if node == nil {
 		return true, nil
 	}
@@ -123,7 +123,7 @@ func And[M NodeMatcher](matchers ...M) NodeMatcher {
 	return zAndMatcher[M]{Matchers: matchers}
 }
 
-func (m zAndMatcher[NodeMatcher]) Match(cx *_MatchContext, node ast.Node) (bool, error) {
+func (m zAndMatcher[NodeMatcher]) Match(cx *MatchContext, node ast.Node) (bool, error) {
 	if len(m.Matchers) == 0 {
 		return false, errors.New("empty And matcher")
 	}
@@ -147,7 +147,7 @@ func Or[M NodeMatcher](matchers ...M) NodeMatcher {
 	return zOrMatcher[M]{Matchers: matchers}
 }
 
-func (m zOrMatcher[NodeMatcher]) Match(cx *_MatchContext, node ast.Node) (bool, error) {
+func (m zOrMatcher[NodeMatcher]) Match(cx *MatchContext, node ast.Node) (bool, error) {
 	if len(m.Matchers) == 0 {
 		return false, errors.New("empty Or matchers")
 	}
@@ -171,8 +171,8 @@ func MatchExprType(t types.Type) NodeMatcher {
 	return zExprTypeMatcher{Type: t}
 }
 
-func (m zExprTypeMatcher) Match(cx *_MatchContext, node ast.Node) (bool, error) {
-	return cx.getType(node) == m.Type, nil
+func (m zExprTypeMatcher) Match(cx *MatchContext, node ast.Node) (bool, error) {
+	return cx.GetType(node) == m.Type, nil
 }
 
 func MatchIdent(nameMatcher StringMatcher) IdentMatcher {
@@ -187,25 +187,54 @@ func MatchIdentAny() IdentMatcher {
 	}
 }
 
+func MatchBlockStmtAny() StmtMatcher {
+	return MatchBlockStmtFunc(func(cx *MatchContext, stmt *ast.BlockStmt) (bool, error) {
+		return true, nil
+	})
+}
+
+func MatchBlockStmtFunc(fn func(cx *MatchContext, stmt *ast.BlockStmt) (bool, error)) StmtMatcher {
+	return BlockStmtMatcherFunc(fn)
+}
+
+type BlockStmtMatcherFunc func(cx *MatchContext, stmt *ast.BlockStmt) (bool, error)
+
+func (fn BlockStmtMatcherFunc) Match(cx *MatchContext, node ast.Node) (bool, error) {
+	x, ok := node.(*ast.BlockStmt)
+	if !ok {
+		return false, nil
+	}
+	return fn(cx, x)
+}
+func (fn BlockStmtMatcherFunc) MatchStmt(cx *MatchContext, stmt ast.Stmt) (bool, error) {
+	return fn(cx, stmt.(*ast.BlockStmt))
+}
+
 func MatchSelector(x ExprMatcher, sel IdentMatcher) SelectorExprMatcher {
 	return SelectorExprMatcherB{X: x, Sel: sel}
 }
 
-func match(cx *_MatchContext, ok bool, err error, m NodeMatcher, node ast.Node) (bool, error) {
-	if !ok {
+func match(cx *MatchContext, ok bool, err error, m NodeMatcher, node ast.Node) (bool, error) {
+	switch {
+	case !ok:
 		return false, err
+	case m == nil && node == nil:
+		return true, nil
+	case m == nil || node == nil:
+		return false, nil
+	default:
+		return m.Match(cx, node)
 	}
-	return m.Match(cx, node)
 }
 
-func matchList[NODE ast.Node](cx *_MatchContext, ok bool, err error, m ListMatcher[NODE], nodes []NODE) (bool, error) {
+func matchList[NODE ast.Node](cx *MatchContext, ok bool, err error, m ListMatcher[NODE], nodes []NODE) (bool, error) {
 	if !ok {
 		return false, err
 	}
 	return m.Match(cx, nodes)
 }
 
-func matchValue[V any](cx *_MatchContext, ok bool, err error, m ValueMatcher[V], value V) (bool, error) {
+func matchValue[V any](cx *MatchContext, ok bool, err error, m ValueMatcher[V], value V) (bool, error) {
 	if !ok {
 		return false, err
 	}

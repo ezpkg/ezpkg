@@ -5,14 +5,14 @@ import (
 	"go/types"
 )
 
-type _MatchContext struct {
-	pkg *Package
+type MatchContext struct {
+	pkgs *Packages
 }
 
-func newMatchContext(pkg *Package) *_MatchContext {
-	return &_MatchContext{pkg: pkg}
+func newMatchContext(pkgs *Packages) *MatchContext {
+	return &MatchContext{pkgs: pkgs}
 }
 
-func (cx *_MatchContext) getType(node ast.Node) types.Type {
+func (cx *MatchContext) GetType(node ast.Node) types.Type {
 	return nil
 }

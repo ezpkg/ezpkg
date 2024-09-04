@@ -28,26 +28,20 @@ func main() {
 	matchContext(pkgs)
 }
 
-func matchContext(pkgs *codez.Packages) {
+func matchContext(pkgSet *codez.Packages) {
 	m0 := codez.MatchSelector(
 		codez.MatchIdentAny(),
 		codez.MatchIdent(codez.MatchString("Context")),
 	)
-	m1 := codez.MatchIdent(codez.MatchString("ctx"))
-	_, _ = m0, m1
 
-	var err error
-	_pkgs := pkgs.AllPackages("ezpkg.io/-/codez_test/testdata/logging/...")
-	for _, pkg := range _pkgs {
-		nodes, err0 := codez.Match(m0, pkg)
-		if err0 != nil {
-			errorz.AppendTo(&err, err0)
-			continue
-		}
-		fmt.Printf("\n👉 %v: found %v nodes\n", pkg.PkgPath, len(nodes))
-		for _, node := range nodes {
-			PrintAst(pkg.Fset, node)
-		}
+	nodes, err := codez.Match(m0, pkgSet, "ezpkg.io/-/codez_test/testdata/logging/...")
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+	fmt.Printf("\n👉 found %v nodes\n", len(nodes))
+	for _, node := range nodes {
+		PrintAst(pkgSet.Fset, node)
 	}
 }
 

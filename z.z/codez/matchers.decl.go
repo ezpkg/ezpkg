@@ -20,10 +20,10 @@ type FuncDeclMatcherB struct {
 	Body BlockStmtMatcher
 }
 
-func (m FuncDeclMatcherB) MatchDecl(cx *_MatchContext, node ast.Decl) (ok bool, err error) {
+func (m FuncDeclMatcherB) MatchDecl(cx *MatchContext, node ast.Decl) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m FuncDeclMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m FuncDeclMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.FuncDecl)
 	if !ok {
 		return false, nil
@@ -48,10 +48,10 @@ type GenDeclMatcherB struct {
 	Rparen token.Pos
 }
 
-func (m GenDeclMatcherB) MatchDecl(cx *_MatchContext, node ast.Decl) (ok bool, err error) {
+func (m GenDeclMatcherB) MatchDecl(cx *MatchContext, node ast.Decl) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m GenDeclMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m GenDeclMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.GenDecl)
 	if !ok {
 		return false, nil

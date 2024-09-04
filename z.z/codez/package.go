@@ -1,6 +1,9 @@
 package codez
 
 import (
+	"go/ast"
+	"go/token"
+	"go/types"
 	"slices"
 	"strings"
 
@@ -10,6 +13,8 @@ import (
 )
 
 type Packages struct {
+	Fset *token.FileSet
+
 	pkgs []*Package
 
 	mapPkgs map[string]*Package
@@ -25,6 +30,13 @@ func newPackage(pkg *packages.Package) *Package {
 	return &Package{
 		Package: pkg,
 	}
+}
+
+func (p *Package) GetObject(name string) types.Object {
+	return p.Types.Scope().Lookup(name)
+}
+func (p *Package) GetType(obj types.Object) types.Type {
+	return obj.Type()
 }
 
 // Packages returns the loaded packages from input patterns.
@@ -45,6 +57,28 @@ func (p *Packages) StdPackages() []*Package {
 }
 func (p *Packages) NonStdPackages() []*Package {
 	return p.allPkgs[len(p.stdPkgs):]
+}
+
+func (p *Packages) GetPackageByPath(path string) *Package {
+	return p.mapPkgs[path]
+}
+
+func (p *Packages) TypeOf(expr ast.Expr) types.Type {
+	for _, pkg := range p.pkgs {
+		if typ := pkg.TypesInfo.TypeOf(expr); typ != nil {
+			return typ
+		}
+	}
+	return nil
+}
+
+func (p *Packages) ObjectOf(ident *ast.Ident) types.Object {
+	for _, pkg := range p.pkgs {
+		if obj := pkg.TypesInfo.ObjectOf(ident); obj != nil {
+			return obj
+		}
+	}
+	return nil
 }
 
 func newPackages(pkgs []*Package) *Packages {

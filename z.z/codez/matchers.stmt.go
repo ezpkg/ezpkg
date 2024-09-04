@@ -19,10 +19,10 @@ type AssignStmtMatcherB struct {
 	Rhs    ExprListMatcher[ast.Expr]
 }
 
-func (m AssignStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m AssignStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m AssignStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m AssignStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.AssignStmt)
 	if !ok {
 		return false, nil
@@ -41,10 +41,10 @@ type BlockStmtMatcherB struct {
 	Rbrace token.Pos
 }
 
-func (m BlockStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m BlockStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m BlockStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m BlockStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.BlockStmt)
 	if !ok {
 		return false, nil
@@ -62,10 +62,10 @@ type BranchStmtMatcherB struct {
 	Label  IdentMatcher
 }
 
-func (m BranchStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m BranchStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m BranchStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m BranchStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.BranchStmt)
 	if !ok {
 		return false, nil
@@ -84,10 +84,10 @@ type CaseClauseMatcherB struct {
 	Body  StmtListMatcher[ast.Stmt]
 }
 
-func (m CaseClauseMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m CaseClauseMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m CaseClauseMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m CaseClauseMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.CaseClause)
 	if !ok {
 		return false, nil
@@ -107,10 +107,10 @@ type CommClauseMatcherB struct {
 	Body  StmtListMatcher[ast.Stmt]
 }
 
-func (m CommClauseMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m CommClauseMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m CommClauseMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m CommClauseMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.CommClause)
 	if !ok {
 		return false, nil
@@ -127,10 +127,10 @@ type DeclStmtMatcherB struct {
 	Decl DeclMatcher
 }
 
-func (m DeclStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m DeclStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m DeclStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m DeclStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.DeclStmt)
 	if !ok {
 		return false, nil
@@ -147,10 +147,10 @@ type DeferStmtMatcherB struct {
 	Call  CallExprMatcher
 }
 
-func (m DeferStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m DeferStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m DeferStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m DeferStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.DeferStmt)
 	if !ok {
 		return false, nil
@@ -167,10 +167,10 @@ type EmptyStmtMatcherB struct {
 	Implicit  BoolMatcher
 }
 
-func (m EmptyStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m EmptyStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m EmptyStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m EmptyStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.EmptyStmt)
 	if !ok {
 		return false, nil
@@ -186,10 +186,10 @@ type ExprStmtMatcherB struct {
 	X ExprMatcher
 }
 
-func (m ExprStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m ExprStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m ExprStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m ExprStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ExprStmt)
 	if !ok {
 		return false, nil
@@ -209,10 +209,10 @@ type ForStmtMatcherB struct {
 	Body BlockStmtMatcher
 }
 
-func (m ForStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m ForStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m ForStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m ForStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ForStmt)
 	if !ok {
 		return false, nil
@@ -232,10 +232,10 @@ type GoStmtMatcherB struct {
 	Call CallExprMatcher
 }
 
-func (m GoStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m GoStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m GoStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m GoStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.GoStmt)
 	if !ok {
 		return false, nil
@@ -255,10 +255,10 @@ type IfStmtMatcherB struct {
 	Else StmtMatcher
 }
 
-func (m IfStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m IfStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m IfStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m IfStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.IfStmt)
 	if !ok {
 		return false, nil
@@ -279,10 +279,10 @@ type IncDecStmtMatcherB struct {
 	Tok    token.Token
 }
 
-func (m IncDecStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m IncDecStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m IncDecStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m IncDecStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.IncDecStmt)
 	if !ok {
 		return false, nil
@@ -300,10 +300,10 @@ type LabeledStmtMatcherB struct {
 	Stmt  StmtMatcher
 }
 
-func (m LabeledStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m LabeledStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m LabeledStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m LabeledStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.LabeledStmt)
 	if !ok {
 		return false, nil
@@ -327,10 +327,10 @@ type RangeStmtMatcherB struct {
 	Body   BlockStmtMatcher
 }
 
-func (m RangeStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m RangeStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m RangeStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m RangeStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.RangeStmt)
 	if !ok {
 		return false, nil
@@ -350,10 +350,10 @@ type ReturnStmtMatcherB struct {
 	Results ExprListMatcher[ast.Expr]
 }
 
-func (m ReturnStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m ReturnStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m ReturnStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m ReturnStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ReturnStmt)
 	if !ok {
 		return false, nil
@@ -370,10 +370,10 @@ type SelectStmtMatcherB struct {
 	Body   BlockStmtMatcher
 }
 
-func (m SelectStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m SelectStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m SelectStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m SelectStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.SelectStmt)
 	if !ok {
 		return false, nil
@@ -391,10 +391,10 @@ type SendStmtMatcherB struct {
 	Value ExprMatcher
 }
 
-func (m SendStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m SendStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m SendStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m SendStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.SendStmt)
 	if !ok {
 		return false, nil
@@ -414,10 +414,10 @@ type SwitchStmtMatcherB struct {
 	Body   BlockStmtMatcher
 }
 
-func (m SwitchStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m SwitchStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m SwitchStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m SwitchStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.SwitchStmt)
 	if !ok {
 		return false, nil
@@ -438,10 +438,10 @@ type TypeSwitchStmtMatcherB struct {
 	Body   BlockStmtMatcher
 }
 
-func (m TypeSwitchStmtMatcherB) MatchStmt(cx *_MatchContext, node ast.Stmt) (ok bool, err error) {
+func (m TypeSwitchStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
 	return m.Match(cx, node)
 }
-func (m TypeSwitchStmtMatcherB) Match(cx *_MatchContext, node ast.Node) (ok bool, err error) {
+func (m TypeSwitchStmtMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.TypeSwitchStmt)
 	if !ok {
 		return false, nil
