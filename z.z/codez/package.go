@@ -11,21 +11,28 @@ import (
 
 	"golang.org/x/tools/go/packages"
 
+	"ezpkg.io/mapz"
 	"ezpkg.io/slicez"
 )
-
-const builtinPkgPath = "ezpkg.io/codez/builtin"
 
 type Packages struct {
 	Fset *token.FileSet
 
-	pkgs []*Package
+	origPkgs []*Package          // original packages from input patterns
+	mapPkgs  map[string]*Package // map of all packages by path
+	allPkgs  []*Package          // all packages, including std packages
+	stdPkgs  []*Package          // std packages
+	pkgByPos []*Package          // all packages sorted by position
 
-	mapPkgs  map[string]*Package
-	allPkgs  []*Package
-	stdPkgs  []*Package
-	pkgByPos []*Package
-	builtin  map[string]types.Type
+	// --- collect types.Info from all packages ---
+
+	Types      map[ast.Expr]types.TypeAndValue
+	Instances  map[*ast.Ident]types.Instance
+	Defs       map[*ast.Ident]types.Object
+	Uses       map[*ast.Ident]types.Object
+	Implicits  map[ast.Node]types.Object
+	Selections map[*ast.SelectorExpr]*types.Selection
+	Scopes     map[ast.Node]*types.Scope
 }
 
 type Package struct {
@@ -40,10 +47,10 @@ func newPackage(pkg *packages.Package) *Package {
 	}
 	for _, file := range pkg.Syntax {
 		if p.start == 0 || file.Pos() < p.start {
-			p.start = file.Pos()
+			p.start = file.FileStart
 		}
 		if p.end == 0 || file.End() > p.end {
-			p.end = file.End()
+			p.end = file.FileEnd
 		}
 	}
 	return p
@@ -51,9 +58,6 @@ func newPackage(pkg *packages.Package) *Package {
 
 func (p *Package) GetObject(name string) types.Object {
 	return p.Types.Scope().Lookup(name)
-}
-func (p *Package) GetType(obj types.Object) types.Type {
-	return obj.Type()
 }
 func (p *Package) Positions() (start, end token.Pos) {
 	return p.start, p.end
@@ -63,19 +67,89 @@ func (p *Package) HasPos(pos token.Pos) bool {
 		return false
 	}
 	for _, file := range p.Syntax {
-		if file.Pos() <= pos && pos <= file.End() {
+		if file.FileStart <= pos && pos <= file.FileEnd {
 			return true
 		}
 	}
 	return false
 }
-func (p *Package) quickHasPos(pos token.Pos) bool {
-	return p.start <= pos && pos <= p.end
+
+func newPackages(pkgs []*Package) *Packages {
+	isStd := func(path string) bool {
+		return !strings.Contains(path, ".")
+	}
+	isGolangOrg := func(path string) bool {
+		return strings.HasPrefix(path, "golang.org/")
+	}
+	sortPkgs := func(pkgs []*Package) {
+		slices.SortFunc(pkgs, func(a, b *Package) int {
+			return strings.Compare(a.PkgPath, b.PkgPath)
+		})
+	}
+	sortPkgsByPos := func(pkgs []*Package) []*Package {
+		slices.SortFunc(pkgs, func(a, b *Package) int {
+			return cmp.Compare(a.start, b.start)
+		})
+		return pkgs
+	}
+
+	if len(pkgs) == 0 {
+		return nil
+	}
+	var allPkgs []*Package
+	p := &Packages{origPkgs: pkgs, Fset: pkgs[0].Fset}
+	p.mapPkgs = map[string]*Package{}
+	for _, pkg := range p.origPkgs {
+		for path, impPkg := range pkg.Imports {
+			if p.mapPkgs[path] == nil {
+				pkg0 := newPackage(impPkg)
+				p.mapPkgs[path] = pkg0
+				allPkgs = append(allPkgs, pkg0)
+			}
+		}
+	}
+
+	// filter std packages then sort
+	var goOrgPkgs, otherPkgs []*Package
+	for _, pkg := range allPkgs {
+		switch {
+		case isStd(pkg.PkgPath):
+			p.stdPkgs = append(p.stdPkgs, pkg)
+		case isGolangOrg(pkg.PkgPath):
+			goOrgPkgs = append(goOrgPkgs, pkg)
+		default:
+			otherPkgs = append(otherPkgs, pkg)
+		}
+	}
+	sortPkgs(p.stdPkgs)
+	sortPkgs(goOrgPkgs)
+	sortPkgs(otherPkgs)
+	p.allPkgs = slicez.Concat(p.stdPkgs, goOrgPkgs, otherPkgs)
+	p.pkgByPos = sortPkgsByPos(allPkgs)
+
+	// collect types.Info from all packages
+	p.Types = map[ast.Expr]types.TypeAndValue{}
+	p.Instances = map[*ast.Ident]types.Instance{}
+	p.Defs = map[*ast.Ident]types.Object{}
+	p.Uses = map[*ast.Ident]types.Object{}
+	p.Implicits = map[ast.Node]types.Object{}
+	p.Selections = map[*ast.SelectorExpr]*types.Selection{}
+	p.Scopes = map[ast.Node]*types.Scope{}
+	for _, pkg := range allPkgs {
+		mapz.Append(p.Types, pkg.TypesInfo.Types)
+		mapz.Append(p.Instances, pkg.TypesInfo.Instances)
+		mapz.Append(p.Defs, pkg.TypesInfo.Defs)
+		mapz.Append(p.Uses, pkg.TypesInfo.Uses)
+		mapz.Append(p.Implicits, pkg.TypesInfo.Implicits)
+		mapz.Append(p.Selections, pkg.TypesInfo.Selections)
+		mapz.Append(p.Scopes, pkg.TypesInfo.Scopes)
+	}
+	return p
 }
 
 // Packages returns the loaded packages from input patterns.
 func (p *Packages) Packages() []*Package {
-	return p.pkgs
+	return p.origPkgs
 }
 
 // AllPackages returns all packages, including std packages, golang.org/x packages, and other packages. It supports filtering by pattern. Examples:
@@ -85,6 +159,12 @@ func (p *Packages) Packages() []*Package {
 //	AllPackages("ezpkg.io/codez", "fmt")  👉 return listed packages
 func (p *Packages) AllPackages(pattern ...string) []*Package {
 	return filterPackages(p.allPkgs, pattern...)
+}
+func (p *Packages) AllErrors() (errs []packages.Error) {
+	for _, pkg := range p.origPkgs {
+		errs = append(errs, pkg.Errors...)
+	}
+	return errs
 }
 func (p *Packages) StdPackages() []*Package {
 	return p.stdPkgs
@@ -149,12 +229,7 @@ func (p *Packages) MustGetBuiltInType(typName string) types.Type {
 }
 
 func (p *Packages) GetPackageByPos(pos token.Pos) *Package {
-	pkg := quickSearchPkgByPos(p.pkgByPos, pos)
-	if pkg != nil && pkg.HasPos(pos) {
-		return pkg
-	}
-	// slow path
-	for _, pkg := range p.pkgs {
+	for _, pkg := range p.origPkgs {
 		if pkg.HasPos(pos) {
 			return pkg
 		}
@@ -162,96 +237,34 @@ func (p *Packages) GetPackageByPos(pos token.Pos) *Package {
 	return nil
 }
 
-func quickSearchPkgByPos(pkgs []*Package, pos token.Pos) *Package {
-	switch {
-	case len(pkgs) == 0:
-		return nil
-	case len(pkgs) == 1 && pkgs[0].quickHasPos(pos):
-		return pkgs[0]
-	case len(pkgs) == 1:
-		return nil
-	}
-	mid := len(pkgs) / 2
-	if pkgs[mid].quickHasPos(pos) {
-		return pkgs[mid]
-	}
-	if pkgs[mid].start > pos {
-		return quickSearchPkgByPos(pkgs[:mid], pos)
-	} else {
-		return quickSearchPkgByPos(pkgs[mid:], pos)
-	}
-}
-
 func (p *Packages) TypeOf(expr ast.Expr) types.Type {
-	pkg := p.GetPackageByPos(expr.Pos())
-	if pkg == nil {
-		return nil
+	if t, ok := p.Types[expr]; ok {
+		return t.Type
 	}
-	return pkg.TypesInfo.TypeOf(expr)
-}
-
-func (p *Packages) ObjectOf(ident *ast.Ident) types.Object {
-	for _, pkg := range p.pkgs {
-		if obj := pkg.TypesInfo.ObjectOf(ident); obj != nil {
-			return obj
+	if id, _ := expr.(*ast.Ident); id != nil {
+		if obj := p.ObjectOf(id); obj != nil {
+			return obj.Type()
 		}
 	}
 	return nil
 }
 
-func newPackages(pkgs []*Package) *Packages {
-	isStd := func(path string) bool {
-		return !strings.Contains(path, ".")
+func (p *Packages) ObjectOf(ident *ast.Ident) types.Object {
+	if obj := p.Defs[ident]; obj != nil {
+		return obj
 	}
-	isGolangOrg := func(path string) bool {
-		return strings.HasPrefix(path, "golang.org/")
-	}
-	sortPkgs := func(pkgs []*Package) {
-		slices.SortFunc(pkgs, func(a, b *Package) int {
-			return strings.Compare(a.PkgPath, b.PkgPath)
-		})
-	}
-	sortPkgsByPos := func(pkgs []*Package) []*Package {
-		slices.SortFunc(pkgs, func(a, b *Package) int {
-			return cmp.Compare(a.start, b.start)
-		})
-		return pkgs
-	}
+	return p.Uses[ident]
+}
 
-	if len(pkgs) == 0 {
-		return nil
+func (p *Packages) PkgNameOf(imp *ast.ImportSpec) *types.PkgName {
+	var obj types.Object
+	if imp.Name != nil {
+		obj = p.Defs[imp.Name]
+	} else {
+		obj = p.Implicits[imp]
 	}
-	var allPkgs []*Package
-	p := &Packages{pkgs: pkgs, Fset: pkgs[0].Fset}
-	p.mapPkgs = map[string]*Package{}
-	for _, pkg := range p.pkgs {
-		for path, impPkg := range pkg.Imports {
-			if p.mapPkgs[path] == nil {
-				pkg0 := newPackage(impPkg)
-				p.mapPkgs[path] = pkg0
-				allPkgs = append(allPkgs, pkg0)
-			}
-		}
-	}
-
-	// filter std packages then sort
-	var goOrgPkgs, otherPkgs []*Package
-	for _, pkg := range allPkgs {
-		switch {
-		case isStd(pkg.PkgPath):
-			p.stdPkgs = append(p.stdPkgs, pkg)
-		case isGolangOrg(pkg.PkgPath):
-			goOrgPkgs = append(goOrgPkgs, pkg)
-		default:
-			otherPkgs = append(otherPkgs, pkg)
-		}
-	}
-	sortPkgs(p.stdPkgs)
-	sortPkgs(goOrgPkgs)
-	sortPkgs(otherPkgs)
-	p.allPkgs = slicez.Concat(p.stdPkgs, goOrgPkgs, otherPkgs)
-	p.pkgByPos = sortPkgsByPos(allPkgs)
-	return p
+	pkgname, _ := obj.(*types.PkgName)
+	return pkgname
 }
 
 func filterPackages(pkgs []*Package, pattern ...string) []*Package {

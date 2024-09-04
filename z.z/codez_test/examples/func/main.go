@@ -34,7 +34,7 @@ func matchContext(pkgSet *codez.Packages) {
 		codez.MatchIdent(codez.MatchString("Context")),
 	)
 
-	nodes, err := codez.Match(m0, pkgSet, "ezpkg.io/-/codez_test/testdata/logging/...")
+	nodes, err := codez.Match(pkgSet, m0, "ezpkg.io/-/codez_test/testdata/logging/...")
 	if err != nil {
 		fmt.Println("error", err)
 		return

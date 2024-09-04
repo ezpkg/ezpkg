@@ -5,6 +5,8 @@ import (
 	"go/ast"
 	"go/types"
 	"regexp"
+
+	"ezpkg.io/typez"
 )
 
 type NodeMatcher interface {
@@ -85,6 +87,35 @@ func (m zStringMatcher) Match(cx *MatchContext, value string) (bool, error) {
 		return m.Regexp.MatchString(value), nil
 	}
 	return value == m.Value, nil
+}
+
+func MatchNodeAny() NodeMatcher {
+	return NodeMatcherFunc(func(cx *MatchContext, node ast.Node) (bool, error) {
+		return true, nil
+	})
+}
+
+func MatchExprAny() ExprMatcher {
+	return ExprMatcherFunc(func(cx *MatchContext, expr ast.Expr) (bool, error) {
+		return true, nil
+	})
+}
+
+type NodeMatcherFunc func(cx *MatchContext, node ast.Node) (bool, error)
+type ExprMatcherFunc func(cx *MatchContext, expr ast.Expr) (bool, error)
+
+func (fn NodeMatcherFunc) Match(cx *MatchContext, node ast.Node) (bool, error) {
+	return fn(cx, node)
+}
+func (fn ExprMatcherFunc) Match(cx *MatchContext, node ast.Node) (bool, error) {
+	expr, ok := node.(ast.Expr)
+	if !ok {
+		return false, nil
+	}
+	return fn(cx, expr)
+}
+func (fn ExprMatcherFunc) MatchExpr(cx *MatchContext, expr ast.Expr) (bool, error) {
+	return fn(cx, expr)
 }
 
 func MatchString(value string) StringMatcher {
@@ -214,19 +245,31 @@ func (fn BlockStmtMatcherFunc) MatchStmt(cx *MatchContext, stmt ast.Stmt) (bool,
 	return fn(cx, stmt.(*ast.BlockStmt))
 }
 
+type FuncDeclMatcherFunc func(cx *MatchContext, decl *ast.FuncDecl) (bool, error)
+
+func (fn FuncDeclMatcherFunc) Match(cx *MatchContext, node ast.Node) (bool, error) {
+	x, ok := node.(*ast.FuncDecl)
+	if !ok {
+		return false, nil
+	}
+	return fn(cx, x)
+}
+
 func MatchSelector(x ExprMatcher, sel IdentMatcher) SelectorExprMatcher {
 	return SelectorExprMatcherB{X: x, Sel: sel}
 }
 
 func match(cx *MatchContext, ok bool, err error, m NodeMatcher, node ast.Node) (bool, error) {
+	nodeIsNil := typez.IsNil(node)
 	switch {
 	case !ok:
 		return false, err
-	case m == nil && node == nil:
+	case m == nil && nodeIsNil:
 		return true, nil
-	case m == nil || node == nil:
+	case m == nil && !nodeIsNil:
 		return false, nil
 	default:
+
 		return m.Match(cx, node)
 	}
 }

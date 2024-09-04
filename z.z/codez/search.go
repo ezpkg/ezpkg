@@ -89,7 +89,7 @@ func (s *Search) Exec(pkgs *Packages) (_ *SearchResult, errs errorz.Errors) {
 
 	var filteredPkgs []*Package
 	if s.pkgs == nil {
-		filteredPkgs = slices.Clone(pkgs.pkgs)
+		filteredPkgs = slices.Clone(pkgs.origPkgs)
 	} else {
 		filteredPkgs = filterPackages(pkgs.allPkgs, s.pkgs...)
 	}

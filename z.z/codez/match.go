@@ -6,7 +6,7 @@ import (
 	"ezpkg.io/errorz"
 )
 
-func Match(m NodeMatcher, pkgs *Packages, pkgPatterns ...string) (out []ast.Node, err error) {
+func Match(pkgs *Packages, m NodeMatcher, pkgPatterns ...string) (out []ast.Node, err error) {
 	cx := newMatchContext(pkgs)
 	for _, pkg := range pkgs.AllPackages(pkgPatterns...) {
 		for _, f := range pkg.Syntax {

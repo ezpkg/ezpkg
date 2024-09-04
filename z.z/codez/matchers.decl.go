@@ -5,6 +5,7 @@
 package codez
 
 import (
+	// "fmt"
 	ast "go/ast"
 	token "go/token"
 )
@@ -28,11 +29,17 @@ func (m FuncDeclMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err e
 	if !ok {
 		return false, nil
 	}
+	// fmt.Printf("FuncDeclMatcherB: %v\n", x.Name.Name)
 	ok, err = match(cx, ok, err, m.Doc, x.Doc)
+	// fmt.Printf("-- matched Doc: %v %v\n", ok, err)
 	ok, err = match(cx, ok, err, m.Recv, x.Recv)
+	// fmt.Printf("-- matched Recv: %v %v\n", ok, err)
 	ok, err = match(cx, ok, err, m.Name, x.Name)
+	// fmt.Printf("-- matched Name: %v %v\n", ok, err)
 	ok, err = match(cx, ok, err, m.Type, x.Type)
+	// fmt.Printf("-- matched Type: %v %v\n", ok, err)
 	ok, err = match(cx, ok, err, m.Body, x.Body)
+	// fmt.Printf("-- matched Body: %v %v\n", ok, err)
 	return ok, err
 }
 
