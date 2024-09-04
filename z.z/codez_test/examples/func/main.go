@@ -41,7 +41,7 @@ func matchContext(pkgSet *codez.Packages) {
 	}
 	fmt.Printf("\n👉 found %v nodes\n", len(nodes))
 	for _, node := range nodes {
-		PrintAst(pkgSet.Fset, node)
+		PrintNode(pkgSet.Fset, node)
 	}
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"os"
@@ -9,8 +10,12 @@ import (
 	"ezpkg.io/errorz"
 )
 
-func PrintAst(fset *token.FileSet, x any) {
-	errorz.MustZ(ast.Fprint(os.Stdout, fset, x, astFilter))
+func PrintNode(fset *token.FileSet, node ast.Node) {
+	pos := fset.Position(node.Pos())
+	if pos.IsValid() {
+		fmt.Printf("-> %v:%v\n", pos.Filename, pos.Line)
+	}
+	errorz.MustZ(ast.Fprint(os.Stdout, fset, node, astFilter))
 }
 
 func astFilter(name string, value reflect.Value) bool {

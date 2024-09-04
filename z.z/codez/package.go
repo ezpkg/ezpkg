@@ -94,7 +94,10 @@ func newPackages(pkgs []*Package) *Packages {
 		})
 	}
 
-	p := &Packages{pkgs: pkgs}
+	if len(pkgs) == 0 {
+		return nil
+	}
+	p := &Packages{pkgs: pkgs, Fset: pkgs[0].Fset}
 	p.mapPkgs = map[string]*Package{}
 	for _, pkg := range p.pkgs {
 		for path, impPkg := range pkg.Imports {
