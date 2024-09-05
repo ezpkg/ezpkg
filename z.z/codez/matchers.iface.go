@@ -68,6 +68,16 @@ type CommClauseMatcher interface {
 	MatchStmt(cx *MatchContext, stmt ast.Stmt) (bool, error)
 }
 
+// Comment
+type CommentMatcher interface {
+	Match(cx *MatchContext, node ast.Node) (bool, error)
+}
+
+// CommentGroup
+type CommentGroupMatcher interface {
+	Match(cx *MatchContext, node ast.Node) (bool, error)
+}
+
 // CompositeLit
 type CompositeLitMatcher interface {
 	Match(cx *MatchContext, node ast.Node) (bool, error)
@@ -102,6 +112,21 @@ type EmptyStmtMatcher interface {
 type ExprStmtMatcher interface {
 	Match(cx *MatchContext, node ast.Node) (bool, error)
 	MatchStmt(cx *MatchContext, stmt ast.Stmt) (bool, error)
+}
+
+// Field
+type FieldMatcher interface {
+	Match(cx *MatchContext, node ast.Node) (bool, error)
+}
+
+// FieldList
+type FieldListMatcher interface {
+	Match(cx *MatchContext, node ast.Node) (bool, error)
+}
+
+// File
+type FileMatcher interface {
+	Match(cx *MatchContext, node ast.Node) (bool, error)
 }
 
 // ForStmt

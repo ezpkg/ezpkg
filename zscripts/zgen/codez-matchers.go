@@ -46,11 +46,11 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 	pkgCodez := ng.GetPackageByPath(pathCodez)
 	pkgDir := filepath.Dir(pkgCodez.CompiledGoFiles[0])
 
+	ignored := []string{"BadDecl", "BadExpr", "BadStmt", "Package", "Object", "Scope"}
 	pkgGoAst := ng.GetPackageByPath(pathGoAst)
 	allObjs := getObjs(pkgGoAst)
 	allObjs = slicez.FilterFunc(allObjs, func(obj types.Object) bool {
-		return obj.Exported() &&
-			!typez.In(obj.Name(), "BadDecl", "BadExpr", "BadStmt", "Package", "Object", "Scope")
+		return obj.Exported() && !typez.In(obj.Name(), ignored...)
 	})
 
 	_, astNodeI := getIface(pkgGoAst, "Node")
@@ -73,6 +73,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 	group.Others = slicez.FilterFunc(allObjs, func(obj types.Object) bool {
 		return isStruct(obj.Type()) &&
 			!implements(obj.Type(), astExprI) &&
+			!implements(obj.Type(), astSpecI) &&
 			!implements(obj.Type(), astStmtI) &&
 			!implements(obj.Type(), astDeclI)
 	})
@@ -86,8 +87,8 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 	}
 	parseField := func(field types.Type) *ParsedField {
 		if named := asNamed(field); named != nil {
-			if typez.In(named.Obj().Name(), "Object") {
-				return nil // ignore deprecated types
+			if typez.In(named.Obj().Name(), ignored...) {
+				return nil // ignore deprecated fields
 			}
 		}
 		astTyp := asAstType(field)
@@ -156,7 +157,8 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 			}
 			pr("}\n\n")
 
-			pr("func (m %s) Match%s(cx *MatchContext, node ast.%s) (ok bool, err error) {\n", nameB, title(gName), title(gName))
+			ifaceName := typez.If(gName == "other", "Node", title(gName))
+			pr("func (m %s) Match%s(cx *MatchContext, node ast.%s) (ok bool, err error) {\n", nameB, ifaceName, ifaceName)
 			pr("\treturn m.Match(cx, node)\n")
 			pr("}\n")
 
@@ -194,6 +196,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 	genMatchers("expr", group.Exprs)
 	genMatchers("spec", group.Specs)
 	genMatchers("stmt", group.Stmts)
+	genMatchers("other", group.Others)
 
 	{ // 👉 interfaces
 		p := errorz.Must(ng.GenerateFile("codez", pkgDir+"/matchers.iface.go"))
@@ -251,6 +254,8 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 
 			pr("// %v\n", name)
 			pr("func (v *zVisitor) visit%v(node *ast.%v) {\n", name, name)
+			pr("\tok := node != nil && v.fn(v.cx, node)\n")
+			pr("\tif ok {\n")
 			for i := 0; i < st.NumFields(); i++ {
 				field := st.Field(i)
 				f := parseField(field.Type())
@@ -262,7 +267,6 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 				case f.token != nil: // skip
 				case f.basic != nil: // skip
 				case f.astTyp != nil:
-					pr("\tv.fn(v.cx, node.%s)\n", field.Name())
 					pr("\tv.visit%v(node.%s)\n", f.astTyp.Obj().Name(), field.Name())
 
 				case f.slice != nil:
@@ -271,14 +275,14 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 						panic(fmt.Sprintf("unsupported slice type %v", field.Type()))
 					}
 					pr("\tfor _, item := range node.%s {\n", field.Name())
-					pr("\t\tok := v.fn(v.cx, item)\n")
-					pr("\t\tif ok { v.visit%v(item) }\n", typ.Obj().Name())
+					pr("\t\tv.visit%v(item)\n", typ.Obj().Name())
 					pr("\t}\n")
 
 				default:
 					pr("\t%s %s ❌\n", field.Name(), p.TypeString(field.Type()))
 				}
 			}
+			pr("}\n")
 			pr("}\n\n")
 		}
 	}

@@ -50,17 +50,6 @@ type ObjectMatcher struct{}
 
 func (x ObjectMatcher) Match(cx *MatchContext, node ast.Node) (bool, error) { return true, nil }
 
-type FieldMatcher interface {
-}
-
-type FieldListMatcher interface {
-	Match(cx *MatchContext, node ast.Node) (bool, error)
-}
-
-type CommentGroupMatcher interface {
-	Match(cx *MatchContext, node ast.Node) (bool, error)
-}
-
 type SpecMatcher interface {
 	Match(cx *MatchContext, node ast.Node) (bool, error)
 }

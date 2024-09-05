@@ -149,12 +149,6 @@ func (v *zVisitor) visitOther(node ast.Node) {
 		v.visitFieldList(x)
 	case *ast.File:
 		v.visitFile(x)
-	case *ast.ImportSpec:
-		v.visitImportSpec(x)
-	case *ast.TypeSpec:
-		v.visitTypeSpec(x)
-	case *ast.ValueSpec:
-		v.visitValueSpec(x)
 	default:
 		panic(fmt.Sprintf("unreachable: %v is ast.Other ❌", node))
 	}
@@ -162,23 +156,21 @@ func (v *zVisitor) visitOther(node ast.Node) {
 
 // ArrayType
 func (v *zVisitor) visitArrayType(node *ast.ArrayType) {
-	v.fn(v.cx, node.Len)
-	v.visitExpr(node.Len)
-	v.fn(v.cx, node.Elt)
-	v.visitExpr(node.Elt)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.Len)
+		v.visitExpr(node.Elt)
+	}
 }
 
 // AssignStmt
 func (v *zVisitor) visitAssignStmt(node *ast.AssignStmt) {
-	for _, item := range node.Lhs {
-		ok := v.fn(v.cx, item)
-		if ok {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		for _, item := range node.Lhs {
 			v.visitExpr(item)
 		}
-	}
-	for _, item := range node.Rhs {
-		ok := v.fn(v.cx, item)
-		if ok {
+		for _, item := range node.Rhs {
 			v.visitExpr(item)
 		}
 	}
@@ -186,21 +178,25 @@ func (v *zVisitor) visitAssignStmt(node *ast.AssignStmt) {
 
 // BasicLit
 func (v *zVisitor) visitBasicLit(node *ast.BasicLit) {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+	}
 }
 
 // BinaryExpr
 func (v *zVisitor) visitBinaryExpr(node *ast.BinaryExpr) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
-	v.fn(v.cx, node.Y)
-	v.visitExpr(node.Y)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+		v.visitExpr(node.Y)
+	}
 }
 
 // BlockStmt
 func (v *zVisitor) visitBlockStmt(node *ast.BlockStmt) {
-	for _, item := range node.List {
-		ok := v.fn(v.cx, item)
-		if ok {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		for _, item := range node.List {
 			v.visitStmt(item)
 		}
 	}
@@ -208,17 +204,18 @@ func (v *zVisitor) visitBlockStmt(node *ast.BlockStmt) {
 
 // BranchStmt
 func (v *zVisitor) visitBranchStmt(node *ast.BranchStmt) {
-	v.fn(v.cx, node.Label)
-	v.visitIdent(node.Label)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitIdent(node.Label)
+	}
 }
 
 // CallExpr
 func (v *zVisitor) visitCallExpr(node *ast.CallExpr) {
-	v.fn(v.cx, node.Fun)
-	v.visitExpr(node.Fun)
-	for _, item := range node.Args {
-		ok := v.fn(v.cx, item)
-		if ok {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.Fun)
+		for _, item := range node.Args {
 			v.visitExpr(item)
 		}
 	}
@@ -226,15 +223,12 @@ func (v *zVisitor) visitCallExpr(node *ast.CallExpr) {
 
 // CaseClause
 func (v *zVisitor) visitCaseClause(node *ast.CaseClause) {
-	for _, item := range node.List {
-		ok := v.fn(v.cx, item)
-		if ok {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		for _, item := range node.List {
 			v.visitExpr(item)
 		}
-	}
-	for _, item := range node.Body {
-		ok := v.fn(v.cx, item)
-		if ok {
+		for _, item := range node.Body {
 			v.visitStmt(item)
 		}
 	}
@@ -242,29 +236,46 @@ func (v *zVisitor) visitCaseClause(node *ast.CaseClause) {
 
 // ChanType
 func (v *zVisitor) visitChanType(node *ast.ChanType) {
-	v.fn(v.cx, node.Value)
-	v.visitExpr(node.Value)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.Value)
+	}
 }
 
 // CommClause
 func (v *zVisitor) visitCommClause(node *ast.CommClause) {
-	v.fn(v.cx, node.Comm)
-	v.visitStmt(node.Comm)
-	for _, item := range node.Body {
-		ok := v.fn(v.cx, item)
-		if ok {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitStmt(node.Comm)
+		for _, item := range node.Body {
 			v.visitStmt(item)
+		}
+	}
+}
+
+// Comment
+func (v *zVisitor) visitComment(node *ast.Comment) {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+	}
+}
+
+// CommentGroup
+func (v *zVisitor) visitCommentGroup(node *ast.CommentGroup) {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		for _, item := range node.List {
+			v.visitComment(item)
 		}
 	}
 }
 
 // CompositeLit
 func (v *zVisitor) visitCompositeLit(node *ast.CompositeLit) {
-	v.fn(v.cx, node.Type)
-	v.visitExpr(node.Type)
-	for _, item := range node.Elts {
-		ok := v.fn(v.cx, item)
-		if ok {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.Type)
+		for _, item := range node.Elts {
 			v.visitExpr(item)
 		}
 	}
@@ -272,83 +283,136 @@ func (v *zVisitor) visitCompositeLit(node *ast.CompositeLit) {
 
 // DeclStmt
 func (v *zVisitor) visitDeclStmt(node *ast.DeclStmt) {
-	v.fn(v.cx, node.Decl)
-	v.visitDecl(node.Decl)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitDecl(node.Decl)
+	}
 }
 
 // DeferStmt
 func (v *zVisitor) visitDeferStmt(node *ast.DeferStmt) {
-	v.fn(v.cx, node.Call)
-	v.visitCallExpr(node.Call)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitCallExpr(node.Call)
+	}
 }
 
 // Ellipsis
 func (v *zVisitor) visitEllipsis(node *ast.Ellipsis) {
-	v.fn(v.cx, node.Elt)
-	v.visitExpr(node.Elt)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.Elt)
+	}
 }
 
 // EmptyStmt
 func (v *zVisitor) visitEmptyStmt(node *ast.EmptyStmt) {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+	}
 }
 
 // ExprStmt
 func (v *zVisitor) visitExprStmt(node *ast.ExprStmt) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+	}
+}
+
+// Field
+func (v *zVisitor) visitField(node *ast.Field) {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitCommentGroup(node.Doc)
+		for _, item := range node.Names {
+			v.visitIdent(item)
+		}
+		v.visitExpr(node.Type)
+		v.visitBasicLit(node.Tag)
+		v.visitCommentGroup(node.Comment)
+	}
+}
+
+// FieldList
+func (v *zVisitor) visitFieldList(node *ast.FieldList) {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		for _, item := range node.List {
+			v.visitField(item)
+		}
+	}
+}
+
+// File
+func (v *zVisitor) visitFile(node *ast.File) {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitCommentGroup(node.Doc)
+		v.visitIdent(node.Name)
+		for _, item := range node.Decls {
+			v.visitDecl(item)
+		}
+		for _, item := range node.Imports {
+			v.visitImportSpec(item)
+		}
+		for _, item := range node.Unresolved {
+			v.visitIdent(item)
+		}
+		for _, item := range node.Comments {
+			v.visitCommentGroup(item)
+		}
+	}
 }
 
 // ForStmt
 func (v *zVisitor) visitForStmt(node *ast.ForStmt) {
-	v.fn(v.cx, node.Init)
-	v.visitStmt(node.Init)
-	v.fn(v.cx, node.Cond)
-	v.visitExpr(node.Cond)
-	v.fn(v.cx, node.Post)
-	v.visitStmt(node.Post)
-	v.fn(v.cx, node.Body)
-	v.visitBlockStmt(node.Body)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitStmt(node.Init)
+		v.visitExpr(node.Cond)
+		v.visitStmt(node.Post)
+		v.visitBlockStmt(node.Body)
+	}
 }
 
 // FuncDecl
 func (v *zVisitor) visitFuncDecl(node *ast.FuncDecl) {
-	v.fn(v.cx, node.Doc)
-	v.visitCommentGroup(node.Doc)
-	v.fn(v.cx, node.Recv)
-	v.visitFieldList(node.Recv)
-	v.fn(v.cx, node.Name)
-	v.visitIdent(node.Name)
-	v.fn(v.cx, node.Type)
-	v.visitFuncType(node.Type)
-	v.fn(v.cx, node.Body)
-	v.visitBlockStmt(node.Body)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitCommentGroup(node.Doc)
+		v.visitFieldList(node.Recv)
+		v.visitIdent(node.Name)
+		v.visitFuncType(node.Type)
+		v.visitBlockStmt(node.Body)
+	}
 }
 
 // FuncLit
 func (v *zVisitor) visitFuncLit(node *ast.FuncLit) {
-	v.fn(v.cx, node.Type)
-	v.visitFuncType(node.Type)
-	v.fn(v.cx, node.Body)
-	v.visitBlockStmt(node.Body)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitFuncType(node.Type)
+		v.visitBlockStmt(node.Body)
+	}
 }
 
 // FuncType
 func (v *zVisitor) visitFuncType(node *ast.FuncType) {
-	v.fn(v.cx, node.TypeParams)
-	v.visitFieldList(node.TypeParams)
-	v.fn(v.cx, node.Params)
-	v.visitFieldList(node.Params)
-	v.fn(v.cx, node.Results)
-	v.visitFieldList(node.Results)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitFieldList(node.TypeParams)
+		v.visitFieldList(node.Params)
+		v.visitFieldList(node.Results)
+	}
 }
 
 // GenDecl
 func (v *zVisitor) visitGenDecl(node *ast.GenDecl) {
-	v.fn(v.cx, node.Doc)
-	v.visitCommentGroup(node.Doc)
-	for _, item := range node.Specs {
-		ok := v.fn(v.cx, item)
-		if ok {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitCommentGroup(node.Doc)
+		for _, item := range node.Specs {
 			v.visitSpec(item)
 		}
 	}
@@ -356,59 +420,64 @@ func (v *zVisitor) visitGenDecl(node *ast.GenDecl) {
 
 // GoStmt
 func (v *zVisitor) visitGoStmt(node *ast.GoStmt) {
-	v.fn(v.cx, node.Call)
-	v.visitCallExpr(node.Call)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitCallExpr(node.Call)
+	}
 }
 
 // Ident
 func (v *zVisitor) visitIdent(node *ast.Ident) {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+	}
 }
 
 // IfStmt
 func (v *zVisitor) visitIfStmt(node *ast.IfStmt) {
-	v.fn(v.cx, node.Init)
-	v.visitStmt(node.Init)
-	v.fn(v.cx, node.Cond)
-	v.visitExpr(node.Cond)
-	v.fn(v.cx, node.Body)
-	v.visitBlockStmt(node.Body)
-	v.fn(v.cx, node.Else)
-	v.visitStmt(node.Else)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitStmt(node.Init)
+		v.visitExpr(node.Cond)
+		v.visitBlockStmt(node.Body)
+		v.visitStmt(node.Else)
+	}
 }
 
 // ImportSpec
 func (v *zVisitor) visitImportSpec(node *ast.ImportSpec) {
-	v.fn(v.cx, node.Doc)
-	v.visitCommentGroup(node.Doc)
-	v.fn(v.cx, node.Name)
-	v.visitIdent(node.Name)
-	v.fn(v.cx, node.Path)
-	v.visitBasicLit(node.Path)
-	v.fn(v.cx, node.Comment)
-	v.visitCommentGroup(node.Comment)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitCommentGroup(node.Doc)
+		v.visitIdent(node.Name)
+		v.visitBasicLit(node.Path)
+		v.visitCommentGroup(node.Comment)
+	}
 }
 
 // IncDecStmt
 func (v *zVisitor) visitIncDecStmt(node *ast.IncDecStmt) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+	}
 }
 
 // IndexExpr
 func (v *zVisitor) visitIndexExpr(node *ast.IndexExpr) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
-	v.fn(v.cx, node.Index)
-	v.visitExpr(node.Index)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+		v.visitExpr(node.Index)
+	}
 }
 
 // IndexListExpr
 func (v *zVisitor) visitIndexListExpr(node *ast.IndexListExpr) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
-	for _, item := range node.Indices {
-		ok := v.fn(v.cx, item)
-		if ok {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+		for _, item := range node.Indices {
 			v.visitExpr(item)
 		}
 	}
@@ -416,57 +485,63 @@ func (v *zVisitor) visitIndexListExpr(node *ast.IndexListExpr) {
 
 // InterfaceType
 func (v *zVisitor) visitInterfaceType(node *ast.InterfaceType) {
-	v.fn(v.cx, node.Methods)
-	v.visitFieldList(node.Methods)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitFieldList(node.Methods)
+	}
 }
 
 // KeyValueExpr
 func (v *zVisitor) visitKeyValueExpr(node *ast.KeyValueExpr) {
-	v.fn(v.cx, node.Key)
-	v.visitExpr(node.Key)
-	v.fn(v.cx, node.Value)
-	v.visitExpr(node.Value)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.Key)
+		v.visitExpr(node.Value)
+	}
 }
 
 // LabeledStmt
 func (v *zVisitor) visitLabeledStmt(node *ast.LabeledStmt) {
-	v.fn(v.cx, node.Label)
-	v.visitIdent(node.Label)
-	v.fn(v.cx, node.Stmt)
-	v.visitStmt(node.Stmt)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitIdent(node.Label)
+		v.visitStmt(node.Stmt)
+	}
 }
 
 // MapType
 func (v *zVisitor) visitMapType(node *ast.MapType) {
-	v.fn(v.cx, node.Key)
-	v.visitExpr(node.Key)
-	v.fn(v.cx, node.Value)
-	v.visitExpr(node.Value)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.Key)
+		v.visitExpr(node.Value)
+	}
 }
 
 // ParenExpr
 func (v *zVisitor) visitParenExpr(node *ast.ParenExpr) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+	}
 }
 
 // RangeStmt
 func (v *zVisitor) visitRangeStmt(node *ast.RangeStmt) {
-	v.fn(v.cx, node.Key)
-	v.visitExpr(node.Key)
-	v.fn(v.cx, node.Value)
-	v.visitExpr(node.Value)
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
-	v.fn(v.cx, node.Body)
-	v.visitBlockStmt(node.Body)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.Key)
+		v.visitExpr(node.Value)
+		v.visitExpr(node.X)
+		v.visitBlockStmt(node.Body)
+	}
 }
 
 // ReturnStmt
 func (v *zVisitor) visitReturnStmt(node *ast.ReturnStmt) {
-	for _, item := range node.Results {
-		ok := v.fn(v.cx, item)
-		if ok {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		for _, item := range node.Results {
 			v.visitExpr(item)
 		}
 	}
@@ -474,116 +549,118 @@ func (v *zVisitor) visitReturnStmt(node *ast.ReturnStmt) {
 
 // SelectStmt
 func (v *zVisitor) visitSelectStmt(node *ast.SelectStmt) {
-	v.fn(v.cx, node.Body)
-	v.visitBlockStmt(node.Body)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitBlockStmt(node.Body)
+	}
 }
 
 // SelectorExpr
 func (v *zVisitor) visitSelectorExpr(node *ast.SelectorExpr) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
-	v.fn(v.cx, node.Sel)
-	v.visitIdent(node.Sel)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+		v.visitIdent(node.Sel)
+	}
 }
 
 // SendStmt
 func (v *zVisitor) visitSendStmt(node *ast.SendStmt) {
-	v.fn(v.cx, node.Chan)
-	v.visitExpr(node.Chan)
-	v.fn(v.cx, node.Value)
-	v.visitExpr(node.Value)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.Chan)
+		v.visitExpr(node.Value)
+	}
 }
 
 // SliceExpr
 func (v *zVisitor) visitSliceExpr(node *ast.SliceExpr) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
-	v.fn(v.cx, node.Low)
-	v.visitExpr(node.Low)
-	v.fn(v.cx, node.High)
-	v.visitExpr(node.High)
-	v.fn(v.cx, node.Max)
-	v.visitExpr(node.Max)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+		v.visitExpr(node.Low)
+		v.visitExpr(node.High)
+		v.visitExpr(node.Max)
+	}
 }
 
 // StarExpr
 func (v *zVisitor) visitStarExpr(node *ast.StarExpr) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+	}
 }
 
 // StructType
 func (v *zVisitor) visitStructType(node *ast.StructType) {
-	v.fn(v.cx, node.Fields)
-	v.visitFieldList(node.Fields)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitFieldList(node.Fields)
+	}
 }
 
 // SwitchStmt
 func (v *zVisitor) visitSwitchStmt(node *ast.SwitchStmt) {
-	v.fn(v.cx, node.Init)
-	v.visitStmt(node.Init)
-	v.fn(v.cx, node.Tag)
-	v.visitExpr(node.Tag)
-	v.fn(v.cx, node.Body)
-	v.visitBlockStmt(node.Body)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitStmt(node.Init)
+		v.visitExpr(node.Tag)
+		v.visitBlockStmt(node.Body)
+	}
 }
 
 // TypeAssertExpr
 func (v *zVisitor) visitTypeAssertExpr(node *ast.TypeAssertExpr) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
-	v.fn(v.cx, node.Type)
-	v.visitExpr(node.Type)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+		v.visitExpr(node.Type)
+	}
 }
 
 // TypeSpec
 func (v *zVisitor) visitTypeSpec(node *ast.TypeSpec) {
-	v.fn(v.cx, node.Doc)
-	v.visitCommentGroup(node.Doc)
-	v.fn(v.cx, node.Name)
-	v.visitIdent(node.Name)
-	v.fn(v.cx, node.TypeParams)
-	v.visitFieldList(node.TypeParams)
-	v.fn(v.cx, node.Type)
-	v.visitExpr(node.Type)
-	v.fn(v.cx, node.Comment)
-	v.visitCommentGroup(node.Comment)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitCommentGroup(node.Doc)
+		v.visitIdent(node.Name)
+		v.visitFieldList(node.TypeParams)
+		v.visitExpr(node.Type)
+		v.visitCommentGroup(node.Comment)
+	}
 }
 
 // TypeSwitchStmt
 func (v *zVisitor) visitTypeSwitchStmt(node *ast.TypeSwitchStmt) {
-	v.fn(v.cx, node.Init)
-	v.visitStmt(node.Init)
-	v.fn(v.cx, node.Assign)
-	v.visitStmt(node.Assign)
-	v.fn(v.cx, node.Body)
-	v.visitBlockStmt(node.Body)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitStmt(node.Init)
+		v.visitStmt(node.Assign)
+		v.visitBlockStmt(node.Body)
+	}
 }
 
 // UnaryExpr
 func (v *zVisitor) visitUnaryExpr(node *ast.UnaryExpr) {
-	v.fn(v.cx, node.X)
-	v.visitExpr(node.X)
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitExpr(node.X)
+	}
 }
 
 // ValueSpec
 func (v *zVisitor) visitValueSpec(node *ast.ValueSpec) {
-	v.fn(v.cx, node.Doc)
-	v.visitCommentGroup(node.Doc)
-	for _, item := range node.Names {
-		ok := v.fn(v.cx, item)
-		if ok {
+	ok := node != nil && v.fn(v.cx, node)
+	if ok {
+		v.visitCommentGroup(node.Doc)
+		for _, item := range node.Names {
 			v.visitIdent(item)
 		}
-	}
-	v.fn(v.cx, node.Type)
-	v.visitExpr(node.Type)
-	for _, item := range node.Values {
-		ok := v.fn(v.cx, item)
-		if ok {
+		v.visitExpr(node.Type)
+		for _, item := range node.Values {
 			v.visitExpr(item)
 		}
+		v.visitCommentGroup(node.Comment)
 	}
-	v.fn(v.cx, node.Comment)
-	v.visitCommentGroup(node.Comment)
 }
