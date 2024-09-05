@@ -272,6 +272,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 				case f.basic != nil: // skip
 				case f.astTyp != nil:
 					pr("\tv.cx.push(\"%s\", node.%s)\n", field.Name(), field.Name())
+					pr("\tv.cx.replaceCurrent, v.cx.curIdx = replace%s_%s, 0\n", name, field.Name())
 					pr("\tv.visit%s(node.%s)\n", f.astTyp.Obj().Name(), field.Name())
 					pr("\tv.cx.pop()\n")
 
@@ -281,7 +282,9 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 						panic(fmt.Sprintf("unsupported slice type %v", field.Type()))
 					}
 					pr("\tv.cx.push(\"%s\", nil)\n", field.Name())
+					pr("\tv.cx.replaceCurrent = replace%s_%s\n", name, field.Name())
 					pr("\tfor i, item := range node.%s {\n", field.Name())
+					pr("\t\tv.cx.curIdx = i\n")
 					pr("\t\tv.cx.push(strconv.Itoa(i), item)\n")
 					pr("\t\tv.visit%s(item)\n", typ.Obj().Name())
 					pr("\t\tv.cx.pop()\n")

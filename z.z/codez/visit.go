@@ -1,6 +1,7 @@
 package codez
 
 import (
+	"errors"
 	"go/ast"
 	"slices"
 	"strings"
@@ -12,6 +13,9 @@ type VisitContext struct {
 	path    []string   // path to the current node
 	nodes   []ast.Node // stack of nodes, not include the current node
 	curNode ast.Node
+	curIdx  int
+
+	replaceCurrent _NodeReplaceFunc
 }
 
 func newVisitContext() *VisitContext {
@@ -39,6 +43,32 @@ func (cx *VisitContext) pop() {
 	cx.curNode = slicez.Last(cx.nodes)
 	cx.nodes = cx.nodes[:len(cx.nodes)-1]
 	cx.path = cx.path[:len(cx.path)-1]
+	cx.replaceCurrent = nil
+}
+
+// ReplaceCurrent replaces the current node with the new node.
+func (cx *VisitContext) ReplaceCurrent(new ast.Node) error {
+	if cx.replaceCurrent == nil {
+		return errors.New("current node can not be replaced")
+	}
+	if err := cx.replaceCurrent(cx.Parent(), cx.curIdx, new); err != nil {
+		return err
+	}
+	cx.curNode = new
+	return nil
+}
+
+// GetReplaceCurrent returns a function (closure) that can replace the current node with the new node. It returns nil if
+// the current node can not be replaced.
+func (cx *VisitContext) GetReplaceCurrent() func(new ast.Node) error {
+	if cx.replaceCurrent == nil {
+		return nil
+	}
+	// capture closure
+	parent, idx, replace := cx.Parent(), cx.curIdx, cx.replaceCurrent
+	return func(new ast.Node) error {
+		return replace(parent, idx, new)
+	}
 }
 
 func Walk(node ast.Node, fn func(cx *VisitContext, node ast.Node) bool) {

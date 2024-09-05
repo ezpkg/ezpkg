@@ -160,9 +160,11 @@ func (v *zVisitor) visitArrayType(node *ast.ArrayType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Len", node.Len)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceArrayType_Len, 0
 		v.visitExpr(node.Len)
 		v.cx.pop()
 		v.cx.push("Elt", node.Elt)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceArrayType_Elt, 0
 		v.visitExpr(node.Elt)
 		v.cx.pop()
 	}
@@ -173,14 +175,18 @@ func (v *zVisitor) visitAssignStmt(node *ast.AssignStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Lhs", nil)
+		v.cx.replaceCurrent = replaceAssignStmt_Lhs
 		for i, item := range node.Lhs {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
 			v.cx.pop()
 		}
 		v.cx.pop()
 		v.cx.push("Rhs", nil)
+		v.cx.replaceCurrent = replaceAssignStmt_Rhs
 		for i, item := range node.Rhs {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
 			v.cx.pop()
@@ -201,9 +207,11 @@ func (v *zVisitor) visitBinaryExpr(node *ast.BinaryExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceBinaryExpr_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 		v.cx.push("Y", node.Y)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceBinaryExpr_Y, 0
 		v.visitExpr(node.Y)
 		v.cx.pop()
 	}
@@ -214,7 +222,9 @@ func (v *zVisitor) visitBlockStmt(node *ast.BlockStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("List", nil)
+		v.cx.replaceCurrent = replaceBlockStmt_List
 		for i, item := range node.List {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitStmt(item)
 			v.cx.pop()
@@ -228,6 +238,7 @@ func (v *zVisitor) visitBranchStmt(node *ast.BranchStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Label", node.Label)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceBranchStmt_Label, 0
 		v.visitIdent(node.Label)
 		v.cx.pop()
 	}
@@ -238,10 +249,13 @@ func (v *zVisitor) visitCallExpr(node *ast.CallExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Fun", node.Fun)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceCallExpr_Fun, 0
 		v.visitExpr(node.Fun)
 		v.cx.pop()
 		v.cx.push("Args", nil)
+		v.cx.replaceCurrent = replaceCallExpr_Args
 		for i, item := range node.Args {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
 			v.cx.pop()
@@ -255,14 +269,18 @@ func (v *zVisitor) visitCaseClause(node *ast.CaseClause) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("List", nil)
+		v.cx.replaceCurrent = replaceCaseClause_List
 		for i, item := range node.List {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
 			v.cx.pop()
 		}
 		v.cx.pop()
 		v.cx.push("Body", nil)
+		v.cx.replaceCurrent = replaceCaseClause_Body
 		for i, item := range node.Body {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitStmt(item)
 			v.cx.pop()
@@ -276,6 +294,7 @@ func (v *zVisitor) visitChanType(node *ast.ChanType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Value", node.Value)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceChanType_Value, 0
 		v.visitExpr(node.Value)
 		v.cx.pop()
 	}
@@ -286,10 +305,13 @@ func (v *zVisitor) visitCommClause(node *ast.CommClause) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Comm", node.Comm)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceCommClause_Comm, 0
 		v.visitStmt(node.Comm)
 		v.cx.pop()
 		v.cx.push("Body", nil)
+		v.cx.replaceCurrent = replaceCommClause_Body
 		for i, item := range node.Body {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitStmt(item)
 			v.cx.pop()
@@ -310,7 +332,9 @@ func (v *zVisitor) visitCommentGroup(node *ast.CommentGroup) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("List", nil)
+		v.cx.replaceCurrent = replaceCommentGroup_List
 		for i, item := range node.List {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitComment(item)
 			v.cx.pop()
@@ -324,10 +348,13 @@ func (v *zVisitor) visitCompositeLit(node *ast.CompositeLit) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Type", node.Type)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceCompositeLit_Type, 0
 		v.visitExpr(node.Type)
 		v.cx.pop()
 		v.cx.push("Elts", nil)
+		v.cx.replaceCurrent = replaceCompositeLit_Elts
 		for i, item := range node.Elts {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
 			v.cx.pop()
@@ -341,6 +368,7 @@ func (v *zVisitor) visitDeclStmt(node *ast.DeclStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Decl", node.Decl)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceDeclStmt_Decl, 0
 		v.visitDecl(node.Decl)
 		v.cx.pop()
 	}
@@ -351,6 +379,7 @@ func (v *zVisitor) visitDeferStmt(node *ast.DeferStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Call", node.Call)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceDeferStmt_Call, 0
 		v.visitCallExpr(node.Call)
 		v.cx.pop()
 	}
@@ -361,6 +390,7 @@ func (v *zVisitor) visitEllipsis(node *ast.Ellipsis) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Elt", node.Elt)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceEllipsis_Elt, 0
 		v.visitExpr(node.Elt)
 		v.cx.pop()
 	}
@@ -378,6 +408,7 @@ func (v *zVisitor) visitExprStmt(node *ast.ExprStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceExprStmt_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 	}
@@ -388,22 +419,28 @@ func (v *zVisitor) visitField(node *ast.Field) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Doc", node.Doc)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceField_Doc, 0
 		v.visitCommentGroup(node.Doc)
 		v.cx.pop()
 		v.cx.push("Names", nil)
+		v.cx.replaceCurrent = replaceField_Names
 		for i, item := range node.Names {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitIdent(item)
 			v.cx.pop()
 		}
 		v.cx.pop()
 		v.cx.push("Type", node.Type)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceField_Type, 0
 		v.visitExpr(node.Type)
 		v.cx.pop()
 		v.cx.push("Tag", node.Tag)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceField_Tag, 0
 		v.visitBasicLit(node.Tag)
 		v.cx.pop()
 		v.cx.push("Comment", node.Comment)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceField_Comment, 0
 		v.visitCommentGroup(node.Comment)
 		v.cx.pop()
 	}
@@ -414,7 +451,9 @@ func (v *zVisitor) visitFieldList(node *ast.FieldList) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("List", nil)
+		v.cx.replaceCurrent = replaceFieldList_List
 		for i, item := range node.List {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitField(item)
 			v.cx.pop()
@@ -428,27 +467,35 @@ func (v *zVisitor) visitFile(node *ast.File) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Doc", node.Doc)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFile_Doc, 0
 		v.visitCommentGroup(node.Doc)
 		v.cx.pop()
 		v.cx.push("Name", node.Name)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFile_Name, 0
 		v.visitIdent(node.Name)
 		v.cx.pop()
 		v.cx.push("Decls", nil)
+		v.cx.replaceCurrent = replaceFile_Decls
 		for i, item := range node.Decls {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitDecl(item)
 			v.cx.pop()
 		}
 		v.cx.pop()
 		v.cx.push("Imports", nil)
+		v.cx.replaceCurrent = replaceFile_Imports
 		for i, item := range node.Imports {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitImportSpec(item)
 			v.cx.pop()
 		}
 		v.cx.pop()
 		v.cx.push("Comments", nil)
+		v.cx.replaceCurrent = replaceFile_Comments
 		for i, item := range node.Comments {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitCommentGroup(item)
 			v.cx.pop()
@@ -462,15 +509,19 @@ func (v *zVisitor) visitForStmt(node *ast.ForStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Init", node.Init)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceForStmt_Init, 0
 		v.visitStmt(node.Init)
 		v.cx.pop()
 		v.cx.push("Cond", node.Cond)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceForStmt_Cond, 0
 		v.visitExpr(node.Cond)
 		v.cx.pop()
 		v.cx.push("Post", node.Post)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceForStmt_Post, 0
 		v.visitStmt(node.Post)
 		v.cx.pop()
 		v.cx.push("Body", node.Body)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceForStmt_Body, 0
 		v.visitBlockStmt(node.Body)
 		v.cx.pop()
 	}
@@ -481,18 +532,23 @@ func (v *zVisitor) visitFuncDecl(node *ast.FuncDecl) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Doc", node.Doc)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFuncDecl_Doc, 0
 		v.visitCommentGroup(node.Doc)
 		v.cx.pop()
 		v.cx.push("Recv", node.Recv)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFuncDecl_Recv, 0
 		v.visitFieldList(node.Recv)
 		v.cx.pop()
 		v.cx.push("Name", node.Name)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFuncDecl_Name, 0
 		v.visitIdent(node.Name)
 		v.cx.pop()
 		v.cx.push("Type", node.Type)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFuncDecl_Type, 0
 		v.visitFuncType(node.Type)
 		v.cx.pop()
 		v.cx.push("Body", node.Body)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFuncDecl_Body, 0
 		v.visitBlockStmt(node.Body)
 		v.cx.pop()
 	}
@@ -503,9 +559,11 @@ func (v *zVisitor) visitFuncLit(node *ast.FuncLit) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Type", node.Type)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFuncLit_Type, 0
 		v.visitFuncType(node.Type)
 		v.cx.pop()
 		v.cx.push("Body", node.Body)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFuncLit_Body, 0
 		v.visitBlockStmt(node.Body)
 		v.cx.pop()
 	}
@@ -516,12 +574,15 @@ func (v *zVisitor) visitFuncType(node *ast.FuncType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("TypeParams", node.TypeParams)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFuncType_TypeParams, 0
 		v.visitFieldList(node.TypeParams)
 		v.cx.pop()
 		v.cx.push("Params", node.Params)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFuncType_Params, 0
 		v.visitFieldList(node.Params)
 		v.cx.pop()
 		v.cx.push("Results", node.Results)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceFuncType_Results, 0
 		v.visitFieldList(node.Results)
 		v.cx.pop()
 	}
@@ -532,10 +593,13 @@ func (v *zVisitor) visitGenDecl(node *ast.GenDecl) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Doc", node.Doc)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceGenDecl_Doc, 0
 		v.visitCommentGroup(node.Doc)
 		v.cx.pop()
 		v.cx.push("Specs", nil)
+		v.cx.replaceCurrent = replaceGenDecl_Specs
 		for i, item := range node.Specs {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitSpec(item)
 			v.cx.pop()
@@ -549,6 +613,7 @@ func (v *zVisitor) visitGoStmt(node *ast.GoStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Call", node.Call)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceGoStmt_Call, 0
 		v.visitCallExpr(node.Call)
 		v.cx.pop()
 	}
@@ -566,15 +631,19 @@ func (v *zVisitor) visitIfStmt(node *ast.IfStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Init", node.Init)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceIfStmt_Init, 0
 		v.visitStmt(node.Init)
 		v.cx.pop()
 		v.cx.push("Cond", node.Cond)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceIfStmt_Cond, 0
 		v.visitExpr(node.Cond)
 		v.cx.pop()
 		v.cx.push("Body", node.Body)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceIfStmt_Body, 0
 		v.visitBlockStmt(node.Body)
 		v.cx.pop()
 		v.cx.push("Else", node.Else)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceIfStmt_Else, 0
 		v.visitStmt(node.Else)
 		v.cx.pop()
 	}
@@ -585,15 +654,19 @@ func (v *zVisitor) visitImportSpec(node *ast.ImportSpec) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Doc", node.Doc)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceImportSpec_Doc, 0
 		v.visitCommentGroup(node.Doc)
 		v.cx.pop()
 		v.cx.push("Name", node.Name)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceImportSpec_Name, 0
 		v.visitIdent(node.Name)
 		v.cx.pop()
 		v.cx.push("Path", node.Path)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceImportSpec_Path, 0
 		v.visitBasicLit(node.Path)
 		v.cx.pop()
 		v.cx.push("Comment", node.Comment)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceImportSpec_Comment, 0
 		v.visitCommentGroup(node.Comment)
 		v.cx.pop()
 	}
@@ -604,6 +677,7 @@ func (v *zVisitor) visitIncDecStmt(node *ast.IncDecStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceIncDecStmt_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 	}
@@ -614,9 +688,11 @@ func (v *zVisitor) visitIndexExpr(node *ast.IndexExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceIndexExpr_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 		v.cx.push("Index", node.Index)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceIndexExpr_Index, 0
 		v.visitExpr(node.Index)
 		v.cx.pop()
 	}
@@ -627,10 +703,13 @@ func (v *zVisitor) visitIndexListExpr(node *ast.IndexListExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceIndexListExpr_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 		v.cx.push("Indices", nil)
+		v.cx.replaceCurrent = replaceIndexListExpr_Indices
 		for i, item := range node.Indices {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
 			v.cx.pop()
@@ -644,6 +723,7 @@ func (v *zVisitor) visitInterfaceType(node *ast.InterfaceType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Methods", node.Methods)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceInterfaceType_Methods, 0
 		v.visitFieldList(node.Methods)
 		v.cx.pop()
 	}
@@ -654,9 +734,11 @@ func (v *zVisitor) visitKeyValueExpr(node *ast.KeyValueExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Key", node.Key)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceKeyValueExpr_Key, 0
 		v.visitExpr(node.Key)
 		v.cx.pop()
 		v.cx.push("Value", node.Value)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceKeyValueExpr_Value, 0
 		v.visitExpr(node.Value)
 		v.cx.pop()
 	}
@@ -667,9 +749,11 @@ func (v *zVisitor) visitLabeledStmt(node *ast.LabeledStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Label", node.Label)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceLabeledStmt_Label, 0
 		v.visitIdent(node.Label)
 		v.cx.pop()
 		v.cx.push("Stmt", node.Stmt)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceLabeledStmt_Stmt, 0
 		v.visitStmt(node.Stmt)
 		v.cx.pop()
 	}
@@ -680,9 +764,11 @@ func (v *zVisitor) visitMapType(node *ast.MapType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Key", node.Key)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceMapType_Key, 0
 		v.visitExpr(node.Key)
 		v.cx.pop()
 		v.cx.push("Value", node.Value)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceMapType_Value, 0
 		v.visitExpr(node.Value)
 		v.cx.pop()
 	}
@@ -693,6 +779,7 @@ func (v *zVisitor) visitParenExpr(node *ast.ParenExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceParenExpr_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 	}
@@ -703,15 +790,19 @@ func (v *zVisitor) visitRangeStmt(node *ast.RangeStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Key", node.Key)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceRangeStmt_Key, 0
 		v.visitExpr(node.Key)
 		v.cx.pop()
 		v.cx.push("Value", node.Value)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceRangeStmt_Value, 0
 		v.visitExpr(node.Value)
 		v.cx.pop()
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceRangeStmt_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 		v.cx.push("Body", node.Body)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceRangeStmt_Body, 0
 		v.visitBlockStmt(node.Body)
 		v.cx.pop()
 	}
@@ -722,7 +813,9 @@ func (v *zVisitor) visitReturnStmt(node *ast.ReturnStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Results", nil)
+		v.cx.replaceCurrent = replaceReturnStmt_Results
 		for i, item := range node.Results {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
 			v.cx.pop()
@@ -736,6 +829,7 @@ func (v *zVisitor) visitSelectStmt(node *ast.SelectStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Body", node.Body)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSelectStmt_Body, 0
 		v.visitBlockStmt(node.Body)
 		v.cx.pop()
 	}
@@ -746,9 +840,11 @@ func (v *zVisitor) visitSelectorExpr(node *ast.SelectorExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSelectorExpr_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 		v.cx.push("Sel", node.Sel)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSelectorExpr_Sel, 0
 		v.visitIdent(node.Sel)
 		v.cx.pop()
 	}
@@ -759,9 +855,11 @@ func (v *zVisitor) visitSendStmt(node *ast.SendStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Chan", node.Chan)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSendStmt_Chan, 0
 		v.visitExpr(node.Chan)
 		v.cx.pop()
 		v.cx.push("Value", node.Value)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSendStmt_Value, 0
 		v.visitExpr(node.Value)
 		v.cx.pop()
 	}
@@ -772,15 +870,19 @@ func (v *zVisitor) visitSliceExpr(node *ast.SliceExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSliceExpr_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 		v.cx.push("Low", node.Low)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSliceExpr_Low, 0
 		v.visitExpr(node.Low)
 		v.cx.pop()
 		v.cx.push("High", node.High)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSliceExpr_High, 0
 		v.visitExpr(node.High)
 		v.cx.pop()
 		v.cx.push("Max", node.Max)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSliceExpr_Max, 0
 		v.visitExpr(node.Max)
 		v.cx.pop()
 	}
@@ -791,6 +893,7 @@ func (v *zVisitor) visitStarExpr(node *ast.StarExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceStarExpr_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 	}
@@ -801,6 +904,7 @@ func (v *zVisitor) visitStructType(node *ast.StructType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Fields", node.Fields)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceStructType_Fields, 0
 		v.visitFieldList(node.Fields)
 		v.cx.pop()
 	}
@@ -811,12 +915,15 @@ func (v *zVisitor) visitSwitchStmt(node *ast.SwitchStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Init", node.Init)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSwitchStmt_Init, 0
 		v.visitStmt(node.Init)
 		v.cx.pop()
 		v.cx.push("Tag", node.Tag)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSwitchStmt_Tag, 0
 		v.visitExpr(node.Tag)
 		v.cx.pop()
 		v.cx.push("Body", node.Body)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceSwitchStmt_Body, 0
 		v.visitBlockStmt(node.Body)
 		v.cx.pop()
 	}
@@ -827,9 +934,11 @@ func (v *zVisitor) visitTypeAssertExpr(node *ast.TypeAssertExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceTypeAssertExpr_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 		v.cx.push("Type", node.Type)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceTypeAssertExpr_Type, 0
 		v.visitExpr(node.Type)
 		v.cx.pop()
 	}
@@ -840,18 +949,23 @@ func (v *zVisitor) visitTypeSpec(node *ast.TypeSpec) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Doc", node.Doc)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceTypeSpec_Doc, 0
 		v.visitCommentGroup(node.Doc)
 		v.cx.pop()
 		v.cx.push("Name", node.Name)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceTypeSpec_Name, 0
 		v.visitIdent(node.Name)
 		v.cx.pop()
 		v.cx.push("TypeParams", node.TypeParams)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceTypeSpec_TypeParams, 0
 		v.visitFieldList(node.TypeParams)
 		v.cx.pop()
 		v.cx.push("Type", node.Type)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceTypeSpec_Type, 0
 		v.visitExpr(node.Type)
 		v.cx.pop()
 		v.cx.push("Comment", node.Comment)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceTypeSpec_Comment, 0
 		v.visitCommentGroup(node.Comment)
 		v.cx.pop()
 	}
@@ -862,12 +976,15 @@ func (v *zVisitor) visitTypeSwitchStmt(node *ast.TypeSwitchStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Init", node.Init)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceTypeSwitchStmt_Init, 0
 		v.visitStmt(node.Init)
 		v.cx.pop()
 		v.cx.push("Assign", node.Assign)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceTypeSwitchStmt_Assign, 0
 		v.visitStmt(node.Assign)
 		v.cx.pop()
 		v.cx.push("Body", node.Body)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceTypeSwitchStmt_Body, 0
 		v.visitBlockStmt(node.Body)
 		v.cx.pop()
 	}
@@ -878,6 +995,7 @@ func (v *zVisitor) visitUnaryExpr(node *ast.UnaryExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("X", node.X)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceUnaryExpr_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
 	}
@@ -888,26 +1006,33 @@ func (v *zVisitor) visitValueSpec(node *ast.ValueSpec) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
 		v.cx.push("Doc", node.Doc)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceValueSpec_Doc, 0
 		v.visitCommentGroup(node.Doc)
 		v.cx.pop()
 		v.cx.push("Names", nil)
+		v.cx.replaceCurrent = replaceValueSpec_Names
 		for i, item := range node.Names {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitIdent(item)
 			v.cx.pop()
 		}
 		v.cx.pop()
 		v.cx.push("Type", node.Type)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceValueSpec_Type, 0
 		v.visitExpr(node.Type)
 		v.cx.pop()
 		v.cx.push("Values", nil)
+		v.cx.replaceCurrent = replaceValueSpec_Values
 		for i, item := range node.Values {
+			v.cx.curIdx = i
 			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
 			v.cx.pop()
 		}
 		v.cx.pop()
 		v.cx.push("Comment", node.Comment)
+		v.cx.replaceCurrent, v.cx.curIdx = replaceValueSpec_Comment, 0
 		v.visitCommentGroup(node.Comment)
 		v.cx.pop()
 	}

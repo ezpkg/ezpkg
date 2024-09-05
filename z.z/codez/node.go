@@ -4,15 +4,15 @@ import (
 	"go/ast"
 )
 
-type _NodeReplacer func(parent, new ast.Node)
+type _NodeReplaceFunc func(parent ast.Node, idx int, new ast.Node) error
 
 type NodeX struct {
 	ast.Node
 	parent   ast.Node
-	replacer _NodeReplacer
+	replacer _NodeReplaceFunc
 }
 
-func newNodeX(node ast.Node, parent ast.Node, replacer _NodeReplacer) *NodeX {
+func newNodeX(node ast.Node, parent ast.Node, replacer _NodeReplaceFunc) *NodeX {
 	return &NodeX{
 		Node:     node,
 		parent:   parent,
