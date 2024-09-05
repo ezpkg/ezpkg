@@ -68,3 +68,16 @@ func LastPartX(s, sep string) (last, remain string) {
 func LastPartIdx(s, sep string) int {
 	return LastNPartsIdx(s, 1, sep)
 }
+
+func JoinFunc[T any](list []T, sep string, fn func(T) string) string {
+	if len(list) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString(fn(list[0]))
+	for _, s := range list[1:] {
+		b.WriteString(sep)
+		b.WriteString(fn(s))
+	}
+	return b.String()
+}
