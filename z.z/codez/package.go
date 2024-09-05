@@ -21,7 +21,6 @@ type Packages struct {
 	mapPkgs  map[string]*Package // map of all packages by path
 	allPkgs  []*Package          // all packages, including std packages
 	stdPkgs  []*Package          // std packages
-	pkgByPos []*Package          // all packages sorted by position
 
 	// --- collect types.Info from all packages ---
 
@@ -74,9 +73,11 @@ func newPackages(pkgs []*Package) *Packages {
 	if len(pkgs) == 0 {
 		return nil
 	}
-	var allPkgs []*Package
+
 	p := &Packages{origPkgs: pkgs, Fset: pkgs[0].Fset}
 	p.mapPkgs = map[string]*Package{}
+
+	var allPkgs []*Package
 	for _, pkg := range p.origPkgs {
 		for path, impPkg := range pkg.Imports {
 			if p.mapPkgs[path] == nil {
@@ -99,6 +100,7 @@ func newPackages(pkgs []*Package) *Packages {
 			otherPkgs = append(otherPkgs, pkg)
 		}
 	}
+	sortPkgs(p.origPkgs)
 	sortPkgs(p.stdPkgs)
 	sortPkgs(goOrgPkgs)
 	sortPkgs(otherPkgs)

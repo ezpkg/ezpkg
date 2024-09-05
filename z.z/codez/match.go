@@ -1,6 +1,7 @@
 package codez
 
 import (
+	"fmt"
 	"go/ast"
 
 	"ezpkg.io/errorz"
@@ -9,7 +10,9 @@ import (
 func Match(pkgs *Packages, m NodeMatcher, pkgPatterns ...string) (out []*NodeX, err error) {
 	cx := newMatchContext(pkgs)
 	for _, pkg := range pkgs.AllPackages(pkgPatterns...) {
+		fmt.Println("-- pkg", pkg.PkgPath)
 		for _, f := range pkg.Syntax {
+			fmt.Println("-->", pkg.PkgPath, f.Name)
 			Walk(f, func(vx *VisitContext, node ast.Node) bool {
 				ok, err0 := m.Match(cx, node)
 				switch {

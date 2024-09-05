@@ -20,6 +20,12 @@ func TestPackage(t *testing.T) {
 			pkg := pkgs.Packages()[0]
 			Ω(pkg.PkgPath).To(g.Equal("ezpkg.io/-/codez_test/testdata/logging/main"))
 		})
+		Convey("LoadPackages with filter", func() {
+			pkgs := errorz.Must(LoadPackages("../codez_test/testdata/logging/..."))
+			Ω(pkgs.Packages()).To(g.HaveLen(2))
+			Ω(pkgs.Packages()[0].PkgPath).To(g.Equal("ezpkg.io/-/codez_test/testdata/logging"))
+			Ω(pkgs.Packages()[1].PkgPath).To(g.Equal("ezpkg.io/-/codez_test/testdata/logging/main"))
+		})
 
 		Convey("GetObject", func() {
 			Convey("context.Context", func() {

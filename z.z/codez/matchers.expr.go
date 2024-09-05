@@ -5,6 +5,7 @@
 package codez
 
 import (
+	// "fmt"
 	ast "go/ast"
 	token "go/token"
 )
@@ -377,12 +378,15 @@ func (m SelectorExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok boo
 	return m.Match(cx, node)
 }
 func (m SelectorExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
+	// fmt.Println("-- selector", node)
 	x, ok := node.(*ast.SelectorExpr)
 	if !ok {
 		return false, nil
 	}
 	ok, err = match(cx, ok, err, m.X, x.X)
+	// fmt.Println("-- 1", ok,m.X)
 	ok, err = match(cx, ok, err, m.Sel, x.Sel)
+	// fmt.Println("-- 2", ok,m.Sel)
 	return ok, err
 }
 
