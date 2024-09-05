@@ -100,16 +100,14 @@ func (m FieldListMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err 
 type FileMatcherB struct {
 	_ *ast.File
 
-	Doc        CommentGroupMatcher
-	Package    token.Pos
-	Name       IdentMatcher
-	Decls      ListMatcher[ast.Decl]
-	FileStart  token.Pos
-	FileEnd    token.Pos
-	Imports    ListMatcher[*ast.ImportSpec]
-	Unresolved ListMatcher[*ast.Ident]
-	Comments   ListMatcher[*ast.CommentGroup]
-	GoVersion  StringMatcher
+	Doc       CommentGroupMatcher
+	Name      IdentMatcher
+	Decls     ListMatcher[ast.Decl]
+	FileStart token.Pos
+	FileEnd   token.Pos
+	Imports   ListMatcher[*ast.ImportSpec]
+	Comments  ListMatcher[*ast.CommentGroup]
+	GoVersion StringMatcher
 }
 
 func (m FileMatcherB) MatchNode(cx *MatchContext, node ast.Node) (ok bool, err error) {
@@ -124,7 +122,6 @@ func (m FileMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error
 	ok, err = match(cx, ok, err, m.Name, x.Name)
 	ok, err = matchList(cx, ok, err, m.Decls, x.Decls)
 	ok, err = matchList(cx, ok, err, m.Imports, x.Imports)
-	ok, err = matchList(cx, ok, err, m.Unresolved, x.Unresolved)
 	ok, err = matchList(cx, ok, err, m.Comments, x.Comments)
 	ok, err = matchValue(cx, ok, err, m.GoVersion, x.GoVersion)
 	return ok, err

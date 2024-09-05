@@ -7,6 +7,7 @@ package codez
 import (
 	"fmt"
 	ast "go/ast"
+	"strconv"
 )
 
 func (v *zVisitor) visitDecl(node ast.Decl) {
@@ -18,7 +19,7 @@ func (v *zVisitor) visitDecl(node ast.Decl) {
 	case *ast.GenDecl:
 		v.visitGenDecl(x)
 	default:
-		panic(fmt.Sprintf("unreachable: %v is ast.Decl ❌", node))
+		panic(fmt.Sprintf("unreachable: %s is ast.Decl ❌", node))
 	}
 }
 func (v *zVisitor) visitExpr(node ast.Expr) {
@@ -70,7 +71,7 @@ func (v *zVisitor) visitExpr(node ast.Expr) {
 	case *ast.UnaryExpr:
 		v.visitUnaryExpr(x)
 	default:
-		panic(fmt.Sprintf("unreachable: %v is ast.Expr ❌", node))
+		panic(fmt.Sprintf("unreachable: %s is ast.Expr ❌", node))
 	}
 }
 func (v *zVisitor) visitSpec(node ast.Spec) {
@@ -84,7 +85,7 @@ func (v *zVisitor) visitSpec(node ast.Spec) {
 	case *ast.ValueSpec:
 		v.visitValueSpec(x)
 	default:
-		panic(fmt.Sprintf("unreachable: %v is ast.Spec ❌", node))
+		panic(fmt.Sprintf("unreachable: %s is ast.Spec ❌", node))
 	}
 }
 func (v *zVisitor) visitStmt(node ast.Stmt) {
@@ -132,7 +133,7 @@ func (v *zVisitor) visitStmt(node ast.Stmt) {
 	case *ast.TypeSwitchStmt:
 		v.visitTypeSwitchStmt(x)
 	default:
-		panic(fmt.Sprintf("unreachable: %v is ast.Stmt ❌", node))
+		panic(fmt.Sprintf("unreachable: %s is ast.Stmt ❌", node))
 	}
 }
 func (v *zVisitor) visitOther(node ast.Node) {
@@ -150,7 +151,7 @@ func (v *zVisitor) visitOther(node ast.Node) {
 	case *ast.File:
 		v.visitFile(x)
 	default:
-		panic(fmt.Sprintf("unreachable: %v is ast.Other ❌", node))
+		panic(fmt.Sprintf("unreachable: %s is ast.Other ❌", node))
 	}
 }
 
@@ -158,8 +159,12 @@ func (v *zVisitor) visitOther(node ast.Node) {
 func (v *zVisitor) visitArrayType(node *ast.ArrayType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Len", node.Len)
 		v.visitExpr(node.Len)
+		v.cx.pop()
+		v.cx.push("Elt", node.Elt)
 		v.visitExpr(node.Elt)
+		v.cx.pop()
 	}
 }
 
@@ -167,12 +172,20 @@ func (v *zVisitor) visitArrayType(node *ast.ArrayType) {
 func (v *zVisitor) visitAssignStmt(node *ast.AssignStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
-		for _, item := range node.Lhs {
+		v.cx.push("Lhs", nil)
+		for i, item := range node.Lhs {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
+			v.cx.pop()
 		}
-		for _, item := range node.Rhs {
+		v.cx.pop()
+		v.cx.push("Rhs", nil)
+		for i, item := range node.Rhs {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -187,8 +200,12 @@ func (v *zVisitor) visitBasicLit(node *ast.BasicLit) {
 func (v *zVisitor) visitBinaryExpr(node *ast.BinaryExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
+		v.cx.push("Y", node.Y)
 		v.visitExpr(node.Y)
+		v.cx.pop()
 	}
 }
 
@@ -196,9 +213,13 @@ func (v *zVisitor) visitBinaryExpr(node *ast.BinaryExpr) {
 func (v *zVisitor) visitBlockStmt(node *ast.BlockStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
-		for _, item := range node.List {
+		v.cx.push("List", nil)
+		for i, item := range node.List {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitStmt(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -206,7 +227,9 @@ func (v *zVisitor) visitBlockStmt(node *ast.BlockStmt) {
 func (v *zVisitor) visitBranchStmt(node *ast.BranchStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Label", node.Label)
 		v.visitIdent(node.Label)
+		v.cx.pop()
 	}
 }
 
@@ -214,10 +237,16 @@ func (v *zVisitor) visitBranchStmt(node *ast.BranchStmt) {
 func (v *zVisitor) visitCallExpr(node *ast.CallExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Fun", node.Fun)
 		v.visitExpr(node.Fun)
-		for _, item := range node.Args {
+		v.cx.pop()
+		v.cx.push("Args", nil)
+		for i, item := range node.Args {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -225,12 +254,20 @@ func (v *zVisitor) visitCallExpr(node *ast.CallExpr) {
 func (v *zVisitor) visitCaseClause(node *ast.CaseClause) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
-		for _, item := range node.List {
+		v.cx.push("List", nil)
+		for i, item := range node.List {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
+			v.cx.pop()
 		}
-		for _, item := range node.Body {
+		v.cx.pop()
+		v.cx.push("Body", nil)
+		for i, item := range node.Body {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitStmt(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -238,7 +275,9 @@ func (v *zVisitor) visitCaseClause(node *ast.CaseClause) {
 func (v *zVisitor) visitChanType(node *ast.ChanType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Value", node.Value)
 		v.visitExpr(node.Value)
+		v.cx.pop()
 	}
 }
 
@@ -246,10 +285,16 @@ func (v *zVisitor) visitChanType(node *ast.ChanType) {
 func (v *zVisitor) visitCommClause(node *ast.CommClause) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Comm", node.Comm)
 		v.visitStmt(node.Comm)
-		for _, item := range node.Body {
+		v.cx.pop()
+		v.cx.push("Body", nil)
+		for i, item := range node.Body {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitStmt(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -264,9 +309,13 @@ func (v *zVisitor) visitComment(node *ast.Comment) {
 func (v *zVisitor) visitCommentGroup(node *ast.CommentGroup) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
-		for _, item := range node.List {
+		v.cx.push("List", nil)
+		for i, item := range node.List {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitComment(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -274,10 +323,16 @@ func (v *zVisitor) visitCommentGroup(node *ast.CommentGroup) {
 func (v *zVisitor) visitCompositeLit(node *ast.CompositeLit) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Type", node.Type)
 		v.visitExpr(node.Type)
-		for _, item := range node.Elts {
+		v.cx.pop()
+		v.cx.push("Elts", nil)
+		for i, item := range node.Elts {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -285,7 +340,9 @@ func (v *zVisitor) visitCompositeLit(node *ast.CompositeLit) {
 func (v *zVisitor) visitDeclStmt(node *ast.DeclStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Decl", node.Decl)
 		v.visitDecl(node.Decl)
+		v.cx.pop()
 	}
 }
 
@@ -293,7 +350,9 @@ func (v *zVisitor) visitDeclStmt(node *ast.DeclStmt) {
 func (v *zVisitor) visitDeferStmt(node *ast.DeferStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Call", node.Call)
 		v.visitCallExpr(node.Call)
+		v.cx.pop()
 	}
 }
 
@@ -301,7 +360,9 @@ func (v *zVisitor) visitDeferStmt(node *ast.DeferStmt) {
 func (v *zVisitor) visitEllipsis(node *ast.Ellipsis) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Elt", node.Elt)
 		v.visitExpr(node.Elt)
+		v.cx.pop()
 	}
 }
 
@@ -316,7 +377,9 @@ func (v *zVisitor) visitEmptyStmt(node *ast.EmptyStmt) {
 func (v *zVisitor) visitExprStmt(node *ast.ExprStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
 	}
 }
 
@@ -324,13 +387,25 @@ func (v *zVisitor) visitExprStmt(node *ast.ExprStmt) {
 func (v *zVisitor) visitField(node *ast.Field) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Doc", node.Doc)
 		v.visitCommentGroup(node.Doc)
-		for _, item := range node.Names {
+		v.cx.pop()
+		v.cx.push("Names", nil)
+		for i, item := range node.Names {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitIdent(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
+		v.cx.push("Type", node.Type)
 		v.visitExpr(node.Type)
+		v.cx.pop()
+		v.cx.push("Tag", node.Tag)
 		v.visitBasicLit(node.Tag)
+		v.cx.pop()
+		v.cx.push("Comment", node.Comment)
 		v.visitCommentGroup(node.Comment)
+		v.cx.pop()
 	}
 }
 
@@ -338,9 +413,13 @@ func (v *zVisitor) visitField(node *ast.Field) {
 func (v *zVisitor) visitFieldList(node *ast.FieldList) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
-		for _, item := range node.List {
+		v.cx.push("List", nil)
+		for i, item := range node.List {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitField(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -348,20 +427,33 @@ func (v *zVisitor) visitFieldList(node *ast.FieldList) {
 func (v *zVisitor) visitFile(node *ast.File) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Doc", node.Doc)
 		v.visitCommentGroup(node.Doc)
+		v.cx.pop()
+		v.cx.push("Name", node.Name)
 		v.visitIdent(node.Name)
-		for _, item := range node.Decls {
+		v.cx.pop()
+		v.cx.push("Decls", nil)
+		for i, item := range node.Decls {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitDecl(item)
+			v.cx.pop()
 		}
-		for _, item := range node.Imports {
+		v.cx.pop()
+		v.cx.push("Imports", nil)
+		for i, item := range node.Imports {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitImportSpec(item)
+			v.cx.pop()
 		}
-		for _, item := range node.Unresolved {
-			v.visitIdent(item)
-		}
-		for _, item := range node.Comments {
+		v.cx.pop()
+		v.cx.push("Comments", nil)
+		for i, item := range node.Comments {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitCommentGroup(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -369,10 +461,18 @@ func (v *zVisitor) visitFile(node *ast.File) {
 func (v *zVisitor) visitForStmt(node *ast.ForStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Init", node.Init)
 		v.visitStmt(node.Init)
+		v.cx.pop()
+		v.cx.push("Cond", node.Cond)
 		v.visitExpr(node.Cond)
+		v.cx.pop()
+		v.cx.push("Post", node.Post)
 		v.visitStmt(node.Post)
+		v.cx.pop()
+		v.cx.push("Body", node.Body)
 		v.visitBlockStmt(node.Body)
+		v.cx.pop()
 	}
 }
 
@@ -380,11 +480,21 @@ func (v *zVisitor) visitForStmt(node *ast.ForStmt) {
 func (v *zVisitor) visitFuncDecl(node *ast.FuncDecl) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Doc", node.Doc)
 		v.visitCommentGroup(node.Doc)
+		v.cx.pop()
+		v.cx.push("Recv", node.Recv)
 		v.visitFieldList(node.Recv)
+		v.cx.pop()
+		v.cx.push("Name", node.Name)
 		v.visitIdent(node.Name)
+		v.cx.pop()
+		v.cx.push("Type", node.Type)
 		v.visitFuncType(node.Type)
+		v.cx.pop()
+		v.cx.push("Body", node.Body)
 		v.visitBlockStmt(node.Body)
+		v.cx.pop()
 	}
 }
 
@@ -392,8 +502,12 @@ func (v *zVisitor) visitFuncDecl(node *ast.FuncDecl) {
 func (v *zVisitor) visitFuncLit(node *ast.FuncLit) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Type", node.Type)
 		v.visitFuncType(node.Type)
+		v.cx.pop()
+		v.cx.push("Body", node.Body)
 		v.visitBlockStmt(node.Body)
+		v.cx.pop()
 	}
 }
 
@@ -401,9 +515,15 @@ func (v *zVisitor) visitFuncLit(node *ast.FuncLit) {
 func (v *zVisitor) visitFuncType(node *ast.FuncType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("TypeParams", node.TypeParams)
 		v.visitFieldList(node.TypeParams)
+		v.cx.pop()
+		v.cx.push("Params", node.Params)
 		v.visitFieldList(node.Params)
+		v.cx.pop()
+		v.cx.push("Results", node.Results)
 		v.visitFieldList(node.Results)
+		v.cx.pop()
 	}
 }
 
@@ -411,10 +531,16 @@ func (v *zVisitor) visitFuncType(node *ast.FuncType) {
 func (v *zVisitor) visitGenDecl(node *ast.GenDecl) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Doc", node.Doc)
 		v.visitCommentGroup(node.Doc)
-		for _, item := range node.Specs {
+		v.cx.pop()
+		v.cx.push("Specs", nil)
+		for i, item := range node.Specs {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitSpec(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -422,7 +548,9 @@ func (v *zVisitor) visitGenDecl(node *ast.GenDecl) {
 func (v *zVisitor) visitGoStmt(node *ast.GoStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Call", node.Call)
 		v.visitCallExpr(node.Call)
+		v.cx.pop()
 	}
 }
 
@@ -437,10 +565,18 @@ func (v *zVisitor) visitIdent(node *ast.Ident) {
 func (v *zVisitor) visitIfStmt(node *ast.IfStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Init", node.Init)
 		v.visitStmt(node.Init)
+		v.cx.pop()
+		v.cx.push("Cond", node.Cond)
 		v.visitExpr(node.Cond)
+		v.cx.pop()
+		v.cx.push("Body", node.Body)
 		v.visitBlockStmt(node.Body)
+		v.cx.pop()
+		v.cx.push("Else", node.Else)
 		v.visitStmt(node.Else)
+		v.cx.pop()
 	}
 }
 
@@ -448,10 +584,18 @@ func (v *zVisitor) visitIfStmt(node *ast.IfStmt) {
 func (v *zVisitor) visitImportSpec(node *ast.ImportSpec) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Doc", node.Doc)
 		v.visitCommentGroup(node.Doc)
+		v.cx.pop()
+		v.cx.push("Name", node.Name)
 		v.visitIdent(node.Name)
+		v.cx.pop()
+		v.cx.push("Path", node.Path)
 		v.visitBasicLit(node.Path)
+		v.cx.pop()
+		v.cx.push("Comment", node.Comment)
 		v.visitCommentGroup(node.Comment)
+		v.cx.pop()
 	}
 }
 
@@ -459,7 +603,9 @@ func (v *zVisitor) visitImportSpec(node *ast.ImportSpec) {
 func (v *zVisitor) visitIncDecStmt(node *ast.IncDecStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
 	}
 }
 
@@ -467,8 +613,12 @@ func (v *zVisitor) visitIncDecStmt(node *ast.IncDecStmt) {
 func (v *zVisitor) visitIndexExpr(node *ast.IndexExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
+		v.cx.push("Index", node.Index)
 		v.visitExpr(node.Index)
+		v.cx.pop()
 	}
 }
 
@@ -476,10 +626,16 @@ func (v *zVisitor) visitIndexExpr(node *ast.IndexExpr) {
 func (v *zVisitor) visitIndexListExpr(node *ast.IndexListExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
-		for _, item := range node.Indices {
+		v.cx.pop()
+		v.cx.push("Indices", nil)
+		for i, item := range node.Indices {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -487,7 +643,9 @@ func (v *zVisitor) visitIndexListExpr(node *ast.IndexListExpr) {
 func (v *zVisitor) visitInterfaceType(node *ast.InterfaceType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Methods", node.Methods)
 		v.visitFieldList(node.Methods)
+		v.cx.pop()
 	}
 }
 
@@ -495,8 +653,12 @@ func (v *zVisitor) visitInterfaceType(node *ast.InterfaceType) {
 func (v *zVisitor) visitKeyValueExpr(node *ast.KeyValueExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Key", node.Key)
 		v.visitExpr(node.Key)
+		v.cx.pop()
+		v.cx.push("Value", node.Value)
 		v.visitExpr(node.Value)
+		v.cx.pop()
 	}
 }
 
@@ -504,8 +666,12 @@ func (v *zVisitor) visitKeyValueExpr(node *ast.KeyValueExpr) {
 func (v *zVisitor) visitLabeledStmt(node *ast.LabeledStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Label", node.Label)
 		v.visitIdent(node.Label)
+		v.cx.pop()
+		v.cx.push("Stmt", node.Stmt)
 		v.visitStmt(node.Stmt)
+		v.cx.pop()
 	}
 }
 
@@ -513,8 +679,12 @@ func (v *zVisitor) visitLabeledStmt(node *ast.LabeledStmt) {
 func (v *zVisitor) visitMapType(node *ast.MapType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Key", node.Key)
 		v.visitExpr(node.Key)
+		v.cx.pop()
+		v.cx.push("Value", node.Value)
 		v.visitExpr(node.Value)
+		v.cx.pop()
 	}
 }
 
@@ -522,7 +692,9 @@ func (v *zVisitor) visitMapType(node *ast.MapType) {
 func (v *zVisitor) visitParenExpr(node *ast.ParenExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
 	}
 }
 
@@ -530,10 +702,18 @@ func (v *zVisitor) visitParenExpr(node *ast.ParenExpr) {
 func (v *zVisitor) visitRangeStmt(node *ast.RangeStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Key", node.Key)
 		v.visitExpr(node.Key)
+		v.cx.pop()
+		v.cx.push("Value", node.Value)
 		v.visitExpr(node.Value)
+		v.cx.pop()
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
+		v.cx.push("Body", node.Body)
 		v.visitBlockStmt(node.Body)
+		v.cx.pop()
 	}
 }
 
@@ -541,9 +721,13 @@ func (v *zVisitor) visitRangeStmt(node *ast.RangeStmt) {
 func (v *zVisitor) visitReturnStmt(node *ast.ReturnStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
-		for _, item := range node.Results {
+		v.cx.push("Results", nil)
+		for i, item := range node.Results {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
 	}
 }
 
@@ -551,7 +735,9 @@ func (v *zVisitor) visitReturnStmt(node *ast.ReturnStmt) {
 func (v *zVisitor) visitSelectStmt(node *ast.SelectStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Body", node.Body)
 		v.visitBlockStmt(node.Body)
+		v.cx.pop()
 	}
 }
 
@@ -559,8 +745,12 @@ func (v *zVisitor) visitSelectStmt(node *ast.SelectStmt) {
 func (v *zVisitor) visitSelectorExpr(node *ast.SelectorExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
+		v.cx.push("Sel", node.Sel)
 		v.visitIdent(node.Sel)
+		v.cx.pop()
 	}
 }
 
@@ -568,8 +758,12 @@ func (v *zVisitor) visitSelectorExpr(node *ast.SelectorExpr) {
 func (v *zVisitor) visitSendStmt(node *ast.SendStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Chan", node.Chan)
 		v.visitExpr(node.Chan)
+		v.cx.pop()
+		v.cx.push("Value", node.Value)
 		v.visitExpr(node.Value)
+		v.cx.pop()
 	}
 }
 
@@ -577,10 +771,18 @@ func (v *zVisitor) visitSendStmt(node *ast.SendStmt) {
 func (v *zVisitor) visitSliceExpr(node *ast.SliceExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
+		v.cx.push("Low", node.Low)
 		v.visitExpr(node.Low)
+		v.cx.pop()
+		v.cx.push("High", node.High)
 		v.visitExpr(node.High)
+		v.cx.pop()
+		v.cx.push("Max", node.Max)
 		v.visitExpr(node.Max)
+		v.cx.pop()
 	}
 }
 
@@ -588,7 +790,9 @@ func (v *zVisitor) visitSliceExpr(node *ast.SliceExpr) {
 func (v *zVisitor) visitStarExpr(node *ast.StarExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
 	}
 }
 
@@ -596,7 +800,9 @@ func (v *zVisitor) visitStarExpr(node *ast.StarExpr) {
 func (v *zVisitor) visitStructType(node *ast.StructType) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Fields", node.Fields)
 		v.visitFieldList(node.Fields)
+		v.cx.pop()
 	}
 }
 
@@ -604,9 +810,15 @@ func (v *zVisitor) visitStructType(node *ast.StructType) {
 func (v *zVisitor) visitSwitchStmt(node *ast.SwitchStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Init", node.Init)
 		v.visitStmt(node.Init)
+		v.cx.pop()
+		v.cx.push("Tag", node.Tag)
 		v.visitExpr(node.Tag)
+		v.cx.pop()
+		v.cx.push("Body", node.Body)
 		v.visitBlockStmt(node.Body)
+		v.cx.pop()
 	}
 }
 
@@ -614,8 +826,12 @@ func (v *zVisitor) visitSwitchStmt(node *ast.SwitchStmt) {
 func (v *zVisitor) visitTypeAssertExpr(node *ast.TypeAssertExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
+		v.cx.push("Type", node.Type)
 		v.visitExpr(node.Type)
+		v.cx.pop()
 	}
 }
 
@@ -623,11 +839,21 @@ func (v *zVisitor) visitTypeAssertExpr(node *ast.TypeAssertExpr) {
 func (v *zVisitor) visitTypeSpec(node *ast.TypeSpec) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Doc", node.Doc)
 		v.visitCommentGroup(node.Doc)
+		v.cx.pop()
+		v.cx.push("Name", node.Name)
 		v.visitIdent(node.Name)
+		v.cx.pop()
+		v.cx.push("TypeParams", node.TypeParams)
 		v.visitFieldList(node.TypeParams)
+		v.cx.pop()
+		v.cx.push("Type", node.Type)
 		v.visitExpr(node.Type)
+		v.cx.pop()
+		v.cx.push("Comment", node.Comment)
 		v.visitCommentGroup(node.Comment)
+		v.cx.pop()
 	}
 }
 
@@ -635,9 +861,15 @@ func (v *zVisitor) visitTypeSpec(node *ast.TypeSpec) {
 func (v *zVisitor) visitTypeSwitchStmt(node *ast.TypeSwitchStmt) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Init", node.Init)
 		v.visitStmt(node.Init)
+		v.cx.pop()
+		v.cx.push("Assign", node.Assign)
 		v.visitStmt(node.Assign)
+		v.cx.pop()
+		v.cx.push("Body", node.Body)
 		v.visitBlockStmt(node.Body)
+		v.cx.pop()
 	}
 }
 
@@ -645,7 +877,9 @@ func (v *zVisitor) visitTypeSwitchStmt(node *ast.TypeSwitchStmt) {
 func (v *zVisitor) visitUnaryExpr(node *ast.UnaryExpr) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("X", node.X)
 		v.visitExpr(node.X)
+		v.cx.pop()
 	}
 }
 
@@ -653,14 +887,28 @@ func (v *zVisitor) visitUnaryExpr(node *ast.UnaryExpr) {
 func (v *zVisitor) visitValueSpec(node *ast.ValueSpec) {
 	ok := node != nil && v.fn(v.cx, node)
 	if ok {
+		v.cx.push("Doc", node.Doc)
 		v.visitCommentGroup(node.Doc)
-		for _, item := range node.Names {
+		v.cx.pop()
+		v.cx.push("Names", nil)
+		for i, item := range node.Names {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitIdent(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
+		v.cx.push("Type", node.Type)
 		v.visitExpr(node.Type)
-		for _, item := range node.Values {
+		v.cx.pop()
+		v.cx.push("Values", nil)
+		for i, item := range node.Values {
+			v.cx.push(strconv.Itoa(i), item)
 			v.visitExpr(item)
+			v.cx.pop()
 		}
+		v.cx.pop()
+		v.cx.push("Comment", node.Comment)
 		v.visitCommentGroup(node.Comment)
+		v.cx.pop()
 	}
 }

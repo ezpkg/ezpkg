@@ -48,6 +48,48 @@ func (p *Package) GetObject(name string) types.Object {
 	return p.Types.Scope().Lookup(name)
 }
 
+func (p *Package) MustGetObject(name string) types.Object {
+	obj := p.GetObject(name)
+	if obj == nil {
+		panic(fmt.Sprintf("object %q not found", name))
+	}
+	return obj
+}
+
+func (p *Package) GetFileByPos(pos token.Pos) *ast.File {
+	for _, file := range p.Syntax {
+		if file.FileStart <= pos && pos <= file.FileEnd {
+			return file
+		}
+	}
+	return nil
+}
+
+func (p *Package) MustGetFileByPos(pos token.Pos) *ast.File {
+	file := p.GetFileByPos(pos)
+	if file == nil {
+		panic(fmt.Sprintf("file not found at %v", pos))
+	}
+	return file
+}
+
+func (p *Package) GetFileByName(name string) *ast.File {
+	for _, file := range p.Syntax {
+		if file.Name.Name == name {
+			return file
+		}
+	}
+	return nil
+}
+
+func (p *Package) MustGetFileByName(name string) *ast.File {
+	file := p.GetFileByName(name)
+	if file == nil {
+		panic(fmt.Sprintf("file %q not found", name))
+	}
+	return file
+}
+
 func (p *Package) HasPos(pos token.Pos) bool {
 	for _, file := range p.Syntax {
 		if file.FileStart <= pos && pos <= file.FileEnd {
@@ -155,6 +197,14 @@ func (p *Packages) GetPackageByPath(path string) *Package {
 	return p.mapPkgs[path]
 }
 
+func (p *Packages) MustGetPackageByPath(path string) *Package {
+	pkg := p.GetPackageByPath(path)
+	if pkg == nil {
+		panic(fmt.Sprintf("package %q not found", path))
+	}
+	return pkg
+}
+
 func (p *Packages) GetObject(pkgPath, objName string) types.Object {
 	if pkgPath == "" {
 		return types.Universe.Lookup(objName)
@@ -207,12 +257,37 @@ func (p *Packages) MustGetBuiltInType(typName string) types.Type {
 }
 
 func (p *Packages) GetPackageByPos(pos token.Pos) *Package {
+	// TODO: optimize this
 	for _, pkg := range p.allPkgs {
 		if pkg.HasPos(pos) {
 			return pkg
 		}
 	}
 	return nil
+}
+
+func (p *Packages) MustGetPackageByPos(pos token.Pos) *Package {
+	pkg := p.GetPackageByPos(pos)
+	if pkg == nil {
+		panic(fmt.Sprintf("package not found at %v", pos))
+	}
+	return pkg
+}
+
+func (p *Packages) GetFileByPos(pos token.Pos) *ast.File {
+	pkg := p.GetPackageByPos(pos)
+	if pkg == nil {
+		return nil
+	}
+	return pkg.GetFileByPos(pos)
+}
+
+func (p *Packages) MustGetFileByPos(pos token.Pos) *ast.File {
+	file := p.GetFileByPos(pos)
+	if file == nil {
+		panic(fmt.Sprintf("file not found at %v", pos))
+	}
+	return file
 }
 
 func (p *Packages) TypeOf(expr ast.Expr) types.Type {

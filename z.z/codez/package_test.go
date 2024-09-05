@@ -21,7 +21,7 @@ func TestLoadPackages(t *testing.T) {
 	}
 	Convey("LoadPackages", t, func() {
 		Convey("single, absolute path", func() {
-			pkgs := errorz.Must(LoadPackages("ezpkg.io/-/codez_test/testpkg/logging/main"))
+			pkgs := cacheLoadPackages("ezpkg.io/-/codez_test/testpkg/logging/main")
 
 			expected := `ezpkg.io/-/codez_test/testpkg/logging/main`
 			ΩxNoDiff(expected, pkgList(pkgs.InputPackages()))
@@ -35,7 +35,7 @@ ezpkg.io/-/codez_test/testpkg/logging/main`
 			ΩxNoDiff(expected, pkgList(pkgs.InputPackages()))
 		})
 		Convey("relative path", func() {
-			pkgs := errorz.Must(LoadPackages("../codez_test/testpkg/logging/..."))
+			pkgs := cacheLoadPackages("../codez_test/testpkg/logging/...")
 
 			expected := `
 ezpkg.io/-/codez_test/testpkg/logging
@@ -43,8 +43,9 @@ ezpkg.io/-/codez_test/testpkg/logging/main`
 			ΩxNoDiff(expected, pkgList(pkgs.InputPackages()))
 		})
 
-		pkgs := errorz.Must(LoadPackages("ezpkg.io/-/codez_test/testpkg/...", "golang.org/..."))
 		Convey("filter", func() {
+			pkgs := cacheLoadPackages("ezpkg.io/-/codez_test/testpkg/...", "golang.org/x/net/...")
+
 			Convey("logging/...", func() {
 				zpkgs := pkgs.AllPackages("ezpkg.io/-/codez_test/testpkg/logging/...")
 
@@ -68,9 +69,10 @@ golang.org/x/net/html/charset`
 
 func TestPackages(t *testing.T) {
 	Ω := GomegaExpect
-	pkgs := errorz.Must(LoadPackages("ezpkg.io/-/codez_test/testpkg/logging/main"))
 
 	Convey("Packages", t, func() {
+		pkgs := cacheLoadPackages("ezpkg.io/-/codez_test/testpkg/logging/main")
+
 		Convey("GetObject", func() {
 			Convey("context.Context", func() {
 				objContext := pkgs.GetObject("context", "Context")

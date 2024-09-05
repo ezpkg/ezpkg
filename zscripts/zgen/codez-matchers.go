@@ -46,7 +46,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 	pkgCodez := ng.GetPackageByPath(pathCodez)
 	pkgDir := filepath.Dir(pkgCodez.CompiledGoFiles[0])
 
-	ignored := []string{"BadDecl", "BadExpr", "BadStmt", "Package", "Object", "Scope"}
+	ignored := []string{"BadDecl", "BadExpr", "BadStmt", "Package", "Object", "Scope", "Unresolved"}
 	pkgGoAst := ng.GetPackageByPath(pathGoAst)
 	allObjs := getObjs(pkgGoAst)
 	allObjs = slicez.FilterFunc(allObjs, func(obj types.Object) bool {
@@ -85,19 +85,23 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 		astTyp *types.Named
 		slice  *types.Slice
 	}
-	parseField := func(field types.Type) *ParsedField {
-		if named := asNamed(field); named != nil {
+	parseField := func(field *types.Var) *ParsedField {
+		typ := field.Type()
+		if typez.In(field.Name(), ignored...) {
+			return nil
+		}
+		if named := asNamed(typ); named != nil {
 			if typez.In(named.Obj().Name(), ignored...) {
 				return nil // ignore deprecated fields
 			}
 		}
-		astTyp := asAstType(field)
+		astTyp := asAstType(typ)
 		return &ParsedField{
 			isNode: astTyp != nil && implements(astTyp, astNodeI),
-			token:  asTokenType(field),
+			token:  asTokenType(typ),
 			astTyp: astTyp,
-			slice:  asSlice(field),
-			basic:  asBasic(field),
+			slice:  asSlice(typ),
+			basic:  asBasic(typ),
 		}
 	}
 
@@ -124,7 +128,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 			pr("\t_ *%s\n\n", p.TypeString(node.Type()))
 			for i := 0; i < st.NumFields(); i++ {
 				field := st.Field(i)
-				f := parseField(field.Type())
+				f := parseField(field)
 				if f == nil {
 					continue
 				}
@@ -170,7 +174,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 
 			for i := 0; i < st.NumFields(); i++ {
 				field := st.Field(i)
-				f := parseField(field.Type())
+				f := parseField(field)
 				if f == nil {
 					continue
 				}
@@ -207,7 +211,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 		for _, name := range mapz.SortedKeys(allNodes) {
 			node := allNodes[name]
 
-			pr("// %v\n", name)
+			pr("// %s\n", name)
 			pr("type %sMatcher interface {\n", name)
 			pr("\tMatch(cx *MatchContext, node ast.Node) (bool, error)\n")
 			if implements(node, astExprI) {
@@ -230,7 +234,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 
 		visitGroup := func(gName string, group []types.Object) {
 			ifaceName := typez.If(gName == "other", "Node", title(gName))
-			pr("func (v *zVisitor) visit%v(node ast.%v) {\n", title(gName), ifaceName)
+			pr("func (v *zVisitor) visit%s(node ast.%s) {\n", title(gName), ifaceName)
 			pr("\tswitch x := node.(type) {\n")
 			pr("\tcase nil:\n\t\treturn\n")
 			for _, node := range group {
@@ -238,7 +242,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 				pr("\t\tv.visit%s(x)\n", node.Name())
 			}
 			pr("\tdefault:\n")
-			pr("\t\tpanic(fmt.Sprintf(\"unreachable: %%v is ast.%v ❌\", node))\n", title(gName))
+			pr("\t\tpanic(fmt.Sprintf(\"unreachable: %%s is ast.%s ❌\", node))\n", title(gName))
 			pr("\t}\n")
 			pr("}\n")
 		}
@@ -252,13 +256,13 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 			node := allNodes[name]
 			st := mustStruct(node)
 
-			pr("// %v\n", name)
-			pr("func (v *zVisitor) visit%v(node *ast.%v) {\n", name, name)
+			pr("// %s\n", name)
+			pr("func (v *zVisitor) visit%s(node *ast.%s) {\n", name, name)
 			pr("\tok := node != nil && v.fn(v.cx, node)\n")
 			pr("\tif ok {\n")
 			for i := 0; i < st.NumFields(); i++ {
 				field := st.Field(i)
-				f := parseField(field.Type())
+				f := parseField(field)
 				if f == nil {
 					continue
 				}
@@ -267,16 +271,22 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 				case f.token != nil: // skip
 				case f.basic != nil: // skip
 				case f.astTyp != nil:
-					pr("\tv.visit%v(node.%s)\n", f.astTyp.Obj().Name(), field.Name())
+					pr("\tv.cx.push(\"%s\", node.%s)\n", field.Name(), field.Name())
+					pr("\tv.visit%s(node.%s)\n", f.astTyp.Obj().Name(), field.Name())
+					pr("\tv.cx.pop()\n")
 
 				case f.slice != nil:
 					typ := asAstType(f.slice.Elem())
 					if typ == nil {
 						panic(fmt.Sprintf("unsupported slice type %v", field.Type()))
 					}
-					pr("\tfor _, item := range node.%s {\n", field.Name())
-					pr("\t\tv.visit%v(item)\n", typ.Obj().Name())
+					pr("\tv.cx.push(\"%s\", nil)\n", field.Name())
+					pr("\tfor i, item := range node.%s {\n", field.Name())
+					pr("\t\tv.cx.push(strconv.Itoa(i), item)\n")
+					pr("\t\tv.visit%s(item)\n", typ.Obj().Name())
+					pr("\t\tv.cx.pop()\n")
 					pr("\t}\n")
+					pr("\tv.cx.pop()\n")
 
 				default:
 					pr("\t%s %s ❌\n", field.Name(), p.TypeString(field.Type()))
