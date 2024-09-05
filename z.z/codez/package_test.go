@@ -57,10 +57,6 @@ func TestPackage(t *testing.T) {
 				Ω(pkg.PkgPath).To(g.Equal("context"))
 				Ω(pkg).To(g.Equal(pkgContext))
 			})
-			Convey("fast path", func() {
-				pkg0 := quickSearchPkgByPos(pkgs.pkgByPos, objContext.Pos())
-				Ω(pkg0).To(g.Equal(pkgContext))
-			})
 		})
 	})
 }

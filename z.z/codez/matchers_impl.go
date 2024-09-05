@@ -42,14 +42,6 @@ type BoolMatcher interface {
 	Match(cx *MatchContext, value bool) (bool, error)
 }
 
-type ExprListMatcher[NODE ast.Node] interface {
-	Match(cx *MatchContext, nodes []NODE) (bool, error)
-}
-
-type StmtListMatcher[NODE ast.Node] interface {
-	Match(cx *MatchContext, nodes []NODE) (bool, error)
-}
-
 type ChanDirMatcher interface {
 	Match(cx *MatchContext, dir ast.ChanDir) (bool, error)
 }

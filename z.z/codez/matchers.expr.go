@@ -81,7 +81,7 @@ type CallExprMatcherB struct {
 
 	Fun      ExprMatcher
 	Lparen   token.Pos
-	Args     ExprListMatcher[ast.Expr]
+	Args     ListMatcher[ast.Expr]
 	Ellipsis token.Pos
 	Rparen   token.Pos
 }
@@ -128,7 +128,7 @@ type CompositeLitMatcherB struct {
 
 	Type       ExprMatcher
 	Lbrace     token.Pos
-	Elts       ExprListMatcher[ast.Expr]
+	Elts       ListMatcher[ast.Expr]
 	Rbrace     token.Pos
 	Incomplete BoolMatcher
 }
@@ -261,7 +261,7 @@ type IndexListExprMatcherB struct {
 
 	X       ExprMatcher
 	Lbrack  token.Pos
-	Indices ExprListMatcher[ast.Expr]
+	Indices ListMatcher[ast.Expr]
 	Rbrack  token.Pos
 }
 

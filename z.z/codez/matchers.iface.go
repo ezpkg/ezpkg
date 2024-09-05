@@ -152,6 +152,11 @@ type IfStmtMatcher interface {
 	MatchStmt(cx *MatchContext, stmt ast.Stmt) (bool, error)
 }
 
+// ImportSpec
+type ImportSpecMatcher interface {
+	Match(cx *MatchContext, node ast.Node) (bool, error)
+}
+
 // IncDecStmt
 type IncDecStmtMatcher interface {
 	Match(cx *MatchContext, node ast.Node) (bool, error)
@@ -260,6 +265,11 @@ type TypeAssertExprMatcher interface {
 	MatchExpr(cx *MatchContext, expr ast.Expr) (bool, error)
 }
 
+// TypeSpec
+type TypeSpecMatcher interface {
+	Match(cx *MatchContext, node ast.Node) (bool, error)
+}
+
 // TypeSwitchStmt
 type TypeSwitchStmtMatcher interface {
 	Match(cx *MatchContext, node ast.Node) (bool, error)
@@ -270,4 +280,9 @@ type TypeSwitchStmtMatcher interface {
 type UnaryExprMatcher interface {
 	Match(cx *MatchContext, node ast.Node) (bool, error)
 	MatchExpr(cx *MatchContext, expr ast.Expr) (bool, error)
+}
+
+// ValueSpec
+type ValueSpecMatcher interface {
+	Match(cx *MatchContext, node ast.Node) (bool, error)
 }

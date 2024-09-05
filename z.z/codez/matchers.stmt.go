@@ -13,10 +13,10 @@ import (
 type AssignStmtMatcherB struct {
 	_ *ast.AssignStmt
 
-	Lhs    ExprListMatcher[ast.Expr]
+	Lhs    ListMatcher[ast.Expr]
 	TokPos token.Pos
 	Tok    token.Token
-	Rhs    ExprListMatcher[ast.Expr]
+	Rhs    ListMatcher[ast.Expr]
 }
 
 func (m AssignStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
@@ -37,7 +37,7 @@ type BlockStmtMatcherB struct {
 	_ *ast.BlockStmt
 
 	Lbrace token.Pos
-	List   StmtListMatcher[ast.Stmt]
+	List   ListMatcher[ast.Stmt]
 	Rbrace token.Pos
 }
 
@@ -79,9 +79,9 @@ type CaseClauseMatcherB struct {
 	_ *ast.CaseClause
 
 	Case  token.Pos
-	List  ExprListMatcher[ast.Expr]
+	List  ListMatcher[ast.Expr]
 	Colon token.Pos
-	Body  StmtListMatcher[ast.Stmt]
+	Body  ListMatcher[ast.Stmt]
 }
 
 func (m CaseClauseMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
@@ -104,7 +104,7 @@ type CommClauseMatcherB struct {
 	Case  token.Pos
 	Comm  StmtMatcher
 	Colon token.Pos
-	Body  StmtListMatcher[ast.Stmt]
+	Body  ListMatcher[ast.Stmt]
 }
 
 func (m CommClauseMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {
@@ -347,7 +347,7 @@ type ReturnStmtMatcherB struct {
 	_ *ast.ReturnStmt
 
 	Return  token.Pos
-	Results ExprListMatcher[ast.Expr]
+	Results ListMatcher[ast.Expr]
 }
 
 func (m ReturnStmtMatcherB) MatchStmt(cx *MatchContext, node ast.Stmt) (ok bool, err error) {

@@ -48,9 +48,9 @@ func Coalesce[T comparable](list ...T) T {
 }
 
 func CoalesceX[T any](list ...T) (out T) {
-	for _, item := range list {
-		if !reflect.ValueOf(item).IsNil() {
-			return item
+	for _, elem := range list {
+		if !IsNil(elem) {
+			return elem
 		}
 	}
 	return out
