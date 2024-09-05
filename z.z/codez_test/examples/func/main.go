@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	pkgs := errorz.Must(codez.LoadPackages("ezpkg.io/-/codez_test/testdata/logging/main"))
-	fmt.Println(colorz.Blue.Wrap("👉 loaded packages:"))
-	for _, pkg := range pkgs.Packages() {
+	pkgs := errorz.Must(codez.LoadPackages("ezpkg.io/-/codez_test/testpkg/logging/main"))
+	fmt.Println(colorz.Blue.Wrap("👉 input packages:"))
+	for _, pkg := range pkgs.InputPackages() {
 		fmt.Printf("\t%v\n", pkg.PkgPath)
 	}
 	fmt.Println()
@@ -34,7 +34,7 @@ func matchContext(pkgSet *codez.Packages) {
 		codez.MatchIdent(codez.MatchString("Context")),
 	)
 
-	nodes, err := codez.Match(pkgSet, m0, "ezpkg.io/-/codez_test/testdata/logging/...")
+	nodes, err := codez.Match(pkgSet, m0, "ezpkg.io/-/codez_test/testpkg/logging/...")
 	if err != nil {
 		fmt.Println("error", err)
 		return
@@ -47,7 +47,7 @@ func matchContext(pkgSet *codez.Packages) {
 
 func searchError(pkgs *codez.Packages) {
 	sr := codez.NewSearch("error").
-		InPackages("ezpkg.io/-/codez_test/testdata/logging/...")
+		InPackages("ezpkg.io/-/codez_test/testpkg/logging/...")
 	result, err := sr.Exec(pkgs)
 	if err != nil {
 		fmt.Printf("%+v\n", err)
@@ -60,7 +60,7 @@ func searchError(pkgs *codez.Packages) {
 func searchContext(pkgs *codez.Packages) {
 	sr := codez.NewSearch("context.Context").
 		Import("context", "context").
-		InPackages("ezpkg.io/-/codez_test/testdata/logging/...")
+		InPackages("ezpkg.io/-/codez_test/testpkg/logging/...")
 	result, err := sr.Exec(pkgs)
 	if err != nil {
 		fmt.Printf("%+v\n", err)
@@ -73,7 +73,7 @@ func searchContext(pkgs *codez.Packages) {
 func searchFuncReturningError(pkgs *codez.Packages) {
 	sr := codez.NewSearch("func $foo(...) (..., error)").
 		WithIdent("$foo").
-		InPackages("ezpkg.io/-/codez_test/testdata/logging/...")
+		InPackages("ezpkg.io/-/codez_test/testpkg/logging/...")
 	result, err := sr.Exec(pkgs)
 	if err != nil {
 		fmt.Printf("%+v\n", err)

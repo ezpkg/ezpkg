@@ -6,27 +6,71 @@ import (
 	g "github.com/onsi/gomega"
 
 	. "ezpkg.io/conveyz"
+	"ezpkg.io/diffz"
 	"ezpkg.io/errorz"
+	"ezpkg.io/stringz"
+	"ezpkg.io/testingz"
 )
 
-func TestPackage(t *testing.T) {
+func TestLoadPackages(t *testing.T) {
+	ΩxNoDiff := testingz.ConveyDiffByLine(diffz.IgnoreSpace())
+
+	pkgList := func(pkgs []*Package) string {
+		return stringz.JoinFunc(pkgs, "\n",
+			func(pkg *Package) string { return pkg.PkgPath })
+	}
+	Convey("LoadPackages", t, func() {
+		Convey("single, absolute path", func() {
+			pkgs := errorz.Must(LoadPackages("ezpkg.io/-/codez_test/testpkg/logging/main"))
+
+			expected := `ezpkg.io/-/codez_test/testpkg/logging/main`
+			ΩxNoDiff(expected, pkgList(pkgs.InputPackages()))
+		})
+		Convey("absolute path with ...", func() {
+			pkgs := errorz.Must(LoadPackages("ezpkg.io/-/codez_test/testpkg/logging/..."))
+
+			expected := `
+ezpkg.io/-/codez_test/testpkg/logging
+ezpkg.io/-/codez_test/testpkg/logging/main`
+			ΩxNoDiff(expected, pkgList(pkgs.InputPackages()))
+		})
+		Convey("relative path", func() {
+			pkgs := errorz.Must(LoadPackages("../codez_test/testpkg/logging/..."))
+
+			expected := `
+ezpkg.io/-/codez_test/testpkg/logging
+ezpkg.io/-/codez_test/testpkg/logging/main`
+			ΩxNoDiff(expected, pkgList(pkgs.InputPackages()))
+		})
+
+		pkgs := errorz.Must(LoadPackages("ezpkg.io/-/codez_test/testpkg/...", "golang.org/..."))
+		Convey("filter", func() {
+			Convey("logging/...", func() {
+				zpkgs := pkgs.AllPackages("ezpkg.io/-/codez_test/testpkg/logging/...")
+
+				expected := `
+ezpkg.io/-/codez_test/testpkg/logging
+ezpkg.io/-/codez_test/testpkg/logging/main`
+				ΩxNoDiff(expected, pkgList(zpkgs))
+			})
+			Convey("golang.org/x/net/html/...", func() {
+				zpkgs := pkgs.AllPackages("golang.org/x/net/html/...")
+
+				expected := `
+golang.org/x/net/html
+golang.org/x/net/html/atom
+golang.org/x/net/html/charset`
+				ΩxNoDiff(expected, pkgList(zpkgs))
+			})
+		})
+	})
+}
+
+func TestPackages(t *testing.T) {
 	Ω := GomegaExpect
-	pkgs := errorz.Must(LoadPackages("ezpkg.io/-/codez_test/testdata/logging/main"))
+	pkgs := errorz.Must(LoadPackages("ezpkg.io/-/codez_test/testpkg/logging/main"))
 
 	Convey("Packages", t, func() {
-		Convey("LoadPackages", func() {
-			Ω(pkgs.Packages()).To(g.HaveLen(1))
-
-			pkg := pkgs.Packages()[0]
-			Ω(pkg.PkgPath).To(g.Equal("ezpkg.io/-/codez_test/testdata/logging/main"))
-		})
-		Convey("LoadPackages with filter", func() {
-			pkgs := errorz.Must(LoadPackages("../codez_test/testdata/logging/..."))
-			Ω(pkgs.Packages()).To(g.HaveLen(2))
-			Ω(pkgs.Packages()[0].PkgPath).To(g.Equal("ezpkg.io/-/codez_test/testdata/logging"))
-			Ω(pkgs.Packages()[1].PkgPath).To(g.Equal("ezpkg.io/-/codez_test/testdata/logging/main"))
-		})
-
 		Convey("GetObject", func() {
 			Convey("context.Context", func() {
 				objContext := pkgs.GetObject("context", "Context")

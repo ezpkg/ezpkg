@@ -76,21 +76,20 @@ func newPackages(pkgs []*Package) *Packages {
 
 	p := &Packages{origPkgs: pkgs, Fset: pkgs[0].Fset}
 	p.mapPkgs = map[string]*Package{}
-
-	var allPkgs []*Package
 	for _, pkg := range p.origPkgs {
+		p.mapPkgs[pkg.PkgPath] = pkg
 		for path, impPkg := range pkg.Imports {
 			if p.mapPkgs[path] == nil {
 				pkg0 := newPackage(impPkg)
 				p.mapPkgs[path] = pkg0
-				allPkgs = append(allPkgs, pkg0)
 			}
 		}
 	}
+	_, listPkgs := mapz.SortedKeysAndValues(p.mapPkgs)
 
 	// filter std packages then sort
 	var goOrgPkgs, otherPkgs []*Package
-	for _, pkg := range allPkgs {
+	for _, pkg := range listPkgs {
 		switch {
 		case isStd(pkg.PkgPath):
 			p.stdPkgs = append(p.stdPkgs, pkg)
@@ -114,7 +113,7 @@ func newPackages(pkgs []*Package) *Packages {
 	p.Implicits = map[ast.Node]types.Object{}
 	p.Selections = map[*ast.SelectorExpr]*types.Selection{}
 	p.Scopes = map[ast.Node]*types.Scope{}
-	for _, pkg := range allPkgs {
+	for _, pkg := range listPkgs {
 		mapz.Append(p.Types, pkg.TypesInfo.Types)
 		mapz.Append(p.Instances, pkg.TypesInfo.Instances)
 		mapz.Append(p.Defs, pkg.TypesInfo.Defs)
@@ -127,7 +126,7 @@ func newPackages(pkgs []*Package) *Packages {
 }
 
 // Packages returns the loaded packages from input patterns.
-func (p *Packages) Packages() []*Package {
+func (p *Packages) InputPackages() []*Package {
 	return p.origPkgs
 }
 
