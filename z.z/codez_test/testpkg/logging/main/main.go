@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	xcontext "golang.org/x/net/context"
+
 	"ezpkg.io/-/codez_test/testdata/logging"
 )
 
@@ -13,6 +15,9 @@ func main() {
 	fmt.Println("Hello, World!")
 	foo()
 	bar()
+
+	logging.AliasCtx(context.Background())
+	logging.GoOrgCtx(xcontext.Background())
 }
 
 func foo() error {
