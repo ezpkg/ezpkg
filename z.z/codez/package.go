@@ -1,7 +1,6 @@
 package codez
 
 import (
-	"cmp"
 	"fmt"
 	"go/ast"
 	"go/token"
@@ -37,21 +36,11 @@ type Packages struct {
 
 type Package struct {
 	*packages.Package
-
-	start, end token.Pos
 }
 
 func newPackage(pkg *packages.Package) *Package {
 	p := &Package{
 		Package: pkg,
-	}
-	for _, file := range pkg.Syntax {
-		if p.start == 0 || file.Pos() < p.start {
-			p.start = file.FileStart
-		}
-		if p.end == 0 || file.End() > p.end {
-			p.end = file.FileEnd
-		}
 	}
 	return p
 }
@@ -59,13 +48,8 @@ func newPackage(pkg *packages.Package) *Package {
 func (p *Package) GetObject(name string) types.Object {
 	return p.Types.Scope().Lookup(name)
 }
-func (p *Package) Positions() (start, end token.Pos) {
-	return p.start, p.end
-}
+
 func (p *Package) HasPos(pos token.Pos) bool {
-	if pos < p.start || pos > p.end {
-		return false
-	}
 	for _, file := range p.Syntax {
 		if file.FileStart <= pos && pos <= file.FileEnd {
 			return true
@@ -85,12 +69,6 @@ func newPackages(pkgs []*Package) *Packages {
 		slices.SortFunc(pkgs, func(a, b *Package) int {
 			return strings.Compare(a.PkgPath, b.PkgPath)
 		})
-	}
-	sortPkgsByPos := func(pkgs []*Package) []*Package {
-		slices.SortFunc(pkgs, func(a, b *Package) int {
-			return cmp.Compare(a.start, b.start)
-		})
-		return pkgs
 	}
 
 	if len(pkgs) == 0 {
@@ -125,7 +103,6 @@ func newPackages(pkgs []*Package) *Packages {
 	sortPkgs(goOrgPkgs)
 	sortPkgs(otherPkgs)
 	p.allPkgs = slicez.Concat(p.stdPkgs, goOrgPkgs, otherPkgs)
-	p.pkgByPos = sortPkgsByPos(allPkgs)
 
 	// collect types.Info from all packages
 	p.Types = map[ast.Expr]types.TypeAndValue{}
@@ -229,7 +206,7 @@ func (p *Packages) MustGetBuiltInType(typName string) types.Type {
 }
 
 func (p *Packages) GetPackageByPos(pos token.Pos) *Package {
-	for _, pkg := range p.origPkgs {
+	for _, pkg := range p.allPkgs {
 		if pkg.HasPos(pos) {
 			return pkg
 		}

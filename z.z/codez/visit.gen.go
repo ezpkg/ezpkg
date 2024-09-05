@@ -5,21 +5,26 @@
 package codez
 
 import (
+	"fmt"
 	ast "go/ast"
 )
 
 func (v *zVisitor) visitDecl(node ast.Decl) {
 	switch x := node.(type) {
+	case nil:
+		return
 	case *ast.FuncDecl:
 		v.visitFuncDecl(x)
 	case *ast.GenDecl:
 		v.visitGenDecl(x)
 	default:
-		panic("unreachable ❌")
+		panic(fmt.Sprintf("unreachable: %v is ast.Decl ❌", node))
 	}
 }
 func (v *zVisitor) visitExpr(node ast.Expr) {
 	switch x := node.(type) {
+	case nil:
+		return
 	case *ast.ArrayType:
 		v.visitArrayType(x)
 	case *ast.BasicLit:
@@ -65,11 +70,13 @@ func (v *zVisitor) visitExpr(node ast.Expr) {
 	case *ast.UnaryExpr:
 		v.visitUnaryExpr(x)
 	default:
-		panic("unreachable ❌")
+		panic(fmt.Sprintf("unreachable: %v is ast.Expr ❌", node))
 	}
 }
 func (v *zVisitor) visitSpec(node ast.Spec) {
 	switch x := node.(type) {
+	case nil:
+		return
 	case *ast.ImportSpec:
 		v.visitImportSpec(x)
 	case *ast.TypeSpec:
@@ -77,11 +84,13 @@ func (v *zVisitor) visitSpec(node ast.Spec) {
 	case *ast.ValueSpec:
 		v.visitValueSpec(x)
 	default:
-		panic("unreachable ❌")
+		panic(fmt.Sprintf("unreachable: %v is ast.Spec ❌", node))
 	}
 }
 func (v *zVisitor) visitStmt(node ast.Stmt) {
 	switch x := node.(type) {
+	case nil:
+		return
 	case *ast.AssignStmt:
 		v.visitAssignStmt(x)
 	case *ast.BlockStmt:
@@ -123,11 +132,13 @@ func (v *zVisitor) visitStmt(node ast.Stmt) {
 	case *ast.TypeSwitchStmt:
 		v.visitTypeSwitchStmt(x)
 	default:
-		panic("unreachable ❌")
+		panic(fmt.Sprintf("unreachable: %v is ast.Stmt ❌", node))
 	}
 }
 func (v *zVisitor) visitOther(node ast.Node) {
 	switch x := node.(type) {
+	case nil:
+		return
 	case *ast.Comment:
 		v.visitComment(x)
 	case *ast.CommentGroup:
@@ -145,7 +156,7 @@ func (v *zVisitor) visitOther(node ast.Node) {
 	case *ast.ValueSpec:
 		v.visitValueSpec(x)
 	default:
-		panic("unreachable ❌")
+		panic(fmt.Sprintf("unreachable: %v is ast.Other ❌", node))
 	}
 }
 

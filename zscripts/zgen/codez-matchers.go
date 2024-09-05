@@ -229,12 +229,13 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 			ifaceName := typez.If(gName == "other", "Node", title(gName))
 			pr("func (v *zVisitor) visit%v(node ast.%v) {\n", title(gName), ifaceName)
 			pr("\tswitch x := node.(type) {\n")
+			pr("\tcase nil:\n\t\treturn\n")
 			for _, node := range group {
 				pr("\tcase *ast.%s:\n", node.Name())
 				pr("\t\tv.visit%s(x)\n", node.Name())
 			}
 			pr("\tdefault:\n")
-			pr("\t\tpanic(\"unreachable ❌\")\n")
+			pr("\t\tpanic(fmt.Sprintf(\"unreachable: %%v is ast.%v ❌\", node))\n", title(gName))
 			pr("\t}\n")
 			pr("}\n")
 		}
