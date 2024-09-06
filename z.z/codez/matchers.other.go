@@ -20,6 +20,7 @@ type CommentMatcherB struct {
 func (m CommentMatcherB) MatchNode(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m CommentMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.Comment)
 	if !ok {
@@ -39,6 +40,7 @@ type CommentGroupMatcherB struct {
 func (m CommentGroupMatcherB) MatchNode(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m CommentGroupMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.CommentGroup)
 	if !ok {
@@ -62,6 +64,7 @@ type FieldMatcherB struct {
 func (m FieldMatcherB) MatchNode(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m FieldMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.Field)
 	if !ok {
@@ -87,6 +90,7 @@ type FieldListMatcherB struct {
 func (m FieldListMatcherB) MatchNode(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m FieldListMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.FieldList)
 	if !ok {
@@ -113,6 +117,7 @@ type FileMatcherB struct {
 func (m FileMatcherB) MatchNode(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m FileMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.File)
 	if !ok {

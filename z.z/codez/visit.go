@@ -1,11 +1,11 @@
 package codez
 
 import (
-	"errors"
 	"go/ast"
 	"slices"
 	"strings"
 
+	"ezpkg.io/errorz"
 	"ezpkg.io/slicez"
 )
 
@@ -49,7 +49,7 @@ func (cx *VisitContext) pop() {
 // ReplaceCurrent replaces the current node with the new node.
 func (cx *VisitContext) ReplaceCurrent(new ast.Node) error {
 	if cx.replaceCurrent == nil {
-		return errors.New("current node can not be replaced")
+		return errorz.New("current node can not be replaced")
 	}
 	if err := cx.replaceCurrent(cx.Parent(), cx.curIdx, new); err != nil {
 		return err

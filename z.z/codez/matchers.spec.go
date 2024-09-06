@@ -23,6 +23,7 @@ type ImportSpecMatcherB struct {
 func (m ImportSpecMatcherB) MatchSpec(cx *MatchContext, node ast.Spec) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m ImportSpecMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ImportSpec)
 	if !ok {
@@ -50,6 +51,7 @@ type TypeSpecMatcherB struct {
 func (m TypeSpecMatcherB) MatchSpec(cx *MatchContext, node ast.Spec) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m TypeSpecMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.TypeSpec)
 	if !ok {
@@ -77,6 +79,7 @@ type ValueSpecMatcherB struct {
 func (m ValueSpecMatcherB) MatchSpec(cx *MatchContext, node ast.Spec) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m ValueSpecMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ValueSpec)
 	if !ok {

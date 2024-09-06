@@ -5,7 +5,7 @@
 package codez
 
 import (
-	ast "go/ast"
+	"go/ast"
 )
 
 // ArrayType

@@ -96,12 +96,13 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 			}
 		}
 		astTyp := asAstType(typ)
+		basic := asBasic(typ)
 		return &ParsedField{
 			isNode: astTyp != nil && implements(astTyp, astNodeI),
 			token:  asTokenType(typ),
-			astTyp: astTyp,
+			astTyp: typez.If(basic == nil, astTyp, nil),
 			slice:  asSlice(typ),
-			basic:  asBasic(typ),
+			basic:  basic,
 		}
 	}
 
@@ -162,15 +163,17 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 			pr("}\n\n")
 
 			ifaceName := typez.If(gName == "other", "Node", title(gName))
-			pr("func (m %s) Match%s(cx *MatchContext, node ast.%s) (ok bool, err error) {\n", nameB, ifaceName, ifaceName)
-			pr("\treturn m.Match(cx, node)\n")
-			pr("}\n")
+			pr(`
+func (m %[1]s) Match%[2]s(cx *MatchContext, node ast.%[2]s) (ok bool, err error) {
+	return m.Match(cx, node)
+}
 
-			pr("func (m %s) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {\n", nameB)
-			pr("\tx, ok := node.(*ast.%s)\n", node.Name())
-			pr("\tif !ok {\n")
-			pr("\t\treturn false, nil\n")
-			pr("\t}\n")
+func (m %[1]s) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
+	x, ok := node.(*ast.%[3]s)
+	if !ok {
+		return false, nil
+	}
+`, nameB, ifaceName, node.Name())
 
 			for i := 0; i < st.NumFields(); i++ {
 				field := st.Field(i)
@@ -204,7 +207,8 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 
 	{ // 👉 interfaces
 		p := errorz.Must(ng.GenerateFile("codez", pkgDir+"/matchers.iface.go"))
-		p.Import("ast", "go/ast")
+		p.Import("", "go/ast")
+		p.Import("", "token")
 		defer func() { errorz.MustZ(p.Close()) }()
 		pr := p.Printf
 
@@ -228,7 +232,11 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 	}
 	{ // 👉 visitor
 		p := errorz.Must(ng.GenerateFile("codez", pkgDir+"/visit.gen.go"))
-		p.Import("ast", "go/ast")
+		p.Import("", "go/ast")
+		p.Import("", "fmt")
+		p.Import("", "strconv")
+		p.Import("", "token")
+		p.Import("", "ezpkg.io/errorz")
 		defer func() { errorz.MustZ(p.Close()) }()
 		pr := p.Printf
 
@@ -252,6 +260,7 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 		visitGroup("stmt", group.Stmts)
 		visitGroup("other", group.Others)
 
+		// visit functions
 		for _, name := range mapz.SortedKeys(allNodes) {
 			node := allNodes[name]
 			st := mustStruct(node)
@@ -281,22 +290,76 @@ func (c CodezMatcher) Generate(ng genz.Engine) error {
 					if typ == nil {
 						panic(fmt.Sprintf("unsupported slice type %v", field.Type()))
 					}
-					pr("\tv.cx.push(\"%s\", nil)\n", field.Name())
-					pr("\tv.cx.replaceCurrent = replace%s_%s\n", name, field.Name())
-					pr("\tfor i, item := range node.%s {\n", field.Name())
-					pr("\t\tv.cx.curIdx = i\n")
-					pr("\t\tv.cx.push(strconv.Itoa(i), item)\n")
-					pr("\t\tv.visit%s(item)\n", typ.Obj().Name())
-					pr("\t\tv.cx.pop()\n")
-					pr("\t}\n")
-					pr("\tv.cx.pop()\n")
+					// replace by a single pr
+					pr(`
+		v.cx.push("%[2]s", nil)
+		v.cx.replaceCurrent = replace%[1]s_%[2]s
+		for i, item := range node.%[2]s {
+			v.cx.curIdx = i
+			v.cx.push(strconv.Itoa(i), item)
+			v.visit%[3]s(item)
+			v.cx.pop()
+		}
+		v.cx.pop()
+`, name, field.Name(), typ.Obj().Name())
 
 				default:
 					pr("\t%s %s ❌\n", field.Name(), p.TypeString(field.Type()))
 				}
 			}
-			pr("}\n")
-			pr("}\n\n")
+			pr("}\n}\n\n")
+		}
+		// replace functions
+		pr("// --- replace functions ---\n\n")
+		for _, name := range mapz.SortedKeys(allNodes) {
+			node := allNodes[name]
+			st := mustStruct(node)
+
+			for i := 0; i < st.NumFields(); i++ {
+				field := st.Field(i)
+				f := parseField(field)
+				if f == nil || f.astTyp == nil && f.slice == nil {
+					continue
+				}
+				pr("func replace%s_%s(parent ast.Node, idx int, new ast.Node) error {\n", name, field.Name())
+				switch {
+				case f.astTyp != nil:
+					typ := f.astTyp
+					newTyp := typez.If(isStruct(typ), "*", "") +
+						"ast." + typ.Obj().Name()
+
+					pr(`
+		p, ok := parent.(*ast.%[1]s)
+		if !ok { return errorz.New("parent is not *ast.%[1]s") }
+		n, ok := new.(%[2]s)
+		if !ok { return errorz.New("new is not %[2]s") }
+		p.%[3]s = n
+		return nil
+		`, name, newTyp, field.Name())
+
+				case f.slice != nil:
+					typ := asAstType(f.slice.Elem())
+					newTyp := typez.If(isStruct(typ), "*", "") +
+						"ast." + typ.Obj().Name()
+
+					pr(`
+		p, ok := parent.(*ast.%[1]s)
+		if !ok { return errorz.New("parent is not *ast.%[1]s") }
+		n, ok := new.(%[2]s)
+		if !ok { return errorz.New("new is not %[2]s") }
+		switch {
+		case idx < 0 || idx > len(p.%[3]s):
+			return errorz.Newf("index out of range (idx=%[4]s, len=%[4]s)", idx, len(p.%[3]s))
+		case idx == len(p.%[3]s):
+			p.%[3]s = append(p.%[3]s, n)
+		default:
+			p.%[3]s[idx] = n
+		}
+		return nil
+		`, name, newTyp, field.Name(), "%s")
+				}
+				pr("}\n\n")
+			}
 		}
 	}
 	return nil

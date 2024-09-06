@@ -21,6 +21,7 @@ type ArrayTypeMatcherB struct {
 func (m ArrayTypeMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m ArrayTypeMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ArrayType)
 	if !ok {
@@ -43,6 +44,7 @@ type BasicLitMatcherB struct {
 func (m BasicLitMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m BasicLitMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.BasicLit)
 	if !ok {
@@ -65,6 +67,7 @@ type BinaryExprMatcherB struct {
 func (m BinaryExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m BinaryExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.BinaryExpr)
 	if !ok {
@@ -89,6 +92,7 @@ type CallExprMatcherB struct {
 func (m CallExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m CallExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.CallExpr)
 	if !ok {
@@ -112,6 +116,7 @@ type ChanTypeMatcherB struct {
 func (m ChanTypeMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m ChanTypeMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ChanType)
 	if !ok {
@@ -136,6 +141,7 @@ type CompositeLitMatcherB struct {
 func (m CompositeLitMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m CompositeLitMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.CompositeLit)
 	if !ok {
@@ -158,6 +164,7 @@ type EllipsisMatcherB struct {
 func (m EllipsisMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m EllipsisMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.Ellipsis)
 	if !ok {
@@ -178,6 +185,7 @@ type FuncLitMatcherB struct {
 func (m FuncLitMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m FuncLitMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.FuncLit)
 	if !ok {
@@ -201,6 +209,7 @@ type FuncTypeMatcherB struct {
 func (m FuncTypeMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m FuncTypeMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.FuncType)
 	if !ok {
@@ -223,6 +232,7 @@ type IdentMatcherB struct {
 func (m IdentMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m IdentMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.Ident)
 	if !ok {
@@ -245,6 +255,7 @@ type IndexExprMatcherB struct {
 func (m IndexExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m IndexExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.IndexExpr)
 	if !ok {
@@ -268,6 +279,7 @@ type IndexListExprMatcherB struct {
 func (m IndexListExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m IndexListExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.IndexListExpr)
 	if !ok {
@@ -290,6 +302,7 @@ type InterfaceTypeMatcherB struct {
 func (m InterfaceTypeMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m InterfaceTypeMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.InterfaceType)
 	if !ok {
@@ -312,6 +325,7 @@ type KeyValueExprMatcherB struct {
 func (m KeyValueExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m KeyValueExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.KeyValueExpr)
 	if !ok {
@@ -334,6 +348,7 @@ type MapTypeMatcherB struct {
 func (m MapTypeMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m MapTypeMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.MapType)
 	if !ok {
@@ -356,6 +371,7 @@ type ParenExprMatcherB struct {
 func (m ParenExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m ParenExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.ParenExpr)
 	if !ok {
@@ -376,6 +392,7 @@ type SelectorExprMatcherB struct {
 func (m SelectorExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m SelectorExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.SelectorExpr)
 	if !ok {
@@ -402,6 +419,7 @@ type SliceExprMatcherB struct {
 func (m SliceExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m SliceExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.SliceExpr)
 	if !ok {
@@ -426,6 +444,7 @@ type StarExprMatcherB struct {
 func (m StarExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m StarExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.StarExpr)
 	if !ok {
@@ -447,6 +466,7 @@ type StructTypeMatcherB struct {
 func (m StructTypeMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m StructTypeMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.StructType)
 	if !ok {
@@ -470,6 +490,7 @@ type TypeAssertExprMatcherB struct {
 func (m TypeAssertExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m TypeAssertExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.TypeAssertExpr)
 	if !ok {
@@ -492,6 +513,7 @@ type UnaryExprMatcherB struct {
 func (m UnaryExprMatcherB) MatchExpr(cx *MatchContext, node ast.Expr) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m UnaryExprMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.UnaryExpr)
 	if !ok {

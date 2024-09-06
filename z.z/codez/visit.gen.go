@@ -6,8 +6,10 @@ package codez
 
 import (
 	"fmt"
-	ast "go/ast"
+	"go/ast"
 	"strconv"
+
+	"ezpkg.io/errorz"
 )
 
 func (v *zVisitor) visitDecl(node ast.Decl) {
@@ -183,6 +185,7 @@ func (v *zVisitor) visitAssignStmt(node *ast.AssignStmt) {
 			v.cx.pop()
 		}
 		v.cx.pop()
+
 		v.cx.push("Rhs", nil)
 		v.cx.replaceCurrent = replaceAssignStmt_Rhs
 		for i, item := range node.Rhs {
@@ -252,6 +255,7 @@ func (v *zVisitor) visitCallExpr(node *ast.CallExpr) {
 		v.cx.replaceCurrent, v.cx.curIdx = replaceCallExpr_Fun, 0
 		v.visitExpr(node.Fun)
 		v.cx.pop()
+
 		v.cx.push("Args", nil)
 		v.cx.replaceCurrent = replaceCallExpr_Args
 		for i, item := range node.Args {
@@ -277,6 +281,7 @@ func (v *zVisitor) visitCaseClause(node *ast.CaseClause) {
 			v.cx.pop()
 		}
 		v.cx.pop()
+
 		v.cx.push("Body", nil)
 		v.cx.replaceCurrent = replaceCaseClause_Body
 		for i, item := range node.Body {
@@ -308,6 +313,7 @@ func (v *zVisitor) visitCommClause(node *ast.CommClause) {
 		v.cx.replaceCurrent, v.cx.curIdx = replaceCommClause_Comm, 0
 		v.visitStmt(node.Comm)
 		v.cx.pop()
+
 		v.cx.push("Body", nil)
 		v.cx.replaceCurrent = replaceCommClause_Body
 		for i, item := range node.Body {
@@ -351,6 +357,7 @@ func (v *zVisitor) visitCompositeLit(node *ast.CompositeLit) {
 		v.cx.replaceCurrent, v.cx.curIdx = replaceCompositeLit_Type, 0
 		v.visitExpr(node.Type)
 		v.cx.pop()
+
 		v.cx.push("Elts", nil)
 		v.cx.replaceCurrent = replaceCompositeLit_Elts
 		for i, item := range node.Elts {
@@ -422,6 +429,7 @@ func (v *zVisitor) visitField(node *ast.Field) {
 		v.cx.replaceCurrent, v.cx.curIdx = replaceField_Doc, 0
 		v.visitCommentGroup(node.Doc)
 		v.cx.pop()
+
 		v.cx.push("Names", nil)
 		v.cx.replaceCurrent = replaceField_Names
 		for i, item := range node.Names {
@@ -474,6 +482,7 @@ func (v *zVisitor) visitFile(node *ast.File) {
 		v.cx.replaceCurrent, v.cx.curIdx = replaceFile_Name, 0
 		v.visitIdent(node.Name)
 		v.cx.pop()
+
 		v.cx.push("Decls", nil)
 		v.cx.replaceCurrent = replaceFile_Decls
 		for i, item := range node.Decls {
@@ -483,6 +492,7 @@ func (v *zVisitor) visitFile(node *ast.File) {
 			v.cx.pop()
 		}
 		v.cx.pop()
+
 		v.cx.push("Imports", nil)
 		v.cx.replaceCurrent = replaceFile_Imports
 		for i, item := range node.Imports {
@@ -492,6 +502,7 @@ func (v *zVisitor) visitFile(node *ast.File) {
 			v.cx.pop()
 		}
 		v.cx.pop()
+
 		v.cx.push("Comments", nil)
 		v.cx.replaceCurrent = replaceFile_Comments
 		for i, item := range node.Comments {
@@ -596,6 +607,7 @@ func (v *zVisitor) visitGenDecl(node *ast.GenDecl) {
 		v.cx.replaceCurrent, v.cx.curIdx = replaceGenDecl_Doc, 0
 		v.visitCommentGroup(node.Doc)
 		v.cx.pop()
+
 		v.cx.push("Specs", nil)
 		v.cx.replaceCurrent = replaceGenDecl_Specs
 		for i, item := range node.Specs {
@@ -706,6 +718,7 @@ func (v *zVisitor) visitIndexListExpr(node *ast.IndexListExpr) {
 		v.cx.replaceCurrent, v.cx.curIdx = replaceIndexListExpr_X, 0
 		v.visitExpr(node.X)
 		v.cx.pop()
+
 		v.cx.push("Indices", nil)
 		v.cx.replaceCurrent = replaceIndexListExpr_Indices
 		for i, item := range node.Indices {
@@ -1009,6 +1022,7 @@ func (v *zVisitor) visitValueSpec(node *ast.ValueSpec) {
 		v.cx.replaceCurrent, v.cx.curIdx = replaceValueSpec_Doc, 0
 		v.visitCommentGroup(node.Doc)
 		v.cx.pop()
+
 		v.cx.push("Names", nil)
 		v.cx.replaceCurrent = replaceValueSpec_Names
 		for i, item := range node.Names {
@@ -1022,6 +1036,7 @@ func (v *zVisitor) visitValueSpec(node *ast.ValueSpec) {
 		v.cx.replaceCurrent, v.cx.curIdx = replaceValueSpec_Type, 0
 		v.visitExpr(node.Type)
 		v.cx.pop()
+
 		v.cx.push("Values", nil)
 		v.cx.replaceCurrent = replaceValueSpec_Values
 		for i, item := range node.Values {
@@ -1036,4 +1051,1517 @@ func (v *zVisitor) visitValueSpec(node *ast.ValueSpec) {
 		v.visitCommentGroup(node.Comment)
 		v.cx.pop()
 	}
+}
+
+// --- replace functions ---
+
+func replaceArrayType_Len(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ArrayType)
+	if !ok {
+		return errorz.New("parent is not *ast.ArrayType")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Len = n
+	return nil
+}
+
+func replaceArrayType_Elt(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ArrayType)
+	if !ok {
+		return errorz.New("parent is not *ast.ArrayType")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Elt = n
+	return nil
+}
+
+func replaceAssignStmt_Lhs(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.AssignStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.AssignStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Lhs):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Lhs))
+	case idx == len(p.Lhs):
+		p.Lhs = append(p.Lhs, n)
+	default:
+		p.Lhs[idx] = n
+	}
+	return nil
+}
+
+func replaceAssignStmt_Rhs(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.AssignStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.AssignStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Rhs):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Rhs))
+	case idx == len(p.Rhs):
+		p.Rhs = append(p.Rhs, n)
+	default:
+		p.Rhs[idx] = n
+	}
+	return nil
+}
+
+func replaceBinaryExpr_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.BinaryExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.BinaryExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceBinaryExpr_Y(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.BinaryExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.BinaryExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Y = n
+	return nil
+}
+
+func replaceBlockStmt_List(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.BlockStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.BlockStmt")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	switch {
+	case idx < 0 || idx > len(p.List):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.List))
+	case idx == len(p.List):
+		p.List = append(p.List, n)
+	default:
+		p.List[idx] = n
+	}
+	return nil
+}
+
+func replaceBranchStmt_Label(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.BranchStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.BranchStmt")
+	}
+	n, ok := new.(*ast.Ident)
+	if !ok {
+		return errorz.New("new is not *ast.Ident")
+	}
+	p.Label = n
+	return nil
+}
+
+func replaceCallExpr_Fun(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.CallExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.CallExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Fun = n
+	return nil
+}
+
+func replaceCallExpr_Args(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.CallExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.CallExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Args):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Args))
+	case idx == len(p.Args):
+		p.Args = append(p.Args, n)
+	default:
+		p.Args[idx] = n
+	}
+	return nil
+}
+
+func replaceCaseClause_List(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.CaseClause)
+	if !ok {
+		return errorz.New("parent is not *ast.CaseClause")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	switch {
+	case idx < 0 || idx > len(p.List):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.List))
+	case idx == len(p.List):
+		p.List = append(p.List, n)
+	default:
+		p.List[idx] = n
+	}
+	return nil
+}
+
+func replaceCaseClause_Body(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.CaseClause)
+	if !ok {
+		return errorz.New("parent is not *ast.CaseClause")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Body):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Body))
+	case idx == len(p.Body):
+		p.Body = append(p.Body, n)
+	default:
+		p.Body[idx] = n
+	}
+	return nil
+}
+
+func replaceChanType_Value(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ChanType)
+	if !ok {
+		return errorz.New("parent is not *ast.ChanType")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Value = n
+	return nil
+}
+
+func replaceCommClause_Comm(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.CommClause)
+	if !ok {
+		return errorz.New("parent is not *ast.CommClause")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	p.Comm = n
+	return nil
+}
+
+func replaceCommClause_Body(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.CommClause)
+	if !ok {
+		return errorz.New("parent is not *ast.CommClause")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Body):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Body))
+	case idx == len(p.Body):
+		p.Body = append(p.Body, n)
+	default:
+		p.Body[idx] = n
+	}
+	return nil
+}
+
+func replaceCommentGroup_List(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("parent is not *ast.CommentGroup")
+	}
+	n, ok := new.(*ast.Comment)
+	if !ok {
+		return errorz.New("new is not *ast.Comment")
+	}
+	switch {
+	case idx < 0 || idx > len(p.List):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.List))
+	case idx == len(p.List):
+		p.List = append(p.List, n)
+	default:
+		p.List[idx] = n
+	}
+	return nil
+}
+
+func replaceCompositeLit_Type(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.CompositeLit)
+	if !ok {
+		return errorz.New("parent is not *ast.CompositeLit")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Type = n
+	return nil
+}
+
+func replaceCompositeLit_Elts(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.CompositeLit)
+	if !ok {
+		return errorz.New("parent is not *ast.CompositeLit")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Elts):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Elts))
+	case idx == len(p.Elts):
+		p.Elts = append(p.Elts, n)
+	default:
+		p.Elts[idx] = n
+	}
+	return nil
+}
+
+func replaceDeclStmt_Decl(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.DeclStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.DeclStmt")
+	}
+	n, ok := new.(ast.Decl)
+	if !ok {
+		return errorz.New("new is not ast.Decl")
+	}
+	p.Decl = n
+	return nil
+}
+
+func replaceDeferStmt_Call(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.DeferStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.DeferStmt")
+	}
+	n, ok := new.(*ast.CallExpr)
+	if !ok {
+		return errorz.New("new is not *ast.CallExpr")
+	}
+	p.Call = n
+	return nil
+}
+
+func replaceEllipsis_Elt(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.Ellipsis)
+	if !ok {
+		return errorz.New("parent is not *ast.Ellipsis")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Elt = n
+	return nil
+}
+
+func replaceExprStmt_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ExprStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.ExprStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceField_Doc(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.Field)
+	if !ok {
+		return errorz.New("parent is not *ast.Field")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Doc = n
+	return nil
+}
+
+func replaceField_Names(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.Field)
+	if !ok {
+		return errorz.New("parent is not *ast.Field")
+	}
+	n, ok := new.(*ast.Ident)
+	if !ok {
+		return errorz.New("new is not *ast.Ident")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Names):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Names))
+	case idx == len(p.Names):
+		p.Names = append(p.Names, n)
+	default:
+		p.Names[idx] = n
+	}
+	return nil
+}
+
+func replaceField_Type(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.Field)
+	if !ok {
+		return errorz.New("parent is not *ast.Field")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Type = n
+	return nil
+}
+
+func replaceField_Tag(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.Field)
+	if !ok {
+		return errorz.New("parent is not *ast.Field")
+	}
+	n, ok := new.(*ast.BasicLit)
+	if !ok {
+		return errorz.New("new is not *ast.BasicLit")
+	}
+	p.Tag = n
+	return nil
+}
+
+func replaceField_Comment(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.Field)
+	if !ok {
+		return errorz.New("parent is not *ast.Field")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Comment = n
+	return nil
+}
+
+func replaceFieldList_List(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FieldList)
+	if !ok {
+		return errorz.New("parent is not *ast.FieldList")
+	}
+	n, ok := new.(*ast.Field)
+	if !ok {
+		return errorz.New("new is not *ast.Field")
+	}
+	switch {
+	case idx < 0 || idx > len(p.List):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.List))
+	case idx == len(p.List):
+		p.List = append(p.List, n)
+	default:
+		p.List[idx] = n
+	}
+	return nil
+}
+
+func replaceFile_Doc(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.File)
+	if !ok {
+		return errorz.New("parent is not *ast.File")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Doc = n
+	return nil
+}
+
+func replaceFile_Name(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.File)
+	if !ok {
+		return errorz.New("parent is not *ast.File")
+	}
+	n, ok := new.(*ast.Ident)
+	if !ok {
+		return errorz.New("new is not *ast.Ident")
+	}
+	p.Name = n
+	return nil
+}
+
+func replaceFile_Decls(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.File)
+	if !ok {
+		return errorz.New("parent is not *ast.File")
+	}
+	n, ok := new.(ast.Decl)
+	if !ok {
+		return errorz.New("new is not ast.Decl")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Decls):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Decls))
+	case idx == len(p.Decls):
+		p.Decls = append(p.Decls, n)
+	default:
+		p.Decls[idx] = n
+	}
+	return nil
+}
+
+func replaceFile_Imports(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.File)
+	if !ok {
+		return errorz.New("parent is not *ast.File")
+	}
+	n, ok := new.(*ast.ImportSpec)
+	if !ok {
+		return errorz.New("new is not *ast.ImportSpec")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Imports):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Imports))
+	case idx == len(p.Imports):
+		p.Imports = append(p.Imports, n)
+	default:
+		p.Imports[idx] = n
+	}
+	return nil
+}
+
+func replaceFile_Comments(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.File)
+	if !ok {
+		return errorz.New("parent is not *ast.File")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Comments):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Comments))
+	case idx == len(p.Comments):
+		p.Comments = append(p.Comments, n)
+	default:
+		p.Comments[idx] = n
+	}
+	return nil
+}
+
+func replaceForStmt_Init(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ForStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.ForStmt")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	p.Init = n
+	return nil
+}
+
+func replaceForStmt_Cond(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ForStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.ForStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Cond = n
+	return nil
+}
+
+func replaceForStmt_Post(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ForStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.ForStmt")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	p.Post = n
+	return nil
+}
+
+func replaceForStmt_Body(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ForStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.ForStmt")
+	}
+	n, ok := new.(*ast.BlockStmt)
+	if !ok {
+		return errorz.New("new is not *ast.BlockStmt")
+	}
+	p.Body = n
+	return nil
+}
+
+func replaceFuncDecl_Doc(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FuncDecl)
+	if !ok {
+		return errorz.New("parent is not *ast.FuncDecl")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Doc = n
+	return nil
+}
+
+func replaceFuncDecl_Recv(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FuncDecl)
+	if !ok {
+		return errorz.New("parent is not *ast.FuncDecl")
+	}
+	n, ok := new.(*ast.FieldList)
+	if !ok {
+		return errorz.New("new is not *ast.FieldList")
+	}
+	p.Recv = n
+	return nil
+}
+
+func replaceFuncDecl_Name(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FuncDecl)
+	if !ok {
+		return errorz.New("parent is not *ast.FuncDecl")
+	}
+	n, ok := new.(*ast.Ident)
+	if !ok {
+		return errorz.New("new is not *ast.Ident")
+	}
+	p.Name = n
+	return nil
+}
+
+func replaceFuncDecl_Type(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FuncDecl)
+	if !ok {
+		return errorz.New("parent is not *ast.FuncDecl")
+	}
+	n, ok := new.(*ast.FuncType)
+	if !ok {
+		return errorz.New("new is not *ast.FuncType")
+	}
+	p.Type = n
+	return nil
+}
+
+func replaceFuncDecl_Body(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FuncDecl)
+	if !ok {
+		return errorz.New("parent is not *ast.FuncDecl")
+	}
+	n, ok := new.(*ast.BlockStmt)
+	if !ok {
+		return errorz.New("new is not *ast.BlockStmt")
+	}
+	p.Body = n
+	return nil
+}
+
+func replaceFuncLit_Type(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FuncLit)
+	if !ok {
+		return errorz.New("parent is not *ast.FuncLit")
+	}
+	n, ok := new.(*ast.FuncType)
+	if !ok {
+		return errorz.New("new is not *ast.FuncType")
+	}
+	p.Type = n
+	return nil
+}
+
+func replaceFuncLit_Body(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FuncLit)
+	if !ok {
+		return errorz.New("parent is not *ast.FuncLit")
+	}
+	n, ok := new.(*ast.BlockStmt)
+	if !ok {
+		return errorz.New("new is not *ast.BlockStmt")
+	}
+	p.Body = n
+	return nil
+}
+
+func replaceFuncType_TypeParams(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FuncType)
+	if !ok {
+		return errorz.New("parent is not *ast.FuncType")
+	}
+	n, ok := new.(*ast.FieldList)
+	if !ok {
+		return errorz.New("new is not *ast.FieldList")
+	}
+	p.TypeParams = n
+	return nil
+}
+
+func replaceFuncType_Params(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FuncType)
+	if !ok {
+		return errorz.New("parent is not *ast.FuncType")
+	}
+	n, ok := new.(*ast.FieldList)
+	if !ok {
+		return errorz.New("new is not *ast.FieldList")
+	}
+	p.Params = n
+	return nil
+}
+
+func replaceFuncType_Results(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.FuncType)
+	if !ok {
+		return errorz.New("parent is not *ast.FuncType")
+	}
+	n, ok := new.(*ast.FieldList)
+	if !ok {
+		return errorz.New("new is not *ast.FieldList")
+	}
+	p.Results = n
+	return nil
+}
+
+func replaceGenDecl_Doc(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.GenDecl)
+	if !ok {
+		return errorz.New("parent is not *ast.GenDecl")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Doc = n
+	return nil
+}
+
+func replaceGenDecl_Specs(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.GenDecl)
+	if !ok {
+		return errorz.New("parent is not *ast.GenDecl")
+	}
+	n, ok := new.(ast.Spec)
+	if !ok {
+		return errorz.New("new is not ast.Spec")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Specs):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Specs))
+	case idx == len(p.Specs):
+		p.Specs = append(p.Specs, n)
+	default:
+		p.Specs[idx] = n
+	}
+	return nil
+}
+
+func replaceGoStmt_Call(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.GoStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.GoStmt")
+	}
+	n, ok := new.(*ast.CallExpr)
+	if !ok {
+		return errorz.New("new is not *ast.CallExpr")
+	}
+	p.Call = n
+	return nil
+}
+
+func replaceIfStmt_Init(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.IfStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.IfStmt")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	p.Init = n
+	return nil
+}
+
+func replaceIfStmt_Cond(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.IfStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.IfStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Cond = n
+	return nil
+}
+
+func replaceIfStmt_Body(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.IfStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.IfStmt")
+	}
+	n, ok := new.(*ast.BlockStmt)
+	if !ok {
+		return errorz.New("new is not *ast.BlockStmt")
+	}
+	p.Body = n
+	return nil
+}
+
+func replaceIfStmt_Else(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.IfStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.IfStmt")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	p.Else = n
+	return nil
+}
+
+func replaceImportSpec_Doc(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ImportSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.ImportSpec")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Doc = n
+	return nil
+}
+
+func replaceImportSpec_Name(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ImportSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.ImportSpec")
+	}
+	n, ok := new.(*ast.Ident)
+	if !ok {
+		return errorz.New("new is not *ast.Ident")
+	}
+	p.Name = n
+	return nil
+}
+
+func replaceImportSpec_Path(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ImportSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.ImportSpec")
+	}
+	n, ok := new.(*ast.BasicLit)
+	if !ok {
+		return errorz.New("new is not *ast.BasicLit")
+	}
+	p.Path = n
+	return nil
+}
+
+func replaceImportSpec_Comment(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ImportSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.ImportSpec")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Comment = n
+	return nil
+}
+
+func replaceIncDecStmt_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.IncDecStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.IncDecStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceIndexExpr_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.IndexExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.IndexExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceIndexExpr_Index(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.IndexExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.IndexExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Index = n
+	return nil
+}
+
+func replaceIndexListExpr_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.IndexListExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.IndexListExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceIndexListExpr_Indices(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.IndexListExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.IndexListExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Indices):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Indices))
+	case idx == len(p.Indices):
+		p.Indices = append(p.Indices, n)
+	default:
+		p.Indices[idx] = n
+	}
+	return nil
+}
+
+func replaceInterfaceType_Methods(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.InterfaceType)
+	if !ok {
+		return errorz.New("parent is not *ast.InterfaceType")
+	}
+	n, ok := new.(*ast.FieldList)
+	if !ok {
+		return errorz.New("new is not *ast.FieldList")
+	}
+	p.Methods = n
+	return nil
+}
+
+func replaceKeyValueExpr_Key(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.KeyValueExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.KeyValueExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Key = n
+	return nil
+}
+
+func replaceKeyValueExpr_Value(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.KeyValueExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.KeyValueExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Value = n
+	return nil
+}
+
+func replaceLabeledStmt_Label(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.LabeledStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.LabeledStmt")
+	}
+	n, ok := new.(*ast.Ident)
+	if !ok {
+		return errorz.New("new is not *ast.Ident")
+	}
+	p.Label = n
+	return nil
+}
+
+func replaceLabeledStmt_Stmt(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.LabeledStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.LabeledStmt")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	p.Stmt = n
+	return nil
+}
+
+func replaceMapType_Key(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.MapType)
+	if !ok {
+		return errorz.New("parent is not *ast.MapType")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Key = n
+	return nil
+}
+
+func replaceMapType_Value(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.MapType)
+	if !ok {
+		return errorz.New("parent is not *ast.MapType")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Value = n
+	return nil
+}
+
+func replaceParenExpr_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ParenExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.ParenExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceRangeStmt_Key(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.RangeStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.RangeStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Key = n
+	return nil
+}
+
+func replaceRangeStmt_Value(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.RangeStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.RangeStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Value = n
+	return nil
+}
+
+func replaceRangeStmt_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.RangeStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.RangeStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceRangeStmt_Body(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.RangeStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.RangeStmt")
+	}
+	n, ok := new.(*ast.BlockStmt)
+	if !ok {
+		return errorz.New("new is not *ast.BlockStmt")
+	}
+	p.Body = n
+	return nil
+}
+
+func replaceReturnStmt_Results(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ReturnStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.ReturnStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Results):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Results))
+	case idx == len(p.Results):
+		p.Results = append(p.Results, n)
+	default:
+		p.Results[idx] = n
+	}
+	return nil
+}
+
+func replaceSelectStmt_Body(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SelectStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.SelectStmt")
+	}
+	n, ok := new.(*ast.BlockStmt)
+	if !ok {
+		return errorz.New("new is not *ast.BlockStmt")
+	}
+	p.Body = n
+	return nil
+}
+
+func replaceSelectorExpr_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SelectorExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.SelectorExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceSelectorExpr_Sel(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SelectorExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.SelectorExpr")
+	}
+	n, ok := new.(*ast.Ident)
+	if !ok {
+		return errorz.New("new is not *ast.Ident")
+	}
+	p.Sel = n
+	return nil
+}
+
+func replaceSendStmt_Chan(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SendStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.SendStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Chan = n
+	return nil
+}
+
+func replaceSendStmt_Value(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SendStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.SendStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Value = n
+	return nil
+}
+
+func replaceSliceExpr_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SliceExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.SliceExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceSliceExpr_Low(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SliceExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.SliceExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Low = n
+	return nil
+}
+
+func replaceSliceExpr_High(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SliceExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.SliceExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.High = n
+	return nil
+}
+
+func replaceSliceExpr_Max(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SliceExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.SliceExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Max = n
+	return nil
+}
+
+func replaceStarExpr_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.StarExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.StarExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceStructType_Fields(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.StructType)
+	if !ok {
+		return errorz.New("parent is not *ast.StructType")
+	}
+	n, ok := new.(*ast.FieldList)
+	if !ok {
+		return errorz.New("new is not *ast.FieldList")
+	}
+	p.Fields = n
+	return nil
+}
+
+func replaceSwitchStmt_Init(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SwitchStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.SwitchStmt")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	p.Init = n
+	return nil
+}
+
+func replaceSwitchStmt_Tag(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SwitchStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.SwitchStmt")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Tag = n
+	return nil
+}
+
+func replaceSwitchStmt_Body(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.SwitchStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.SwitchStmt")
+	}
+	n, ok := new.(*ast.BlockStmt)
+	if !ok {
+		return errorz.New("new is not *ast.BlockStmt")
+	}
+	p.Body = n
+	return nil
+}
+
+func replaceTypeAssertExpr_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.TypeAssertExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.TypeAssertExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceTypeAssertExpr_Type(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.TypeAssertExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.TypeAssertExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Type = n
+	return nil
+}
+
+func replaceTypeSpec_Doc(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.TypeSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.TypeSpec")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Doc = n
+	return nil
+}
+
+func replaceTypeSpec_Name(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.TypeSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.TypeSpec")
+	}
+	n, ok := new.(*ast.Ident)
+	if !ok {
+		return errorz.New("new is not *ast.Ident")
+	}
+	p.Name = n
+	return nil
+}
+
+func replaceTypeSpec_TypeParams(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.TypeSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.TypeSpec")
+	}
+	n, ok := new.(*ast.FieldList)
+	if !ok {
+		return errorz.New("new is not *ast.FieldList")
+	}
+	p.TypeParams = n
+	return nil
+}
+
+func replaceTypeSpec_Type(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.TypeSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.TypeSpec")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Type = n
+	return nil
+}
+
+func replaceTypeSpec_Comment(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.TypeSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.TypeSpec")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Comment = n
+	return nil
+}
+
+func replaceTypeSwitchStmt_Init(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.TypeSwitchStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.TypeSwitchStmt")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	p.Init = n
+	return nil
+}
+
+func replaceTypeSwitchStmt_Assign(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.TypeSwitchStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.TypeSwitchStmt")
+	}
+	n, ok := new.(ast.Stmt)
+	if !ok {
+		return errorz.New("new is not ast.Stmt")
+	}
+	p.Assign = n
+	return nil
+}
+
+func replaceTypeSwitchStmt_Body(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.TypeSwitchStmt)
+	if !ok {
+		return errorz.New("parent is not *ast.TypeSwitchStmt")
+	}
+	n, ok := new.(*ast.BlockStmt)
+	if !ok {
+		return errorz.New("new is not *ast.BlockStmt")
+	}
+	p.Body = n
+	return nil
+}
+
+func replaceUnaryExpr_X(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.UnaryExpr)
+	if !ok {
+		return errorz.New("parent is not *ast.UnaryExpr")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.X = n
+	return nil
+}
+
+func replaceValueSpec_Doc(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ValueSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.ValueSpec")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Doc = n
+	return nil
+}
+
+func replaceValueSpec_Names(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ValueSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.ValueSpec")
+	}
+	n, ok := new.(*ast.Ident)
+	if !ok {
+		return errorz.New("new is not *ast.Ident")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Names):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Names))
+	case idx == len(p.Names):
+		p.Names = append(p.Names, n)
+	default:
+		p.Names[idx] = n
+	}
+	return nil
+}
+
+func replaceValueSpec_Type(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ValueSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.ValueSpec")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	p.Type = n
+	return nil
+}
+
+func replaceValueSpec_Values(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ValueSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.ValueSpec")
+	}
+	n, ok := new.(ast.Expr)
+	if !ok {
+		return errorz.New("new is not ast.Expr")
+	}
+	switch {
+	case idx < 0 || idx > len(p.Values):
+		return errorz.Newf("index out of range (idx=%s, len=%s)", idx, len(p.Values))
+	case idx == len(p.Values):
+		p.Values = append(p.Values, n)
+	default:
+		p.Values[idx] = n
+	}
+	return nil
+}
+
+func replaceValueSpec_Comment(parent ast.Node, idx int, new ast.Node) error {
+	p, ok := parent.(*ast.ValueSpec)
+	if !ok {
+		return errorz.New("parent is not *ast.ValueSpec")
+	}
+	n, ok := new.(*ast.CommentGroup)
+	if !ok {
+		return errorz.New("new is not *ast.CommentGroup")
+	}
+	p.Comment = n
+	return nil
 }

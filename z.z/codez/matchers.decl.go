@@ -23,6 +23,7 @@ type FuncDeclMatcherB struct {
 func (m FuncDeclMatcherB) MatchDecl(cx *MatchContext, node ast.Decl) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m FuncDeclMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.FuncDecl)
 	if !ok {
@@ -51,6 +52,7 @@ type GenDeclMatcherB struct {
 func (m GenDeclMatcherB) MatchDecl(cx *MatchContext, node ast.Decl) (ok bool, err error) {
 	return m.Match(cx, node)
 }
+
 func (m GenDeclMatcherB) Match(cx *MatchContext, node ast.Node) (ok bool, err error) {
 	x, ok := node.(*ast.GenDecl)
 	if !ok {

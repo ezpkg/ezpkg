@@ -1,11 +1,11 @@
 package codez
 
 import (
-	"errors"
 	"go/ast"
 	"go/types"
 	"regexp"
 
+	"ezpkg.io/errorz"
 	"ezpkg.io/typez"
 )
 
@@ -137,7 +137,7 @@ func And[M NodeMatcher](matchers ...M) NodeMatcher {
 
 func (m zAndMatcher[NodeMatcher]) Match(cx *MatchContext, node ast.Node) (bool, error) {
 	if len(m.Matchers) == 0 {
-		return false, errors.New("empty And matcher")
+		return false, errorz.New("empty And matcher")
 	}
 	for _, matcher := range m.Matchers {
 		ok, err := matcher.Match(cx, node)
@@ -161,7 +161,7 @@ func Or[M NodeMatcher](matchers ...M) NodeMatcher {
 
 func (m zOrMatcher[NodeMatcher]) Match(cx *MatchContext, node ast.Node) (bool, error) {
 	if len(m.Matchers) == 0 {
-		return false, errors.New("empty Or matchers")
+		return false, errorz.New("empty Or matchers")
 	}
 	for _, matcher := range m.Matchers {
 		ok, err := matcher.Match(cx, node)
