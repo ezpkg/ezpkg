@@ -71,12 +71,12 @@ func (cx *VisitContext) GetReplaceCurrent() func(new ast.Node) error {
 	}
 }
 
-func Walk(node ast.Node, fn func(cx *VisitContext, node ast.Node) bool) {
+func Walk(node _NodeI, fn func(cx *VisitContext, node ast.Node) bool) {
 	v := zVisitor{
 		cx: newVisitContext(),
 		fn: fn,
 	}
-	v.visit(node)
+	v.visit(unwrapNode(node))
 }
 
 type zVisitFunc func(cx *VisitContext, node ast.Node) bool

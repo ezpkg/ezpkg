@@ -44,6 +44,8 @@ func newPackage(pkg *packages.Package) *Package {
 	return p
 }
 
+func (p *Package) Unwrap() *packages.Package { return p.Package }
+
 func (p *Package) GetObject(name string) types.Object {
 	return p.Types.Scope().Lookup(name)
 }
@@ -56,16 +58,16 @@ func (p *Package) MustGetObject(name string) types.Object {
 	return obj
 }
 
-func (p *Package) GetFileByPos(pos token.Pos) *ast.File {
+func (p *Package) GetFileByPos(pos token.Pos) *FileX {
 	for _, file := range p.Syntax {
 		if file.FileStart <= pos && pos <= file.FileEnd {
-			return file
+			return newFileX(file)
 		}
 	}
 	return nil
 }
 
-func (p *Package) MustGetFileByPos(pos token.Pos) *ast.File {
+func (p *Package) MustGetFileByPos(pos token.Pos) *FileX {
 	file := p.GetFileByPos(pos)
 	if file == nil {
 		panic(fmt.Sprintf("file not found at %v", pos))
@@ -274,7 +276,7 @@ func (p *Packages) MustGetPackageByPos(pos token.Pos) *Package {
 	return pkg
 }
 
-func (p *Packages) GetFileByPos(pos token.Pos) *ast.File {
+func (p *Packages) GetFileByPos(pos token.Pos) *FileX {
 	pkg := p.GetPackageByPos(pos)
 	if pkg == nil {
 		return nil
@@ -282,7 +284,7 @@ func (p *Packages) GetFileByPos(pos token.Pos) *ast.File {
 	return pkg.GetFileByPos(pos)
 }
 
-func (p *Packages) MustGetFileByPos(pos token.Pos) *ast.File {
+func (p *Packages) MustGetFileByPos(pos token.Pos) *FileX {
 	file := p.GetFileByPos(pos)
 	if file == nil {
 		panic(fmt.Sprintf("file not found at %v", pos))

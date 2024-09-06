@@ -17,7 +17,7 @@ func Match(pkgs *Packages, m NodeMatcher, pkgPatterns ...string) (out []*NodeX, 
 					errorz.AppendTo(&err, err0)
 					return false
 				case ok:
-					nodeX := newNodeX(node, vx.Parent(), vx.replaceCurrent)
+					nodeX := newNodeX(node, vx.Parent(), vx.curIdx, vx.replaceCurrent)
 					out = append(out, nodeX)
 					return false
 				}
