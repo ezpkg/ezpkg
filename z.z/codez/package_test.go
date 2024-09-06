@@ -15,9 +15,9 @@ import (
 func TestLoadPackages(t *testing.T) {
 	ΩxNoDiff := testingz.ConveyDiffByLine(diffz.IgnoreSpace())
 
-	pkgList := func(pkgs []*Package) string {
+	pkgList := func(pkgs []*PackageX) string {
 		return stringz.JoinFunc(pkgs, "\n",
-			func(pkg *Package) string { return pkg.PkgPath })
+			func(pkg *PackageX) string { return pkg.PkgPath })
 	}
 	Convey("LoadPackages", t, func() {
 		Convey("single, absolute path", func() {

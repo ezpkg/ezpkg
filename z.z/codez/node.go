@@ -1,13 +1,19 @@
 package codez
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
+	"go/format"
 	"go/token"
+	"io"
+	"os"
 
 	"golang.org/x/tools/go/packages"
 
+	"ezpkg.io/errorz"
 	"ezpkg.io/slicez"
+	"ezpkg.io/typez"
 )
 
 type _NodeReplaceFunc func(parent ast.Node, idx int, new ast.Node) error
@@ -56,11 +62,17 @@ func (n *NodeX) ReplaceBy(new ast.Node) error {
 
 type FileX struct {
 	*ast.File
+	px  *Packages
+	pkg *PackageX
+	tok *token.File
 }
 
-func newFileX(file *ast.File) *FileX {
+func (px *Packages) newFileX(file *ast.File, tok *token.File, pkg *PackageX) *FileX {
 	return &FileX{
 		File: file,
+		px:   px,
+		pkg:  pkg,
+		tok:  tok,
 	}
 }
 
@@ -68,6 +80,10 @@ func newFileX(file *ast.File) *FileX {
 func (n *FileX) End() {}
 
 func (f *FileX) Unwrap() ast.Node { return f.File }
+
+func (p *FileX) Path() string {
+	return p.tok.Name()
+}
 
 func (f *FileX) GetImport(pkgPath string) *ast.ImportSpec {
 	for _, imp := range f.Imports {
@@ -125,4 +141,32 @@ func (f *FileX) Import(alias string, pkg *packages.Package) (qualifier string) {
 	slicez.AppendTo(&f.Imports, imp)
 
 	return alias
+}
+
+// WriteFile writes the file to the input path, creating if necessary. If path is empty, it writes to the original file. If the file exists, it will be overridden.
+func (f *FileX) WriteFile(path string, perm os.FileMode) error {
+	var b bytes.Buffer
+	if err := format.Node(&b, f.px.Fset, f); err != nil {
+		return errorz.Wrapf(err, "failed to format file")
+	}
+	path = typez.Coalesce(path, f.Path())
+	if path == "" {
+		return errorz.Errorf("empty path")
+	}
+	if err := os.WriteFile(path, b.Bytes(), perm); err != nil {
+		return errorz.Wrapf(err, "failed to write file")
+	}
+	return nil
+}
+
+// WriteTo writes the file to the writer.
+func (f *FileX) WriteTo(w io.Writer) (int64, error) {
+	var _ io.WriterTo = (*FileX)(nil)
+
+	var b bytes.Buffer
+	if err := format.Node(&b, f.px.Fset, f); err != nil {
+		return 0, errorz.Wrap(err, "failed to format file")
+	}
+	n, err := w.Write(b.Bytes())
+	return int64(n), errorz.Wrap(err, "failed to write file")
 }

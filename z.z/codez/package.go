@@ -17,10 +17,10 @@ import (
 type Packages struct {
 	Fset *token.FileSet
 
-	origPkgs []*Package          // original packages from input patterns
-	mapPkgs  map[string]*Package // map of all packages by path
-	allPkgs  []*Package          // all packages, including std packages
-	stdPkgs  []*Package          // std packages
+	origPkgs []*PackageX          // original packages from input patterns
+	mapPkgs  map[string]*PackageX // map of all packages by path
+	allPkgs  []*PackageX          // all packages, including std packages
+	stdPkgs  []*PackageX          // std packages
 
 	// --- collect types.Info from all packages ---
 
@@ -33,24 +33,26 @@ type Packages struct {
 	Scopes     map[ast.Node]*types.Scope
 }
 
-type Package struct {
+type PackageX struct {
 	*packages.Package
+	px *Packages
 }
 
-func newPackage(pkg *packages.Package) *Package {
-	p := &Package{
+func (px *Packages) newPackage(pkg *packages.Package) *PackageX {
+	p := &PackageX{
 		Package: pkg,
+		px:      px,
 	}
 	return p
 }
 
-func (p *Package) Unwrap() *packages.Package { return p.Package }
+func (p *PackageX) Unwrap() *packages.Package { return p.Package }
 
-func (p *Package) GetObject(name string) types.Object {
+func (p *PackageX) GetObject(name string) types.Object {
 	return p.Types.Scope().Lookup(name)
 }
 
-func (p *Package) MustGetObject(name string) types.Object {
+func (p *PackageX) MustGetObject(name string) types.Object {
 	obj := p.GetObject(name)
 	if obj == nil {
 		panic(fmt.Sprintf("object %q not found", name))
@@ -58,16 +60,17 @@ func (p *Package) MustGetObject(name string) types.Object {
 	return obj
 }
 
-func (p *Package) GetFileByPos(pos token.Pos) *FileX {
+func (p *PackageX) GetFileByPos(pos token.Pos) *FileX {
 	for _, file := range p.Syntax {
 		if file.FileStart <= pos && pos <= file.FileEnd {
-			return newFileX(file)
+			tokFile := p.Fset.File(file.Pos())
+			return p.px.newFileX(file, tokFile, p)
 		}
 	}
 	return nil
 }
 
-func (p *Package) MustGetFileByPos(pos token.Pos) *FileX {
+func (p *PackageX) MustGetFileByPos(pos token.Pos) *FileX {
 	file := p.GetFileByPos(pos)
 	if file == nil {
 		panic(fmt.Sprintf("file not found at %v", pos))
@@ -75,7 +78,7 @@ func (p *Package) MustGetFileByPos(pos token.Pos) *FileX {
 	return file
 }
 
-func (p *Package) GetFileByName(name string) *ast.File {
+func (p *PackageX) GetFileByName(name string) *ast.File {
 	for _, file := range p.Syntax {
 		if file.Name.Name == name {
 			return file
@@ -84,7 +87,7 @@ func (p *Package) GetFileByName(name string) *ast.File {
 	return nil
 }
 
-func (p *Package) MustGetFileByName(name string) *ast.File {
+func (p *PackageX) MustGetFileByName(name string) *ast.File {
 	file := p.GetFileByName(name)
 	if file == nil {
 		panic(fmt.Sprintf("file %q not found", name))
@@ -92,7 +95,7 @@ func (p *Package) MustGetFileByName(name string) *ast.File {
 	return file
 }
 
-func (p *Package) HasPos(pos token.Pos) bool {
+func (p *PackageX) HasPos(pos token.Pos) bool {
 	for _, file := range p.Syntax {
 		if file.FileStart <= pos && pos <= file.FileEnd {
 			return true
@@ -101,15 +104,15 @@ func (p *Package) HasPos(pos token.Pos) bool {
 	return false
 }
 
-func newPackages(pkgs []*Package) *Packages {
+func newPackages(pkgs []*PackageX) *Packages {
 	isStd := func(path string) bool {
 		return !strings.Contains(path, ".")
 	}
 	isGolangOrg := func(path string) bool {
 		return strings.HasPrefix(path, "golang.org/")
 	}
-	sortPkgs := func(pkgs []*Package) {
-		slices.SortFunc(pkgs, func(a, b *Package) int {
+	sortPkgs := func(pkgs []*PackageX) {
+		slices.SortFunc(pkgs, func(a, b *PackageX) int {
 			return strings.Compare(a.PkgPath, b.PkgPath)
 		})
 	}
@@ -118,59 +121,59 @@ func newPackages(pkgs []*Package) *Packages {
 		return nil
 	}
 
-	p := &Packages{origPkgs: pkgs, Fset: pkgs[0].Fset}
-	p.mapPkgs = map[string]*Package{}
-	for _, pkg := range p.origPkgs {
-		p.mapPkgs[pkg.PkgPath] = pkg
+	px := &Packages{origPkgs: pkgs, Fset: pkgs[0].Fset}
+	px.mapPkgs = map[string]*PackageX{}
+	for _, pkg := range px.origPkgs {
+		px.mapPkgs[pkg.PkgPath] = pkg
 		for path, impPkg := range pkg.Imports {
-			if p.mapPkgs[path] == nil {
-				pkg0 := newPackage(impPkg)
-				p.mapPkgs[path] = pkg0
+			if px.mapPkgs[path] == nil {
+				pkg0 := px.newPackage(impPkg)
+				px.mapPkgs[path] = pkg0
 			}
 		}
 	}
-	_, listPkgs := mapz.SortedKeysAndValues(p.mapPkgs)
+	_, listPkgs := mapz.SortedKeysAndValues(px.mapPkgs)
 
 	// filter std packages then sort
-	var goOrgPkgs, otherPkgs []*Package
+	var goOrgPkgs, otherPkgs []*PackageX
 	for _, pkg := range listPkgs {
 		switch {
 		case isStd(pkg.PkgPath):
-			p.stdPkgs = append(p.stdPkgs, pkg)
+			px.stdPkgs = append(px.stdPkgs, pkg)
 		case isGolangOrg(pkg.PkgPath):
 			goOrgPkgs = append(goOrgPkgs, pkg)
 		default:
 			otherPkgs = append(otherPkgs, pkg)
 		}
 	}
-	sortPkgs(p.origPkgs)
-	sortPkgs(p.stdPkgs)
+	sortPkgs(px.origPkgs)
+	sortPkgs(px.stdPkgs)
 	sortPkgs(goOrgPkgs)
 	sortPkgs(otherPkgs)
-	p.allPkgs = slicez.Concat(p.stdPkgs, goOrgPkgs, otherPkgs)
+	px.allPkgs = slicez.Concat(px.stdPkgs, goOrgPkgs, otherPkgs)
 
 	// collect types.Info from all packages
-	p.Types = map[ast.Expr]types.TypeAndValue{}
-	p.Instances = map[*ast.Ident]types.Instance{}
-	p.Defs = map[*ast.Ident]types.Object{}
-	p.Uses = map[*ast.Ident]types.Object{}
-	p.Implicits = map[ast.Node]types.Object{}
-	p.Selections = map[*ast.SelectorExpr]*types.Selection{}
-	p.Scopes = map[ast.Node]*types.Scope{}
+	px.Types = map[ast.Expr]types.TypeAndValue{}
+	px.Instances = map[*ast.Ident]types.Instance{}
+	px.Defs = map[*ast.Ident]types.Object{}
+	px.Uses = map[*ast.Ident]types.Object{}
+	px.Implicits = map[ast.Node]types.Object{}
+	px.Selections = map[*ast.SelectorExpr]*types.Selection{}
+	px.Scopes = map[ast.Node]*types.Scope{}
 	for _, pkg := range listPkgs {
-		mapz.Append(p.Types, pkg.TypesInfo.Types)
-		mapz.Append(p.Instances, pkg.TypesInfo.Instances)
-		mapz.Append(p.Defs, pkg.TypesInfo.Defs)
-		mapz.Append(p.Uses, pkg.TypesInfo.Uses)
-		mapz.Append(p.Implicits, pkg.TypesInfo.Implicits)
-		mapz.Append(p.Selections, pkg.TypesInfo.Selections)
-		mapz.Append(p.Scopes, pkg.TypesInfo.Scopes)
+		mapz.Append(px.Types, pkg.TypesInfo.Types)
+		mapz.Append(px.Instances, pkg.TypesInfo.Instances)
+		mapz.Append(px.Defs, pkg.TypesInfo.Defs)
+		mapz.Append(px.Uses, pkg.TypesInfo.Uses)
+		mapz.Append(px.Implicits, pkg.TypesInfo.Implicits)
+		mapz.Append(px.Selections, pkg.TypesInfo.Selections)
+		mapz.Append(px.Scopes, pkg.TypesInfo.Scopes)
 	}
-	return p
+	return px
 }
 
 // Packages returns the loaded packages from input patterns.
-func (p *Packages) InputPackages() []*Package {
+func (p *Packages) InputPackages() []*PackageX {
 	return p.origPkgs
 }
 
@@ -179,7 +182,7 @@ func (p *Packages) InputPackages() []*Package {
 //	AllPackages()                         👉 return all packages
 //	AllPackages("ezpkg.io/...")           👉 return packages that start with "ezpkg.io"
 //	AllPackages("ezpkg.io/codez", "fmt")  👉 return listed packages
-func (p *Packages) AllPackages(pattern ...string) []*Package {
+func (p *Packages) AllPackages(pattern ...string) []*PackageX {
 	return filterPackages(p.allPkgs, pattern...)
 }
 func (p *Packages) AllErrors() (errs []packages.Error) {
@@ -188,18 +191,18 @@ func (p *Packages) AllErrors() (errs []packages.Error) {
 	}
 	return errs
 }
-func (p *Packages) StdPackages() []*Package {
+func (p *Packages) StdPackages() []*PackageX {
 	return p.stdPkgs
 }
-func (p *Packages) NonStdPackages() []*Package {
+func (p *Packages) NonStdPackages() []*PackageX {
 	return p.allPkgs[len(p.stdPkgs):]
 }
 
-func (p *Packages) GetPackageByPath(path string) *Package {
+func (p *Packages) GetPackageByPath(path string) *PackageX {
 	return p.mapPkgs[path]
 }
 
-func (p *Packages) MustGetPackageByPath(path string) *Package {
+func (p *Packages) MustGetPackageByPath(path string) *PackageX {
 	pkg := p.GetPackageByPath(path)
 	if pkg == nil {
 		panic(fmt.Sprintf("package %q not found", path))
@@ -258,7 +261,7 @@ func (p *Packages) MustGetBuiltInType(typName string) types.Type {
 	return typ
 }
 
-func (p *Packages) GetPackageByPos(pos token.Pos) *Package {
+func (p *Packages) GetPackageByPos(pos token.Pos) *PackageX {
 	// TODO: optimize this
 	for _, pkg := range p.allPkgs {
 		if pkg.HasPos(pos) {
@@ -268,7 +271,7 @@ func (p *Packages) GetPackageByPos(pos token.Pos) *Package {
 	return nil
 }
 
-func (p *Packages) MustGetPackageByPos(pos token.Pos) *Package {
+func (p *Packages) MustGetPackageByPos(pos token.Pos) *PackageX {
 	pkg := p.GetPackageByPos(pos)
 	if pkg == nil {
 		panic(fmt.Sprintf("package not found at %v", pos))
@@ -322,11 +325,11 @@ func (p *Packages) PkgNameOf(imp *ast.ImportSpec) *types.PkgName {
 	return pkgname
 }
 
-func filterPackages(pkgs []*Package, pattern ...string) []*Package {
+func filterPackages(pkgs []*PackageX, pattern ...string) []*PackageX {
 	if len(pattern) == 0 {
 		return pkgs
 	}
-	var out []*Package
+	var out []*PackageX
 	for _, p := range pattern {
 		if !strings.HasSuffix(p, "/...") {
 			for _, pkg := range pkgs {

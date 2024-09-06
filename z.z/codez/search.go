@@ -87,7 +87,7 @@ func (s *Search) InPackages(pkgs ...string) *Search {
 func (s *Search) Exec(pkgs *Packages) (_ *SearchResult, errs errorz.Errors) {
 	s.cs = &compiledSearch{}
 
-	var filteredPkgs []*Package
+	var filteredPkgs []*PackageX
 	if s.pkgs == nil {
 		filteredPkgs = slices.Clone(pkgs.origPkgs)
 	} else {
@@ -96,7 +96,7 @@ func (s *Search) Exec(pkgs *Packages) (_ *SearchResult, errs errorz.Errors) {
 	if len(filteredPkgs) == 0 {
 		return nil, errorz.ToErrors(errorz.New("no matching packages"))
 	}
-	slices.SortFunc(filteredPkgs, func(a, b *Package) int {
+	slices.SortFunc(filteredPkgs, func(a, b *PackageX) int {
 		return strings.Compare(a.PkgPath, b.PkgPath)
 	})
 

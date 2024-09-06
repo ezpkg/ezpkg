@@ -14,12 +14,12 @@ func LoadPackages(pattern ...string) (_ *Packages, err error) {
 	if err != nil {
 		return nil, err
 	}
-	zPkgs := slicez.MapFunc(pkgs, func(pkg *packages.Package) *Package {
+	zPkgs := slicez.MapFunc(pkgs, func(pkg *packages.Package) *PackageX {
 		if len(pkg.Errors) > 0 {
 			// only store the first error message, use .AllErrors() to get all
 			errorz.NoStack().AppendTo(&err, pkg.Errors[0])
 		}
-		return &Package{Package: pkg}
+		return &PackageX{Package: pkg}
 	})
 	err = errorz.Wrap(err, "failed to load packages (use .Errors() to get all errors)")
 	pkgSet := newPackages(zPkgs)
