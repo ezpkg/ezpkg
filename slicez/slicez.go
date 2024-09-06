@@ -126,12 +126,12 @@ func FilterMapFunc[S ~[]E, E any](s S, fn func(E) (E, bool)) (outs []E) {
 	return MapFilterFunc(s, fn)
 }
 
-// Concat appends multiple slices to a slice.
+// Concat combine multiple slices into a new slice.
 func Concat[S ~[]E, E any](slices ...S) []E {
 	return AppendSlice(nil, slices...)
 }
 
-// AppendSlice appends multiple slices to a slice.
+// AppendSlice appends multiple slices to the first slice.
 func AppendSlice[S ~[]E, E any](s S, slices ...S) []E {
 	N := len(s)
 	for _, slice := range slices {
@@ -143,4 +143,27 @@ func AppendSlice[S ~[]E, E any](s S, slices ...S) []E {
 		outs = append(outs, slice...)
 	}
 	return outs
+}
+
+// AppendTo appends multiple elements to a slice pointer.
+func AppendTo[S ~*[]E, E any](s S, items ...E) []E {
+	*s = append(*s, items...)
+	return *s
+}
+
+// AppendSliceTo appends multiple slices to a slice pointer.
+func AppendSliceTo[S ~*[]E, E any](s S, slices ...[]E) []E {
+	*s = AppendSlice(*s, slices...)
+	return *s
+}
+
+// Prepend appends multiple elements to the beginning of a slice.
+func Prepend[S ~[]E, E any](s S, items ...E) []E {
+	return append(items, s...)
+}
+
+// PrependTo appends multiple elements to the beginning of a slice pointer.
+func PrependTo[S ~*[]E, E any](s S, items ...E) []E {
+	*s = append(items, *s...)
+	return *s
 }
