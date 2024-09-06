@@ -8,10 +8,12 @@ import (
 	"go/token"
 	"io"
 	"os"
+	"strings"
 
 	"golang.org/x/tools/go/packages"
 
 	"ezpkg.io/errorz"
+	"ezpkg.io/mapz"
 	"ezpkg.io/slicez"
 	"ezpkg.io/typez"
 )
@@ -96,9 +98,13 @@ func (f *FileX) GetImport(pkgPath string) *ast.ImportSpec {
 
 // Import adds an import to the file if it doesn't exist yet, and return the qualifier.
 func (f *FileX) Import(alias string, pkg *packages.Package) (qualifier string) {
-	getQualifier := func(imp *ast.ImportSpec) string {
+	qualifierFromImport := func(imp *ast.ImportSpec) string {
 		switch {
 		case imp.Name == nil, imp.Name.Name == "":
+			pkg := f.px.GetPackageByPath(imp.Path.Value)
+			if pkg == nil {
+				return ""
+			}
 			return pkg.Name
 		case imp.Name.Name == ".": // dot import
 			return ""
@@ -106,47 +112,76 @@ func (f *FileX) Import(alias string, pkg *packages.Package) (qualifier string) {
 			return imp.Name.Name
 		}
 	}
-	qualExists := func(qual string) bool {
-		return slicez.ExistsFunc(f.Imports, func(imp *ast.ImportSpec) bool {
-			return getQualifier(imp) == qual
-		})
+	allQualifiers := func() map[string]struct{} {
+		m := map[string]struct{}{}
+		for _, imp := range f.Imports {
+			qual := qualifierFromImport(imp)
+			if qual != "" {
+				m[qual] = struct{}{}
+			}
+		}
+		return m
+	}
+	addImport := func(qual *ast.Ident) {
+		imp := &ast.ImportSpec{
+			Name: qual,
+			Path: BasicString(pkg.PkgPath),
+		}
+		slicez.AppendTo(&f.Imports, imp)
+
+		// find all import decls
+		var first, last *ast.GenDecl
+		for _, decl := range f.Decls {
+			genDecl, ok := decl.(*ast.GenDecl)
+			if !ok || genDecl.Tok != token.IMPORT {
+				continue
+			}
+			first = typez.Coalesce(first, genDecl)
+			last = genDecl
+			for _, spec := range genDecl.Specs {
+				impSpec, ok := spec.(*ast.ImportSpec)
+				if ok && impSpec.Path == imp.Path {
+					return // already imported
+				}
+			}
+		}
+		// append standard import to first group, otherwise append to last group
+		decl := typez.If(strings.Contains(pkg.PkgPath, "."), last, first)
+		if decl != nil {
+			decl.Specs = append(decl.Specs, imp)
+			return
+		}
+		// no import declarations, add a new one
+		decl = &ast.GenDecl{
+			Tok:   token.IMPORT,
+			Specs: []ast.Spec{imp},
+		}
+		f.File.Decls = append(f.File.Decls, decl)
 	}
 
 	// if the package is already imported, return the qualifier
 	if imp := f.GetImport(pkg.PkgPath); imp != nil {
-		return getQualifier(imp)
+		return qualifierFromImport(imp)
 	}
-
-	// prepare the import spec
-	imp := &ast.ImportSpec{
-		Path: BasicString(pkg.PkgPath),
-	}
-	switch alias {
-	case "":
-		slicez.AppendTo(&f.Imports, imp)
-		return pkg.Name
-
-	case ".": // dot import
-		imp.Name = NewIdent(".")
-		slicez.AppendTo(&f.Imports, imp)
+	// dot import, return empty qualifier
+	if alias == "." {
+		addImport(nil)
 		return ""
 	}
-
 	// if the alias is already used, find a new one
-	// TODO: handle conflicting default import alias
-	for idx := 0; qualExists(alias); idx++ {
+	mapQual := allQualifiers()
+	alias = typez.Coalesce(alias, pkg.Name, "unknown")
+	for idx := 0; mapz.Exists(mapQual, alias); idx++ {
 		alias = fmt.Sprintf("%s%d", alias, idx)
 	}
-	imp.Name = NewIdent(alias)
-	slicez.AppendTo(&f.Imports, imp)
-
+	addImport(NewIdent(alias))
 	return alias
 }
 
 // WriteFile writes the file to the input path, creating if necessary. If path is empty, it writes to the original file. If the file exists, it will be overridden.
 func (f *FileX) WriteFile(path string, perm os.FileMode) error {
 	var b bytes.Buffer
-	if err := format.Node(&b, f.px.Fset, f); err != nil {
+	if err := format.Node(&b, f.px.Fset, f.Unwrap()); err != nil {
 		return errorz.Wrapf(err, "failed to format file")
 	}
 	path = typez.Coalesce(path, f.Path())

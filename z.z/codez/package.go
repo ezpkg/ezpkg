@@ -38,11 +38,13 @@ type PackageX struct {
 	px *Packages
 }
 
-func (px *Packages) newPackage(pkg *packages.Package) *PackageX {
-	p := &PackageX{
-		Package: pkg,
-		px:      px,
+// wrapPackage wraps packages.Package to PackageX, and store it in Packages.mapPkgs.
+func (px *Packages) wrapPackage(pkg *packages.Package) *PackageX {
+	if p := px.mapPkgs[pkg.PkgPath]; p != nil {
+		return p
 	}
+	p := &PackageX{Package: pkg, px: px}
+	px.mapPkgs[pkg.PkgPath] = p
 	return p
 }
 
@@ -104,7 +106,7 @@ func (p *PackageX) HasPos(pos token.Pos) bool {
 	return false
 }
 
-func newPackages(pkgs []*PackageX) *Packages {
+func newPackages(pkgs []*packages.Package) *Packages {
 	isStd := func(path string) bool {
 		return !strings.Contains(path, ".")
 	}
@@ -121,15 +123,12 @@ func newPackages(pkgs []*PackageX) *Packages {
 		return nil
 	}
 
-	px := &Packages{origPkgs: pkgs, Fset: pkgs[0].Fset}
+	px := &Packages{Fset: pkgs[0].Fset}
 	px.mapPkgs = map[string]*PackageX{}
-	for _, pkg := range px.origPkgs {
-		px.mapPkgs[pkg.PkgPath] = pkg
-		for path, impPkg := range pkg.Imports {
-			if px.mapPkgs[path] == nil {
-				pkg0 := px.newPackage(impPkg)
-				px.mapPkgs[path] = pkg0
-			}
+	for _, pkg := range pkgs {
+		slicez.AppendTo(&px.origPkgs, px.wrapPackage(pkg))
+		for _, impPkg := range pkg.Imports {
+			px.wrapPackage(impPkg)
 		}
 	}
 	_, listPkgs := mapz.SortedKeysAndValues(px.mapPkgs)
