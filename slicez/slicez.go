@@ -1,6 +1,9 @@
 package slicez // import "ezpkg.io/slicez"
 
 import (
+	"cmp"
+	"slices"
+
 	"ezpkg.io/typez"
 )
 
@@ -193,4 +196,95 @@ func Prepend[S ~[]E, E any](s S, items ...E) []E {
 func PrependTo[S ~*[]E, E any](s S, items ...E) []E {
 	*s = append(items, *s...)
 	return *s
+}
+
+// IsUnique returns true if all elements in the slice are unique.
+func IsUnique[S ~[]E, E comparable](s S) bool {
+	m := make(map[E]struct{})
+	for _, item := range s {
+		if _, ok := m[item]; ok {
+			return false
+		}
+		m[item] = struct{}{}
+	}
+	return true
+}
+
+// IsUniqueFunc returns true if all elements in the slice are unique based on the function.
+func IsUniqueFunc[S ~[]E, E any, K comparable](s S, fn func(E) K) bool {
+	m := make(map[K]struct{})
+	for _, item := range s {
+		key := fn(item)
+		if _, ok := m[key]; ok {
+			return false
+		}
+		m[key] = struct{}{}
+	}
+	return true
+}
+
+// Unique returns a slice with unique elements. If the slice is already unique, it returns the original slice.
+func Unique[S ~[]E, E comparable](s S) (out []E) {
+	m := make(map[E]struct{})
+	for i, item := range s {
+		if _, exist := m[item]; !exist {
+			m[item] = struct{}{}
+		} else {
+			out = s[:i:i]
+			break // use slow fast
+		}
+	}
+	if out == nil { // all unique
+		return s
+	}
+	// slow path, check remaining
+	for _, item := range s[len(out)+1:] {
+		if _, exist := m[item]; !exist {
+			m[item] = struct{}{}
+			out = append(out, item)
+		}
+	}
+	return out
+}
+
+// UniqueFunc returns a new slice with unique elements.
+func UniqueFunc[S ~[]E, E any, K comparable](s S, fn func(E) K) (out []E) {
+	m := make(map[K]struct{})
+	for i, item := range s {
+		key := fn(item)
+		if _, exist := m[key]; !exist {
+			m[key] = struct{}{}
+		} else {
+			out = s[:i:i]
+			break // use slow fast
+		}
+	}
+	if out == nil { // all unique
+		return s
+	}
+	// slow path, check remaining
+	for _, item := range s[len(out):] {
+		key := fn(item)
+		if _, exist := m[key]; !exist {
+			m[key] = struct{}{}
+			out = append(out, item)
+		}
+	}
+	return out
+}
+
+// SortUnique modified content of the slice, and return the modified slice with unique elements, sorted.
+func SortUnique[S ~[]E, E cmp.Ordered](s S) (out []E) {
+	slices.Sort(s)
+	return slices.Compact(s)
+}
+
+// SortUniqueFunc modified content of the slice, and return the modified slice with unique elements, sorted based on the function.
+func SortUniqueFunc[S ~[]E, E any, K cmp.Ordered](s S, fn func(E) K) (out []E) {
+	slices.SortFunc(s, func(a, b E) int {
+		return cmp.Compare(fn(a), fn(b))
+	})
+	return slices.CompactFunc(s, func(a, b E) bool {
+		return fn(a) == fn(b)
+	})
 }

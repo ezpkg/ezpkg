@@ -1,6 +1,8 @@
 package slicez_test
 
 import (
+	"fmt"
+	"slices"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -58,6 +60,76 @@ func Test(t *testing.T) {
 		})
 		Convey("Concat", func() {
 			Ω(Concat([]int{1, 2}, []int{3, 4})).To(Equal([]int{1, 2, 3, 4}))
+		})
+		Convey("AppendTo", func() {
+			s := []int{1, 2}
+			sx := AppendTo(&s, 3, 4)
+			Ω(s).To(Equal([]int{1, 2, 3, 4}))
+			Ω(sx).To(Equal(s))
+		})
+		Convey("PrependTo", func() {
+			s := []int{3, 4}
+			sx := PrependTo(&s, 1, 2)
+			Ω(s).To(Equal([]int{1, 2, 3, 4}))
+			Ω(sx).To(Equal(s))
+		})
+		Convey("Unique", func() {
+			Convey("empty", func() {
+				s := []int{}
+				fn := func(int) int { return 0 }
+
+				Ω(IsUnique(s)).To(BeTrue())
+				Ω(IsUniqueFunc(s, fn)).To(BeTrue())
+
+				Ω(Unique(s)).To(Equal(s))
+				Ω(UniqueFunc(s, fn)).To(Equal(s))
+			})
+			Convey("unique", func() {
+				s := []int{1, 2, 3}
+				fn := func(x int) int { return x }
+
+				Ω(IsUnique(s)).To(BeTrue())
+				Ω(IsUniqueFunc(s, fn)).To(BeTrue())
+
+				Ω(Unique(s)).To(Equal(s))
+				Ω(UniqueFunc(s, fn)).To(Equal(s))
+			})
+			Convey("not unique", func() {
+				ss := [][]int{
+					{3, 2, 1, 2},
+					{2, 1, 3, 3},
+					{1, 3, 1, 2, 1},
+				}
+				exps := [][]int{
+					{3, 2, 1},
+					{2, 1, 3},
+					{1, 3, 2},
+				}
+				fn := func(x int) int { return x }
+				for i, s := range ss {
+					Convey(fmt.Sprintf("%d", i), func() {
+						Ω(IsUnique(s)).To(BeFalse())
+						Ω(IsUniqueFunc(s, fn)).To(BeFalse())
+
+						Ω(Unique(s)).To(Equal(exps[i]))
+						Ω(UniqueFunc(s, fn)).To(Equal(exps[i]))
+					})
+				}
+			})
+			Convey("sorted", func() {
+				ss := [][]int{
+					{3, 2, 1, 2},
+					{2, 1, 3, 3},
+					{1, 3, 1, 2, 1},
+				}
+				fn := func(x int) int { return x }
+				for i, s := range ss {
+					Convey(fmt.Sprintf("%d", i), func() {
+						Ω(SortUnique(slices.Clone(s))).To(Equal([]int{1, 2, 3}))
+						Ω(SortUniqueFunc(slices.Clone(s), fn)).To(Equal([]int{1, 2, 3}))
+					})
+				}
+			})
 		})
 	})
 }
