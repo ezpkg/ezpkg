@@ -10,6 +10,7 @@ import (
 
 	"golang.org/x/tools/go/packages"
 
+	"ezpkg.io/errorz"
 	"ezpkg.io/mapz"
 	"ezpkg.io/slicez"
 )
@@ -106,7 +107,7 @@ func (p *PackageX) HasPos(pos token.Pos) bool {
 	return false
 }
 
-func newPackages(pkgs []*packages.Package) *Packages {
+func newPackages(pkgs []*packages.Package) (*Packages, error) {
 	isStd := func(path string) bool {
 		return !strings.Contains(path, ".")
 	}
@@ -120,7 +121,7 @@ func newPackages(pkgs []*packages.Package) *Packages {
 	}
 
 	if len(pkgs) == 0 {
-		return nil
+		return nil, errorz.New("no packages loaded")
 	}
 
 	px := &Packages{Fset: pkgs[0].Fset}
@@ -168,7 +169,7 @@ func newPackages(pkgs []*packages.Package) *Packages {
 		mapz.Append(px.Selections, pkg.TypesInfo.Selections)
 		mapz.Append(px.Scopes, pkg.TypesInfo.Scopes)
 	}
-	return px
+	return px, nil
 }
 
 // Packages returns the loaded packages from input patterns.
@@ -184,12 +185,26 @@ func (p *Packages) InputPackages() []*PackageX {
 func (p *Packages) AllPackages(pattern ...string) []*PackageX {
 	return filterPackages(p.allPkgs, pattern...)
 }
-func (p *Packages) AllErrors() (errs []packages.Error) {
+func (p *Packages) AllErrors() (errs Errors) {
 	for _, pkg := range p.origPkgs {
 		errs = append(errs, pkg.Errors...)
 	}
 	return errs
 }
+
+// FirstErrors collect the first error message for each error package.
+func (p *Packages) FirstErrors() (errs Errors) {
+	if p == nil {
+		return nil
+	}
+	for _, pkg := range p.origPkgs {
+		if len(pkg.Errors) > 0 {
+			errs = append(errs, pkg.Errors[0])
+		}
+	}
+	return errs
+}
+
 func (p *Packages) StdPackages() []*PackageX {
 	return p.stdPkgs
 }

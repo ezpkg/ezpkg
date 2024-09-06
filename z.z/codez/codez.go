@@ -7,24 +7,15 @@ import (
 	"ezpkg.io/errorz"
 )
 
+// LoadPackages loads packages by pattern. To see compilation errors, use Packages.AllErrors(), Packages.FirstErrors(), or Package.Errors.
 func LoadPackages(pattern ...string) (_ *Packages, err error) {
 	cfg := Cfg()
 	pkgs, err := packages.Load(&cfg.Config, pattern...)
 	if err != nil {
 		return nil, err
 	}
-
-	for _, pkg := range pkgs {
-		if len(pkg.Errors) > 0 {
-			// only store the first error message, use .AllErrors() to get all
-			err0 := errorz.NoStack().Wrapf(pkg.Errors[0], "package %q", pkg.PkgPath)
-			errorz.AppendTo(&err, err0)
-		}
+	if len(pkgs) == 0 {
+		return nil, errorz.New("no packages loaded")
 	}
-	err = errorz.Wrap(err, "failed to load packages (use .Errors() to get all errors)")
-	pkgSet := newPackages(pkgs)
-	if pkgSet == nil && err == nil {
-		err = errorz.New("no packages loaded")
-	}
-	return pkgSet, err
+	return newPackages(pkgs)
 }
