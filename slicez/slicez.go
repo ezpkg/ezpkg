@@ -37,6 +37,33 @@ func GetOrFunc[S ~[]E, E any](s S, n int, fallback func() E) (out E) {
 	}
 }
 
+// GetFunc returns the element that satisfies the function. To get the index, use slices.Index or slices.IndexFunc.
+func GetFunc[S ~[]E, E any](s S, fn func(E) bool) (out E) {
+	for _, item := range s {
+		if fn(item) {
+			return item
+		}
+	}
+	return out
+}
+
+// Exists returns true if the element exists in the slice. To get the index, use slices.Index or slices.IndexFunc.
+func Exists[S ~[]E, E comparable](s S, item E) bool {
+	return ExistsFunc(s, func(x E) bool {
+		return x == item
+	})
+}
+
+// Exists returns true if the element exists in the slice. To get the index, use slices.Index or slices.IndexFunc.
+func ExistsFunc[S ~[]E, E any](s S, fn func(E) bool) bool {
+	for _, item := range s {
+		if fn(item) {
+			return true
+		}
+	}
+	return false
+}
+
 // First returns the first element of the slice.
 func First[S ~[]E, E any](s S) (out E) {
 	if len(s) > 0 {
