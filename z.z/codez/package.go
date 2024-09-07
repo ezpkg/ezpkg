@@ -5,12 +5,14 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"iter"
 	"slices"
 	"strings"
 
 	"golang.org/x/tools/go/packages"
 
 	"ezpkg.io/errorz"
+	"ezpkg.io/iterz"
 	"ezpkg.io/mapz"
 	"ezpkg.io/slicez"
 )
@@ -81,16 +83,17 @@ func (p *PackageX) MustGetFileByPos(pos token.Pos) *FileX {
 	return file
 }
 
-func (p *PackageX) GetFileByName(name string) *ast.File {
+func (p *PackageX) GetFileByName(name string) *FileX {
 	for _, file := range p.Syntax {
 		if file.Name.Name == name {
-			return file
+			tokFile := p.Fset.File(file.Pos())
+			return p.px.newFileX(file, tokFile, p)
 		}
 	}
 	return nil
 }
 
-func (p *PackageX) MustGetFileByName(name string) *ast.File {
+func (p *PackageX) MustGetFileByName(name string) *FileX {
 	file := p.GetFileByName(name)
 	if file == nil {
 		panic(fmt.Sprintf("file %q not found", name))
@@ -173,8 +176,8 @@ func newPackages(pkgs []*packages.Package) (*Packages, error) {
 }
 
 // Packages returns the loaded packages from input patterns.
-func (p *Packages) InputPackages() []*PackageX {
-	return p.origPkgs
+func (px *Packages) InputPackages() []*PackageX {
+	return px.origPkgs
 }
 
 // AllPackages returns all packages, including std packages, golang.org/x packages, and other packages. It supports filtering by pattern. Examples:
@@ -182,22 +185,22 @@ func (p *Packages) InputPackages() []*PackageX {
 //	AllPackages()                         👉 return all packages
 //	AllPackages("ezpkg.io/...")           👉 return packages that start with "ezpkg.io"
 //	AllPackages("ezpkg.io/codez", "fmt")  👉 return listed packages
-func (p *Packages) AllPackages(pattern ...string) []*PackageX {
-	return filterPackages(p.allPkgs, pattern...)
+func (px *Packages) AllPackages(pattern ...string) []*PackageX {
+	return filterPackages(px.allPkgs, pattern...)
 }
-func (p *Packages) AllErrors() (errs Errors) {
-	for _, pkg := range p.origPkgs {
+func (px *Packages) AllErrors() (errs Errors) {
+	for _, pkg := range px.origPkgs {
 		errs = append(errs, pkg.Errors...)
 	}
 	return errs
 }
 
 // FirstErrors collect the first error message for each error package.
-func (p *Packages) FirstErrors() (errs Errors) {
-	if p == nil {
+func (px *Packages) FirstErrors() (errs Errors) {
+	if px == nil {
 		return nil
 	}
-	for _, pkg := range p.origPkgs {
+	for _, pkg := range px.origPkgs {
 		if len(pkg.Errors) > 0 {
 			errs = append(errs, pkg.Errors[0])
 		}
@@ -205,61 +208,61 @@ func (p *Packages) FirstErrors() (errs Errors) {
 	return errs
 }
 
-func (p *Packages) StdPackages() []*PackageX {
-	return p.stdPkgs
+func (px *Packages) StdPackages() []*PackageX {
+	return px.stdPkgs
 }
-func (p *Packages) NonStdPackages() []*PackageX {
-	return p.allPkgs[len(p.stdPkgs):]
-}
-
-func (p *Packages) GetPackageByPath(path string) *PackageX {
-	return p.mapPkgs[path]
+func (px *Packages) NonStdPackages() []*PackageX {
+	return px.allPkgs[len(px.stdPkgs):]
 }
 
-func (p *Packages) MustGetPackageByPath(path string) *PackageX {
-	pkg := p.GetPackageByPath(path)
+func (px *Packages) GetPackageByPath(path string) *PackageX {
+	return px.mapPkgs[path]
+}
+
+func (px *Packages) MustGetPackageByPath(path string) *PackageX {
+	pkg := px.GetPackageByPath(path)
 	if pkg == nil {
 		panic(fmt.Sprintf("package %q not found", path))
 	}
 	return pkg
 }
 
-func (p *Packages) GetObject(pkgPath, objName string) types.Object {
+func (px *Packages) GetObject(pkgPath, objName string) types.Object {
 	if pkgPath == "" {
 		return types.Universe.Lookup(objName)
 	}
-	pkg := p.GetPackageByPath(pkgPath)
+	pkg := px.GetPackageByPath(pkgPath)
 	if pkg == nil {
 		return nil
 	}
 	return pkg.GetObject(objName)
 }
 
-func (p *Packages) MustGetObject(pkgPath, objName string) types.Object {
-	obj := p.GetObject(pkgPath, objName)
+func (px *Packages) MustGetObject(pkgPath, objName string) types.Object {
+	obj := px.GetObject(pkgPath, objName)
 	if obj == nil {
 		panic(fmt.Sprintf("object %v.%v not found", pkgPath, objName))
 	}
 	return obj
 }
 
-func (p *Packages) GetType(pkgPath, objName string) types.Type {
-	obj := p.GetObject(pkgPath, objName)
+func (px *Packages) GetType(pkgPath, objName string) types.Type {
+	obj := px.GetObject(pkgPath, objName)
 	if obj == nil {
 		return nil
 	}
 	return obj.Type()
 }
 
-func (p *Packages) MustGetType(pkgPath, objName string) types.Type {
-	typ := p.GetType(pkgPath, objName)
+func (px *Packages) MustGetType(pkgPath, objName string) types.Type {
+	typ := px.GetType(pkgPath, objName)
 	if typ == nil {
 		panic(fmt.Sprintf("type %v.%v not found", pkgPath, objName))
 	}
 	return typ
 }
 
-func (p *Packages) GetBuiltInType(typName string) types.Type {
+func (px *Packages) GetBuiltInType(typName string) types.Type {
 	obj := types.Universe.Lookup(typName)
 	if obj == nil {
 		return nil
@@ -267,17 +270,17 @@ func (p *Packages) GetBuiltInType(typName string) types.Type {
 	return obj.Type()
 }
 
-func (p *Packages) MustGetBuiltInType(typName string) types.Type {
-	typ := p.GetBuiltInType(typName)
+func (px *Packages) MustGetBuiltInType(typName string) types.Type {
+	typ := px.GetBuiltInType(typName)
 	if typ == nil {
 		panic(fmt.Sprintf("type %q not found", typName))
 	}
 	return typ
 }
 
-func (p *Packages) GetPackageByPos(pos token.Pos) *PackageX {
+func (px *Packages) GetPackageByPos(pos token.Pos) *PackageX {
 	// TODO: optimize this
-	for _, pkg := range p.allPkgs {
+	for _, pkg := range px.allPkgs {
 		if pkg.HasPos(pos) {
 			return pkg
 		}
@@ -285,58 +288,71 @@ func (p *Packages) GetPackageByPos(pos token.Pos) *PackageX {
 	return nil
 }
 
-func (p *Packages) MustGetPackageByPos(pos token.Pos) *PackageX {
-	pkg := p.GetPackageByPos(pos)
+func (px *Packages) MustGetPackageByPos(pos token.Pos) *PackageX {
+	pkg := px.GetPackageByPos(pos)
 	if pkg == nil {
 		panic(fmt.Sprintf("package not found at %v", pos))
 	}
 	return pkg
 }
 
-func (p *Packages) GetFileByPos(pos token.Pos) *FileX {
-	pkg := p.GetPackageByPos(pos)
+func (px *Packages) GetFileByPos(pos token.Pos) *FileX {
+	pkg := px.GetPackageByPos(pos)
 	if pkg == nil {
 		return nil
 	}
 	return pkg.GetFileByPos(pos)
 }
 
-func (p *Packages) MustGetFileByPos(pos token.Pos) *FileX {
-	file := p.GetFileByPos(pos)
+func (px *Packages) MustGetFileByPos(pos token.Pos) *FileX {
+	file := px.GetFileByPos(pos)
 	if file == nil {
 		panic(fmt.Sprintf("file not found at %v", pos))
 	}
 	return file
 }
 
-func (p *Packages) TypeOf(expr ast.Expr) types.Type {
-	if t, ok := p.Types[expr]; ok {
+func (px *Packages) TypeOf(expr ast.Expr) types.Type {
+	if t, ok := px.Types[expr]; ok {
 		return t.Type
 	}
 	if id, _ := expr.(*ast.Ident); id != nil {
-		if obj := p.ObjectOf(id); obj != nil {
+		if obj := px.ObjectOf(id); obj != nil {
 			return obj.Type()
 		}
 	}
 	return nil
 }
 
-func (p *Packages) ObjectOf(ident *ast.Ident) types.Object {
-	if obj := p.Defs[ident]; obj != nil {
+func (px *Packages) ObjectOf(ident *ast.Ident) types.Object {
+	if obj := px.Defs[ident]; obj != nil {
 		return obj
 	}
-	return p.Uses[ident]
+	return px.Uses[ident]
 }
 
-func (p *Packages) PkgNameOf(imp *ast.ImportSpec) *types.PkgName {
+func (px *Packages) PkgNameOf(imp *ast.ImportSpec) *types.PkgName {
 	var obj types.Object
 	if imp.Name != nil {
-		obj = p.Defs[imp.Name]
+		obj = px.Defs[imp.Name]
 	} else {
-		obj = p.Implicits[imp]
+		obj = px.Implicits[imp]
 	}
 	pkgname, _ := obj.(*types.PkgName)
 	return pkgname
+}
+
+func (px *Packages) IterNodesByPos(pos token.Pos) iter.Seq2[NodePath, *NodeX] {
+	file := px.GetFileByPos(pos)
+	if file == nil {
+		return iterz.Nil2[NodePath, *NodeX]()
+	}
+	return file.IterNodesByPos(pos)
+}
+
+func (px *Packages) MustNodesByPos(pos token.Pos) iter.Seq2[NodePath, *NodeX] {
+	file := px.MustGetFileByPos(pos)
+	return file.MustNodesByPos(pos)
 }
 
 func filterPackages(pkgs []*PackageX, pattern ...string) []*PackageX {

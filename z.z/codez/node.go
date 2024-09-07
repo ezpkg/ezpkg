@@ -7,6 +7,7 @@ import (
 	"go/format"
 	"go/token"
 	"io"
+	"iter"
 	"os"
 	"strings"
 
@@ -22,6 +23,8 @@ type _NodeReplaceFunc func(parent ast.Node, idx int, new ast.Node) error
 
 type _NodeI interface{ Pos() token.Pos }
 type _NodeW interface{ Unwrap() ast.Node }
+
+type NodePath []string // path to the node from root (ast.File)
 
 type NodeX struct {
 	ast.Node
@@ -85,6 +88,18 @@ func (f *FileX) Unwrap() ast.Node { return f.File }
 
 func (p *FileX) Path() string {
 	return p.tok.Name()
+}
+
+func (f *FileX) HasPos(pos token.Pos) bool {
+	return f.FileStart <= pos && pos <= f.FileEnd
+}
+
+func (f *FileX) IterNodesByPos(pos token.Pos) iter.Seq2[NodePath, *NodeX] {
+	panic("todo")
+}
+
+func (f *FileX) MustNodesByPos(pos token.Pos) iter.Seq2[NodePath, *NodeX] {
+	panic("todo")
 }
 
 func (f *FileX) GetImport(pkgPath string) *ast.ImportSpec {
