@@ -1,3 +1,3 @@
 module ezpkg.io/fmtz
 
-go 1.21
+go 1.23

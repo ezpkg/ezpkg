@@ -1,9 +1,9 @@
 module ezpkg.io/codez
 
-go 1.21
+go 1.23
 
 require (
-	golang.org/x/tools v0.23.0
+	golang.org/x/tools v0.24.0
 )
 
 require (

@@ -1,6 +1,6 @@
 module ezpkg.io/conveyz
 
-go 1.21
+go 1.23
 
 require (
 	github.com/onsi/gomega v1.33.1
@@ -16,7 +16,7 @@ require (
 	github.com/smarty/assertions v1.15.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
-	golang.org/x/tools v0.23.0 // indirect
+	golang.org/x/tools v0.24.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

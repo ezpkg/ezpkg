@@ -1,6 +1,6 @@
 module ezpkg.io/testingz
 
-go 1.21
+go 1.23
 
 require (
 	github.com/kylelemons/godebug v1.1.0 // indirect

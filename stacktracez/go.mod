@@ -1,5 +1,5 @@
 module ezpkg.io/stacktracez
 
-go 1.21
+go 1.23
 
 
