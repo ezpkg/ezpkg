@@ -5,6 +5,7 @@ alias z.='cd $EZPKG_DIR'
 alias z.root='cd $EZPKG_ROOT_DIR'
 alias z.scripts='cd $EZPKG_DIR/zscripts'
 alias z.target='cd $EZPKG_ROOT_DIR/ztarget'
+alias z.z='cd $EZPKG_DIR/z.z'
 
 alias z.bytez='cd $EZPKG_DIR/bytez'
 alias z.colorz='cd $EZPKG_DIR/colorz'
