@@ -1,4 +1,4 @@
 package mapz
 
 // internal usage
-const zzVersion = `0.1.1`
+const zzVersion = `0.1.2`

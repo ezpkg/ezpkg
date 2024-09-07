@@ -15,7 +15,7 @@ Package [typez](https://pkg.go.dev/ezpkg.io/typez) provides generic functions fo
 ## Installation
 
 ```sh
-go get -u ezpkg.io/typez@v0.1.1
+go get -u ezpkg.io/typez@v0.1.2
 ```
 
 ## Examples
