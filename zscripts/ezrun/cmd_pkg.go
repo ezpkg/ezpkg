@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/urfave/cli/v2"
@@ -16,8 +17,11 @@ import (
 
 	"ezpkg.io/-/zscripts/-/script"
 	"ezpkg.io/bytez"
+	"ezpkg.io/colorz"
 	"ezpkg.io/errorz"
 	"ezpkg.io/mapz"
+	"ezpkg.io/slicez"
+	"ezpkg.io/stringz"
 )
 
 const defaultPkgMode = packages.NeedName |
@@ -36,7 +40,7 @@ const defaultPkgMode = packages.NeedName |
 
 type cmdPkg struct {
 	fileSet *token.FileSet
-	pkgInfo map[string]*PkgInfo
+	pkgInfo map[string]*PkgInfo // map[name]*PkgInfo
 }
 
 func (c *cmdPkg) Run(cx *cli.Context) error {
@@ -91,6 +95,14 @@ func (c *cmdPkg) generateCode(pkgs []string) {
 	}
 	errorz.MustZ(err)
 
+	// calc dependencies and generate go(.local).mod
+	fmt.Printf("calc deps\n")
+	calcDeps(c.pkgInfo)
+	for _, pkg := range pkgs {
+		pkgInfo := c.pkgInfo[pkg]
+		c.processGoMod(pkgInfo)
+	}
+
 	// copy all files to target dirs, except tests
 	for _, pkg := range pkgs {
 		fmt.Printf("writing %v\n", pkg)
@@ -137,42 +149,44 @@ func (c *cmdPkg) processPackage(pkgName string) (pkgInfo *PkgInfo, err error) {
 				Package: pkg,
 				pkgDir:  pkgDir,
 			}
-			c.processGoMod(pkgInfo, pkgDir)
+			imports := mapz.SortedKeys(pkgInfo.Imports)
+			pkgInfo.ezDeps = slicez.FilterFunc(imports, func(path string) bool {
+				return strings.HasPrefix(path, "ezpkg.io/")
+			})
+			slices.Sort(pkgInfo.ezDeps)
 		}
 	}
 	return pkgInfo, err
 }
 
-func (c *cmdPkg) processGoMod(pkgInfo *PkgInfo, pkgDir string) {
-	path := filepath.Join(pkgDir, "go.mod")
+func (c *cmdPkg) processGoMod(pkgInfo *PkgInfo) {
+	path := filepath.Join(pkgInfo.pkgDir, "go.mod")
 	data := errorz.Must(os.ReadFile(path))
 	pkgInfo.goMod = errorz.Must(modfile.Parse(path, data, nil))
 
 	re := regexp.MustCompile(`\ngo [\d.]+\n`)
 	idx := re.FindIndex(data)[1]
 
-	var ezpkgImports []string
-	for _, importPath := range mapz.SortedKeys(pkgInfo.Imports) {
-		if strings.HasPrefix(importPath, "ezpkg.io/") {
-			ezpkgImports = append(ezpkgImports, importPath)
-		}
-	}
-
 	outputGoMod := func(isLocal bool) []byte {
 		var b bytez.Buffer
 		b.WriteZ(bytes.TrimSpace(data[:idx]))
 		b.WriteStringZ("\n")
-		if len(ezpkgImports) > 0 {
+		for {
+			if len(pkgInfo.ezDepsAll) == 0 {
+				break
+			}
 			b.Printf("\nrequire (\n")
-			for _, importPath := range ezpkgImports {
+			for _, importPath := range pkgInfo.ezDepsAll {
 				b.Printf("\t%s v%s\n", importPath, env.Info.Version)
 			}
 			b.Printf(")\n")
-			if isLocal {
-				for _, importPath := range ezpkgImports {
-					b.Printf("replace %s => ../%s\n", importPath, filepath.Base(importPath))
-				}
+			if !isLocal {
+				break
 			}
+			for _, importPath := range pkgInfo.ezDepsAll {
+				b.Printf("replace %s => ../%s\n", importPath, filepath.Base(importPath))
+			}
+			break
 		}
 		data0 := bytes.TrimSpace(data[idx:])
 		if len(data0) > 0 {
@@ -186,6 +200,54 @@ func (c *cmdPkg) processGoMod(pkgInfo *PkgInfo, pkgDir string) {
 	pkgInfo.goModLocal = outputGoMod(true)
 }
 
+func calcDeps(pkgs map[string]*PkgInfo) {
+	marks := map[string]int{} // 0: unmarked, -1: pending, 1: done
+	var visit func(parent, name string)
+	visit = func(parent, name string) {
+		switch marks[name] {
+		case 1:
+			return // done
+		case -1:
+			panic("circular dependency")
+		default:
+			marks[name] = -1 // pending
+			pkg := pkgs[name]
+			if pkg == nil {
+				panic(fmt.Sprintf("package %s→%s not found", parent, name))
+			}
+			for _, depPath := range pkg.ezDeps {
+				depName := ezGetName(depPath)
+				visit(name, depName)
+
+				pkg.ezDepsAll = append(pkg.ezDepsAll, "ezpkg.io/"+depName)
+				pkg.ezDepsAll = append(pkg.ezDepsAll, pkgs[depName].ezDepsAll...)
+			}
+			marks[name] = 1 // done
+		}
+	}
+	pkgList := mapz.SortedKeys(pkgs)
+	for _, name := range pkgList {
+		if marks[name] != 1 {
+			visit("", name)
+		}
+	}
+	fmt.Printf("👉 DEPENDENCIES (%s %s):\n", colorz.Yellow.Wrap("direct"), colorz.White.Wrap("indirect"))
+	for _, name := range pkgList {
+		pkg := pkgs[name]
+		pkg.ezDepsAll = slicez.SortUnique(pkg.ezDepsAll)
+
+		fmt.Printf(colorz.Reset.Wrap("ezpkg.io/%s:"), name)
+		for _, depPath := range pkg.ezDepsAll {
+			color := colorz.White
+			if slicez.Exists(pkg.ezDeps, depPath) {
+				color = colorz.Yellow
+			}
+			fmt.Print(" ", color.Wrap(ezGetName(depPath)))
+		}
+		fmt.Println()
+	}
+}
+
 func generateMockTestFile(pkgInfo *PkgInfo) []byte {
 	var b bytez.Buffer
 	b.Printf(`package %s_test
@@ -194,6 +256,11 @@ func generateMockTestFile(pkgInfo *PkgInfo) []byte {
 // For actual tests, see 👉 https://github.com/ezpkg/ezpkg/tree/main/%s
 `, pkgInfo.Name, pkgInfo.Name)
 	return b.Bytes()
+}
+
+func ezGetName(pkgPath string) string {
+	s := strings.TrimPrefix(pkgPath, "ezpkg.io/")
+	return stringz.FirstPart(s, "/")
 }
 
 func copyFile(srcDir, dstDir, file string) {

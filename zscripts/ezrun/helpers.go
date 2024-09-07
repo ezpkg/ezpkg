@@ -28,4 +28,7 @@ type PkgInfo struct {
 
 	goModPublish []byte
 	goModLocal   []byte
+
+	ezDeps    []string // direct ezpkg.io dependencies in format "ezpkg.io/..."
+	ezDepsAll []string // direct and indirect ezpkg.io dependencies
 }
