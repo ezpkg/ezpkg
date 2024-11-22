@@ -2,18 +2,17 @@ package test
 
 import (
 	"bytes"
-	"compress/gzip"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
 	"sync/atomic"
 	"testing"
 )
 
 var isDebug = getEnvBool("TESTING_DEBUG")
+var currentDir = getCurrentDir()
 
 func getEnvBool(env string) bool {
 	str := os.Getenv(env)
@@ -23,51 +22,23 @@ func getEnvBool(env string) bool {
 	return false
 }
 
-var testcases = []*Testcase{
-	// test data from https://github.com/valyala/fastjson
-	testcase("small.json"),
-	testcase("medium.json"),
-	testcase("large.json"),
-
-	// test data from https://github.com/serde-rs/json-benchmark
-	testcase("canada.json.gz"),
-	testcase("citm_catalog.json.gz"),
-	testcase("twitter.json.gz"),
-
-	// test data from https://github.com/Tencent/rapidjson
-	testcase("rapid.json.gz"),
-}
-
-// Testcase encapsulates the input and states during a test. Testcase is cloned before running each benchmark, and will
+// xTestcase encapsulates the input and states during a test. xTestcase is cloned before running each benchmark, and will
 // only be accessed locally in each goroutine for parallel benchmarks.
-type Testcase struct {
-	path string
-	data []byte
+type xTestcase struct {
+	Testcase
 
 	// options and states
-	reader   *bytes.Reader       // resettable reader
-	parallel bool                // read-only
-	state    any                 // read-only
-	initFn   func(*Testcase) any // called once for each goroutine
+	reader   *bytes.Reader        // resettable reader
+	parallel bool                 // read-only
+	state    any                  // read-only
+	initFn   func(*xTestcase) any // called once for each goroutine
 }
 
-func testcase(path string) *Testcase {
-	var r io.Reader = must(os.Open(filepath.Join("data", path)))
-	if strings.HasSuffix(path, ".gz") {
-		r = must(gzip.NewReader(r))
-	}
-	data := must(io.ReadAll(r))
-	return &Testcase{
-		path: path,
-		data: data,
-	}
-}
+func (t *xTestcase) State() any        { return t.state }
+func (t *xTestcase) Reader() io.Reader { return t.reader }
+func (t *xTestcase) IsParallel() bool  { return t.parallel }
 
-func (t *Testcase) State() any        { return t.state }
-func (t *Testcase) Reader() io.Reader { return t.reader }
-func (t *Testcase) IsParallel() bool  { return t.parallel }
-
-func (t *Testcase) WithParallel(b bool) *Testcase {
+func (t *xTestcase) WithParallel(b bool) *xTestcase {
 	cloned := *t
 	cloned.parallel = b
 	return &cloned
@@ -75,16 +46,16 @@ func (t *Testcase) WithParallel(b bool) *Testcase {
 
 // WithInitFunc clones the Testcase and register an init state function. The function will be run once for each goroutine
 // to init the local state for that goroutine. The benchmark code can access the state while running.
-func (t *Testcase) WithInitFunc(fn func(tc *Testcase) any) *Testcase {
+func (t *xTestcase) WithInitFunc(fn func(tc *xTestcase) any) *xTestcase {
 	cloned := *t
 	cloned.initFn = fn
 	return &cloned
 }
 
 // setupInitState clones the Testcase and runs the registered init function to init the state.
-func (t *Testcase) setupInitState() *Testcase {
+func (t *xTestcase) setupInitState() *xTestcase {
 	cloned := *t
-	cloned.reader = bytes.NewReader(t.data)
+	cloned.reader = bytes.NewReader(t.Data)
 	if cloned.initFn != nil {
 		cloned.state = cloned.initFn(t)
 	} else {
@@ -94,22 +65,22 @@ func (t *Testcase) setupInitState() *Testcase {
 }
 
 // reset resets the reader
-func (t *Testcase) reset() {
+func (t *xTestcase) reset() {
 	must(t.reader.Seek(0, 0))
 }
 
-func benchSkip(b *testing.B, name string, tc *Testcase, fn func(*Testcase) error) error {
+func benchSkip(b *testing.B, name string, tc *xTestcase, fn func(*xTestcase) error) error {
 	return nil // do nothing
 }
 
 // bench runs the benchmark with the given name and testcase. The testcase is cloned for each goroutine.
-func bench(b *testing.B, name string, tc *Testcase, fn func(tc *Testcase) error) error {
+func bench(b *testing.B, name string, tc *xTestcase, fn func(tc *xTestcase) error) error {
 	parallel := xif(tc.parallel, "parallel/", "")
-	name = parallel + name + "/" + tc.path
+	name = parallel + name + "/" + tc.Name
 	var atomErr atomic.Pointer[error]
 	b.Run(name, func(b *testing.B) {
 		N := xif(tc.parallel, runtime.NumCPU(), 1)
-		tcases := make([]*Testcase, N)
+		tcases := make([]*xTestcase, N)
 		for i := 0; i < N; i++ {
 			tcases[i] = tc.setupInitState()
 		}
@@ -117,7 +88,7 @@ func bench(b *testing.B, name string, tc *Testcase, fn func(tc *Testcase) error)
 		atomIdx.Store(-1)
 
 		b.ReportAllocs()
-		b.SetBytes(int64(len(tc.data)))
+		b.SetBytes(int64(len(tc.Data)))
 		b.ResetTimer()
 		if tc.parallel {
 			b.RunParallel(func(pb *testing.PB) {
@@ -143,6 +114,14 @@ func bench(b *testing.B, name string, tc *Testcase, fn func(tc *Testcase) error)
 		return *err
 	}
 	return nil
+}
+
+func getCurrentDir() string {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("unexpected")
+	}
+	return filepath.Dir(file)
 }
 
 func shortenError(err error) string {
