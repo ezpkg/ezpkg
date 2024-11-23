@@ -1,109 +1,111 @@
 package draft
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
 )
 
-const rNull = "null"
-const rTrue = "true"
-const rFalse = "false"
+var rNull = []byte("null")
+var rTrue = []byte("true")
+var rFalse = []byte("false")
 
-func NextToken(s string) (token string, remain string, err error) {
-	s = TrimPrefixSpace(s)
-	if s == "" {
-		return "", "", nil
+type RawToken []byte
+
+func NextToken(in []byte) (token RawToken, remain []byte, err error) {
+	in = skipSpace(in)
+	if len(in) == 0 {
+		return nil, nil, nil
 	}
-	switch s[0] {
+	switch in[0] {
 	case '{', '}', '[', ']', ',', ':':
-		return s[:1], s[1:], nil
+		return in[:1], in[1:], nil
 	case 'n':
-		if len(s) < len(rNull) || s[:len(rNull)] != rNull {
-			return "", s, newTokenError(s)
-		}
-		return rNull, s[len(rNull):], nil
+		return nextToken(in, rNull)
 	case 'f':
-		if len(s) < len(rFalse) || s[:len(rFalse)] != rFalse {
-			return "", s, newTokenError(s)
-		}
-		return rFalse, s[len(rFalse):], nil
+		return nextToken(in, rFalse)
 	case 't':
-		if len(s) < len(rTrue) || s[:len(rTrue)] != rTrue {
-			return "", s, newTokenError(s)
-		}
-		return rTrue, s[len(rTrue):], nil
+		return nextToken(in, rTrue)
 	case '"':
-		return nextTokenString(s)
+		return nextTokenString(in)
 	default:
-		return nextTokenNumber(s)
+		return nextTokenNumber(in)
 	}
 }
 
-func nextTokenNumber(s string) (token string, remain string, err error) {
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if c >= '0' && c <= '9' || c == '+' || c == '-' {
+func nextToken(in []byte, expect []byte) (token RawToken, remain []byte, err error) {
+	if len(in) < len(expect) || !bytes.Equal(in[:len(expect)], expect) {
+		return nil, in, newTokenError(in)
+	}
+	return expect, in[len(expect):], nil
+}
+
+func nextTokenNumber(in []byte) (token RawToken, remain []byte, err error) {
+	for i := 0; i < len(in); i++ {
+		c := in[i]
+		if c >= '0' && c <= '9' {
 			continue
 		}
-		if c == '.' || c == 'e' || c == 'E' {
+		switch c {
+		case '+', '-', '.', 'e', 'E':
 			continue
 		}
-		token, remain = s[:i], s[i:]
+		token, remain = in[:i], in[i:]
 		break
 	}
-	if token == "" {
-		return "", s, newTokenError(s)
+	if len(token) == 0 {
+		return nil, in, newTokenError(in)
 	}
 	return token, remain, nil
 }
 
-func nextTokenString(s string) (token string, remain string, err error) {
-	s0, s := s, s[1:]
-	for {
-		n := strings.IndexByte(s, '"')
-		if n < 0 {
-			return "", s0, fmt.Errorf("missing close quote at %q", snipStr(s0, 16))
+func nextTokenString(in []byte) (token RawToken, remain []byte, err error) {
+	for i := 1; i < len(in); i++ {
+		c := in[i]
+		switch c {
+		case '"':
+			return in[:i+1], in[i+1:], nil
+		case '\\':
+			if i+1 >= len(in) {
+				return nil, in, newTokenError(in)
+			}
+			switch in[i+1] {
+			case '"', '\\', '/', 'b', 'f', 'n', 'r', 't':
+				i++
+			case 'u':
+				if i+5 >= len(in) {
+					return nil, in, newTokenError(in)
+				}
+				i += 5
+			default:
+				return nil, in, newTokenError(in)
+			}
 		}
-		if s0[n-1] != '\\' {
-			return s0[:n+2], s0[n+2:], nil
-		}
-		i := n - 2
-		for ; i >= 0 && s[i] == '\\'; i-- {
-		}
-		if (n-i)%2 == 0 {
-			return s0[:n+2], s0[n+2:], nil
-		}
-		s = s[n+1:]
 	}
+	return nil, in, newTokenError(in)
 }
 
-func TrimPrefixSpace(s string) string {
-	if len(s) == 0 || s[0] > 0x20 {
-		return s
-	}
-	if !IsSpace(s[0]) {
-		return s
-	}
-	for i := 1; i < len(s); i++ {
-		if !IsSpace(s[i]) {
-			return s[i:]
+// RFC8259: whitespace is space, horizontal tab, line feed, or carriage return.
+func skipSpace(in []byte) []byte {
+	for i := 0; i < len(in); i++ {
+		c := in[i]
+		switch c {
+		case ' ', '\t', '\n', '\r':
+			continue
+		default:
+			return in[i:]
 		}
 	}
-	return ""
+	return nil
 }
 
-func IsSpace(c byte) bool {
-	return c == 0x09 || c == 0x0A || c == 0x0D || c == 0x20
-}
-
-func snipStr(s string, n int) string {
-	if len(s) <= n {
-		return s
+func snip(in []byte, n int) []byte {
+	if len(in) <= n {
+		return in
 	}
-	return s[:n]
+	return in[:n]
 }
 
-// newTokenError returns an error for an invalid token. Input s should not be starts with space.
-func newTokenError(s string) error {
-	return fmt.Errorf("invalid token at %q", snipStr(s, 16))
+// newTokenError returns an error for an invalid token. Input should not be starts with space.
+func newTokenError(in []byte) error {
+	return fmt.Errorf("invalid token at %v", snip(in, 16))
 }
