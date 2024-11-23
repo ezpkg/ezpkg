@@ -3,6 +3,7 @@ package draft
 import (
 	"bytes"
 	"fmt"
+	"iter"
 )
 
 var rNull = []byte("null")
@@ -29,6 +30,26 @@ func NextToken(in []byte) (token RawToken, remain []byte, err error) {
 		return nextTokenString(in)
 	default:
 		return nextTokenNumber(in)
+	}
+}
+
+func Scan(in []byte) iter.Seq2[RawToken, error] {
+	return func(yield func(token RawToken, err error) bool) {
+		last := in
+		for {
+			token, remain, err := NextToken(last)
+			if err != nil {
+				yield(nil, err)
+				return
+			}
+			if !yield(token, nil) {
+				return
+			}
+			if len(remain) == 0 {
+				return
+			}
+			last = remain
+		}
 	}
 }
 

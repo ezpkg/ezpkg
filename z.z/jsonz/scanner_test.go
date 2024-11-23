@@ -42,6 +42,27 @@ func TestNextToken(t *testing.T) {
 	}
 }
 
+func TestScan(t *testing.T) {
+	run := func(tcase jtest.Testcase) {
+		t.Run(tcase.Name, func(t *testing.T) {
+			buf := make([]byte, 0, len(tcase.Data))
+			w := bytes.NewBuffer(buf)
+			for token, err := range Scan(tcase.Data) {
+				if err != nil {
+					t.Errorf("error: %v", err)
+					return
+				}
+				w.Write(token)
+			}
+
+			var v any
+			must(0, json.Unmarshal(w.Bytes(), &v))
+		})
+	}
+
+	run(jtest.GetTestcase("pass01.json"))
+}
+
 func must[T any](v T, err error) T {
 	if err != nil {
 		panic(err)
