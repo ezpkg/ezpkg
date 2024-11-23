@@ -34,7 +34,7 @@ func NextToken(in []byte) (token RawToken, remain []byte, err error) {
 
 func nextToken(in []byte, expect []byte) (token RawToken, remain []byte, err error) {
 	if len(in) < len(expect) || !bytes.Equal(in[:len(expect)], expect) {
-		return nil, in, newTokenError(in)
+		return nil, in, newTokenError(string(expect), in)
 	}
 	return expect, in[len(expect):], nil
 }
@@ -46,6 +46,7 @@ func nextTokenNumber(in []byte) (token RawToken, remain []byte, err error) {
 			continue
 		}
 		switch c {
+		// https://datatracker.ietf.org/doc/html/rfc8259#section-6
 		case '+', '-', '.', 'e', 'E':
 			continue
 		}
@@ -53,7 +54,7 @@ func nextTokenNumber(in []byte) (token RawToken, remain []byte, err error) {
 		break
 	}
 	if len(token) == 0 {
-		return nil, in, newTokenError(in)
+		return nil, in, newTokenError("number", in)
 	}
 	return token, remain, nil
 }
@@ -66,29 +67,30 @@ func nextTokenString(in []byte) (token RawToken, remain []byte, err error) {
 			return in[:i+1], in[i+1:], nil
 		case '\\':
 			if i+1 >= len(in) {
-				return nil, in, newTokenError(in)
+				return nil, in, newTokenError("string", in)
 			}
 			switch in[i+1] {
+			// https://datatracker.ietf.org/doc/html/rfc8259#section-7
 			case '"', '\\', '/', 'b', 'f', 'n', 'r', 't':
 				i++
 			case 'u':
 				if i+5 >= len(in) {
-					return nil, in, newTokenError(in)
+					return nil, in, newTokenError("string", in)
 				}
 				i += 5
 			default:
-				return nil, in, newTokenError(in)
+				return nil, in, newTokenError("string", in)
 			}
 		}
 	}
-	return nil, in, newTokenError(in)
+	return nil, in, newTokenError("string", in)
 }
 
-// RFC8259: whitespace is space, horizontal tab, line feed, or carriage return.
 func skipSpace(in []byte) []byte {
 	for i := 0; i < len(in); i++ {
 		c := in[i]
 		switch c {
+		// https://datatracker.ietf.org/doc/html/rfc8259#section-2
 		case ' ', '\t', '\n', '\r':
 			continue
 		default:
@@ -106,6 +108,6 @@ func snip(in []byte, n int) []byte {
 }
 
 // newTokenError returns an error for an invalid token. Input should not be starts with space.
-func newTokenError(in []byte) error {
-	return fmt.Errorf("invalid token at %v", snip(in, 16))
+func newTokenError(name string, in []byte) error {
+	return fmt.Errorf("expect %v, got %v", name, snip(in, 16))
 }

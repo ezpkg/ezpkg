@@ -2,6 +2,7 @@ package test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -154,4 +155,8 @@ func must[T any](v T, err error) T {
 		panic(err)
 	}
 	return v
+}
+
+func panicf(format string, args ...any) {
+	panic(fmt.Sprintf(format, args...))
 }

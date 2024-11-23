@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var mapTestcases = map[string]Testcase{}
+
 type Testcase struct {
 	Name string
 	Data []byte
@@ -42,11 +44,22 @@ var LargeSet = []Testcase{
 	load("data/rapid.json.gz"),
 }
 
+func GetTestcase(name string) Testcase {
+	tcase, ok := mapTestcases[name]
+	if !ok {
+		panicf("unknown testcase: %v", name)
+	}
+	return tcase
+}
+
 func load(path string) Testcase {
 	var r io.Reader = must(os.Open(filepath.Join(currentDir, path)))
 	if strings.HasSuffix(path, ".gz") {
 		r = must(gzip.NewReader(r))
 	}
 	data := must(io.ReadAll(r))
-	return Testcase{Name: filepath.Base(path), Data: data}
+	name := filepath.Base(path)
+	tcase := Testcase{Name: name, Data: data}
+	mapTestcases[name] = tcase
+	return tcase
 }

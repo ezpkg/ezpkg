@@ -10,11 +10,11 @@ import (
 )
 
 func TestNextToken(t *testing.T) {
-	for _, test := range jtest.LargeSet {
-		t.Run(test.Name, func(t *testing.T) {
-			buf := make([]byte, 0, len(test.Data))
+	run := func(tcase jtest.Testcase) {
+		t.Run(tcase.Name, func(t *testing.T) {
+			buf := make([]byte, 0, len(tcase.Data))
 			w := bytes.NewBuffer(buf)
-			last := test.Data
+			last := tcase.Data
 			for {
 				token, remain, err := NextToken(last)
 				if err != nil {
@@ -34,6 +34,11 @@ func TestNextToken(t *testing.T) {
 			var v any
 			must(0, json.Unmarshal(w.Bytes(), &v))
 		})
+	}
+
+	run(jtest.GetTestcase("pass01.json"))
+	for _, test := range jtest.LargeSet {
+		run(test)
 	}
 }
 
