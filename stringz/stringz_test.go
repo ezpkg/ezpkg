@@ -3,8 +3,6 @@ package stringz_test
 import (
 	"testing"
 
-	. "github.com/onsi/gomega"
-
 	. "ezpkg.io/conveyz"
 	"ezpkg.io/stringz"
 )

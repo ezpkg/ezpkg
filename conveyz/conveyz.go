@@ -77,6 +77,12 @@ func Reset(action func()) {
 	convey.Reset(action)
 }
 
+// Ω is a shortcut for GomegaExpect, which is an adapter to make gomega work with goconvey.
+func Ω(actual any, extra ...any) gomega.Assertion {
+	assertion := gomega.Expect(actual, extra...)
+	return gomegaAssertion{actual: actual, assertion: assertion}
+}
+
 // GomegaExpect is an adapter to make gomega work with goconvey.
 //
 // Usage: Ω := GomegaExpect

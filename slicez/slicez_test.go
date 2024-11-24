@@ -5,8 +5,6 @@ import (
 	"slices"
 	"testing"
 
-	. "github.com/onsi/gomega"
-
 	. "ezpkg.io/conveyz"
 	. "ezpkg.io/slicez"
 )

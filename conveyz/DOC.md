@@ -27,12 +27,10 @@ import (
 	"fmt"
 	"testing"
 
-	. "github.com/onsi/gomega"
 	. "ezpkg.io/conveyz"
 )
 
 func Test(t *testing.T) {
-	Ω := GomegaExpect // 👈 make Ω as alias for GomegaExpect
 	Convey("Start", t, func() {
 		s := "[0]"
 		defer func() { fmt.Printf("\n%s\n", s) }()

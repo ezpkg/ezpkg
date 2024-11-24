@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/onsi/gomega"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
 
