@@ -12,32 +12,32 @@ import (
 	"ezpkg.io/typez"
 )
 
-func DiffByChar(expect, actual string) (formatted string, isDiff bool) {
+func DiffByChar(actual, expect string) (formatted string, isDiff bool) {
 	diffs := diffz.ByChar(actual, expect)
 	return diffz.Format(diffs), diffs.IsDiff()
 }
 
-func DiffByCharX(expect, actual string, opt diffz.Option) (formatted string, isDiff bool) {
+func DiffByCharX(actual, expect string, opt diffz.Option) (formatted string, isDiff bool) {
 	diffs := diffz.ByCharX(actual, expect, opt)
 	return diffz.Format(diffs), diffs.IsDiff()
 }
 
-func DiffByCharZ(expect, actual string) (formatted string, isDiff bool) {
+func DiffByCharZ(actual, expect string) (formatted string, isDiff bool) {
 	diffs := diffz.ByCharZ(actual, expect)
 	return diffz.Format(diffs), diffs.IsDiff()
 }
 
-func DiffByLine(expect, actual string) (formatted string, isDiff bool) {
+func DiffByLine(actual, expect string) (formatted string, isDiff bool) {
 	diffs := diffz.ByLine(actual, expect)
 	return diffz.Format(diffs), diffs.IsDiff()
 }
 
-func DiffByLineX(expect, actual string, opt diffz.Option) (formatted string, isDiff bool) {
+func DiffByLineX(actual, expect string, opt diffz.Option) (formatted string, isDiff bool) {
 	diffs := diffz.ByLineX(actual, expect, opt)
 	return diffz.Format(diffs), diffs.IsDiff()
 }
 
-func DiffByLineZ(expect, actual string) (formatted string, isDiff bool) {
+func DiffByLineZ(actual, expect string) (formatted string, isDiff bool) {
 	diffs := diffz.ByLineZ(actual, expect)
 	return diffz.Format(diffs), diffs.IsDiff()
 }
@@ -46,7 +46,7 @@ func DiffByLineZ(expect, actual string) (formatted string, isDiff bool) {
 //
 //	ΩxNoDiff := ConveyDiffByLine(diffz.IgnoreSpace().AndPlaceholder())
 //	ΩxNoDiff(expect, actual, "my message")
-func ConveyDiffByLine(opt diffz.Option) func(expect, actual string, msgArgs ...any) {
+func ConveyDiffByLine(opt diffz.Option) func(actual, expect string, msgArgs ...any) {
 	pr := func(text string) {
 		if opt.IgnoreSpace {
 			fmt.Println(strings.TrimSpace(text))
@@ -58,7 +58,7 @@ func ConveyDiffByLine(opt diffz.Option) func(expect, actual string, msgArgs ...a
 		}
 	}
 
-	return func(expect, actual string, msgArgs ...any) {
+	return func(actual, expect string, msgArgs ...any) {
 		diffs := diffz.ByLineX(actual, expect, opt)
 		if !diffs.IsDiff() {
 			return
@@ -80,9 +80,9 @@ func ConveyDiffByLine(opt diffz.Option) func(expect, actual string, msgArgs ...a
 var _NoDiffByLine = ConveyDiffByLine(diffz.Option{})
 var _NoDiffByLineZ = ConveyDiffByLine(diffz.IgnoreSpace().AndPlaceholder())
 
-func ΩxNoDiffByLine(expect, actual string, msgArgs ...any) {
-	_NoDiffByLine(expect, actual, msgArgs...)
+func ΩxNoDiffByLine(actual, expect string, msgArgs ...any) {
+	_NoDiffByLine(actual, expect, msgArgs...)
 }
-func ΩxNoDiffByLineZ(expect, actual string, msgArgs ...any) {
-	_NoDiffByLineZ(expect, actual, msgArgs...)
+func ΩxNoDiffByLineZ(actual, expect string, msgArgs ...any) {
+	_NoDiffByLineZ(actual, expect, msgArgs...)
 }
