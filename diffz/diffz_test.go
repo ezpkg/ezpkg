@@ -1,9 +1,9 @@
 package diffz_test
 
 import (
-	"fmt"
 	"testing"
 
+	. "ezpkg.io/conveyz"
 	"ezpkg.io/diffz"
 )
 
@@ -146,196 +146,172 @@ color:
   code: #00ff00`
 
 func TestDiff(t *testing.T) {
-	t.Run("ByChar", func(t *testing.T) {
-		t.Run("default", func(t *testing.T) {
-			t.Run("diff", func(t *testing.T) {
+	Convey("ByChar", t, func() {
+		Convey("default", func() {
+			Convey("diff", func() {
 				left, right := "onetwo threefour five", "onethree two fourfve"
 				diffs := diffz.ByChar(left, right)
-				assertDiff(t, diffs)
+				Ω(diffs.IsDiff()).To(BeTrue())
 			})
-			t.Run("multiline/diff", func(t *testing.T) {
+			Convey("multiline/diff", func() {
 				diffs := diffz.ByChar(left0, right0)
-				assertDiff(t, diffs)
+				Ω(diffs.IsDiff()).To(BeTrue())
 			})
 		})
-		t.Run("ignore_space", func(t *testing.T) {
-			t.Run("equal", func(t *testing.T) {
+		Convey("ignore_space", func() {
+			Convey("equal", func() {
 				left, right := "onetwo threefour five", "onetwothree fourfive"
 				diffs := diffz.IgnoreSpace().DiffByChar(left, right)
-				assertEqual(t, diffs)
+				Ω(diffs.IsDiff()).To(BeFalse())
 			})
-			t.Run("diff", func(t *testing.T) {
+			Convey("diff", func() {
 				left, right := "onetwo thre3four five", "onetwothree fourfive"
 				diffs := diffz.IgnoreSpace().DiffByChar(left, right)
-				assertDiff(t, diffs)
+				Ω(diffs.IsDiff()).To(BeTrue())
 			})
-			t.Run("multiline/equal", func(t *testing.T) {
+			Convey("multiline/equal", func() {
 				diffs := diffz.IgnoreSpace().DiffByChar(left0, right0_IgnoreSpace)
-				assertEqual(t, diffs)
+				Ω(diffs.IsDiff()).To(BeFalse())
 			})
 		})
-		t.Run("placeholder", func(t *testing.T) {
-			t.Run("equal", func(t *testing.T) {
+		Convey("placeholder", func() {
+			Convey("equal", func() {
 				left, right := "on█twothr██fourfiv█", "onetwothreefourfive"
 				diffs := diffz.Placeholder().DiffByChar(left, right)
-				assertEqual(t, diffs)
+				Ω(diffs.IsDiff()).To(BeFalse())
 			})
-			t.Run("space+placeholder/equal", func(t *testing.T) {
+			Convey("space+placeholder/equal", func() {
 				left, right := "on█two thr██four fiv█", "onetwothree fourfive"
 				diffs := diffz.Placeholder().AndIgnoreSpace().DiffByChar(left, right)
-				assertEqual(t, diffs)
+				Ω(diffs.IsDiff()).To(BeFalse())
 			})
-			t.Run("extra_x/equal", func(t *testing.T) {
+			Convey("extra_x/equal", func() {
 				left, right := "on█two thr██four fiv█", "onetwothreexfourfive"
 				diffs := diffz.IgnoreSpace().AndPlaceholder().DiffByChar(left, right)
-				assertDiff(t, diffs)
+				Ω(diffs.IsDiff()).To(BeTrue())
 			})
-			t.Run("extra_space/diff", func(t *testing.T) {
+			Convey("extra_space/diff", func() {
 				left, right := "on█two thr██four fiv█", "onetwothree fourfive"
 				diffs := diffz.Placeholder().DiffByChar(left, right)
-				assertDiff(t, diffs)
+				Ω(diffs.IsDiff()).To(BeTrue())
 			})
-			t.Run("extra_placeholder/diff", func(t *testing.T) {
+			Convey("extra_placeholder/diff", func() {
 				left, right := "on█two thr███four fiv█", "onetwothree fourfive"
 				diffs := diffz.Placeholder().AndIgnoreSpace().DiffByChar(left, right)
-				assertDiff(t, diffs)
+				Ω(diffs.IsDiff()).To(BeTrue())
 			})
-			t.Run("multiline/equal", func(t *testing.T) {
+			Convey("multiline/equal", func() {
 				diffs := diffz.IgnoreSpace().AndPlaceholder().DiffByChar(left0, right0_Placeholder)
-				assertEqual(t, diffs)
+				Ω(diffs.IsDiff()).To(BeFalse())
 			})
-			t.Run("multiline/no_placeholder/diff", func(t *testing.T) {
+			Convey("multiline/no_placeholder/diff", func() {
 				diffs := diffz.IgnoreSpace().DiffByChar(left0, right0_Placeholder)
-				assertDiff(t, diffs)
+				Ω(diffs.IsDiff()).To(BeTrue())
 			})
 		})
 	})
-	t.Run("ByLine", func(t *testing.T) {
-		t.Run("diff/1", func(t *testing.T) {
+	Convey("ByLine", t, func() {
+		Convey("diff/1", func() {
 			diffs := diffz.ByLine("", "one")
-			assertDiff(t, diffs)
+			Ω(diffs.IsDiff()).To(BeTrue())
 		})
-		t.Run("diff/2a", func(t *testing.T) {
+		Convey("diff/2a", func() {
 			diffs := diffz.ByLine("onetwo", "xonetwo")
-			assertDiff(t, diffs)
+			Ω(diffs.IsDiff()).To(BeTrue())
 		})
-		t.Run("diff/2b", func(t *testing.T) {
+		Convey("diff/2b", func() {
 			diffs := diffz.ByLine("onetwo", "onextwo")
-			assertDiff(t, diffs)
+			Ω(diffs.IsDiff()).To(BeTrue())
 		})
-		t.Run("diff/2c", func(t *testing.T) {
+		Convey("diff/2c", func() {
 			diffs := diffz.ByLine("onetwo", "onetwox")
-			assertDiff(t, diffs)
+			Ω(diffs.IsDiff()).To(BeTrue())
 		})
-		t.Run("diff/3a", func(t *testing.T) {
+		Convey("diff/3a", func() {
 			diffs := diffz.ByLine("xonetwo", "onetwo")
-			assertDiff(t, diffs)
+			Ω(diffs.IsDiff()).To(BeTrue())
 		})
-		t.Run("diff/3b", func(t *testing.T) {
+		Convey("diff/3b", func() {
 			diffs := diffz.ByLine("onextwo", "onetwo")
-			assertDiff(t, diffs)
+			Ω(diffs.IsDiff()).To(BeTrue())
 		})
-		t.Run("diff/3c", func(t *testing.T) {
+		Convey("diff/3c", func() {
 			diffs := diffz.ByLine("onetwox", "onetwo")
-			assertDiff(t, diffs)
+			Ω(diffs.IsDiff()).To(BeTrue())
 		})
-		t.Run("diff/4", func(t *testing.T) {
+		Convey("diff/4", func() {
 			left, right := "zero", "one\ntwo\nthree"
 			diffs := diffz.ByLine(left, right)
-			assertDiff(t, diffs)
-			assert(t, diffs.Items[0].Text == "zero\n").Errorf("❌0")
-			assert(t, diffs.Items[1].Text == "one\n").Errorf("❌1")
-			assert(t, diffs.Items[2].Text == "two\n").Errorf("❌2")
-			assert(t, diffs.Items[3].Text == "three\n").Errorf("❌3")
+			Ω(diffs.IsDiff()).To(BeTrue())
+			Ω(diffs.Items[0].Text).To(Equal("zero\n"), "❌0")
+			Ω(diffs.Items[1].Text).To(Equal("one\n"), "❌1")
+			Ω(diffs.Items[2].Text).To(Equal("two\n"), "❌2")
+			Ω(diffs.Items[3].Text).To(Equal("three\n"), "❌3")
 		})
-		t.Run("default", func(t *testing.T) {
+		Convey("default", func() {
 			diffs := diffz.ByLine(left0, right0)
-			assertDiff(t, diffs)
+			Ω(diffs.IsDiff()).To(BeTrue())
 		})
-		t.Run("ignore_space", func(t *testing.T) {
-			t.Run("not_ignore/diff", func(t *testing.T) {
+		Convey("ignore_space", func() {
+			Convey("not_ignore/diff", func() {
 				diffs := diffz.ByLine(left0, right0_IgnoreSpace)
-				assertDiff(t, diffs)
+				Ω(diffs.IsDiff()).To(BeTrue())
 			})
-			t.Run("ignore/equal", func(t *testing.T) {
+			Convey("ignore/equal", func() {
 				diffs := diffz.IgnoreSpace().DiffByLine(left0, right0_IgnoreSpace)
-				assertEqual(t, diffs)
+				Ω(diffs.IsDiff()).To(BeFalse())
 			})
-			t.Run("end_with_newline", func(t *testing.T) {
+			Convey("end_with_newline", func() {
 				left, right := "zero", "one\ntwo\nthree"
 				diffs := diffz.IgnoreSpace().DiffByLine(left, right)
-				assertDiff(t, diffs)
-				assert(t, diffs.Items[0].Text == "zero\n").Errorf("❌0")
-				assert(t, diffs.Items[1].Text == "one\n").Errorf("❌1")
-				assert(t, diffs.Items[2].Text == "two\n").Errorf("❌2")
-				assert(t, diffs.Items[3].Text == "three\n").Errorf("❌3")
+				Ω(diffs.IsDiff()).To(BeTrue())
+				Ω(diffs.Items[0].Text).To(Equal("zero\n"), "❌0")
+				Ω(diffs.Items[1].Text).To(Equal("one\n"), "❌1")
+				Ω(diffs.Items[2].Text).To(Equal("two\n"), "❌2")
+				Ω(diffs.Items[3].Text).To(Equal("three\n"), "❌3")
 			})
-			t.Run("color", func(t *testing.T) {
+			Convey("color", func() {
 				diffs := diffz.IgnoreSpace().DiffByLine(red, green)
-				assertDiff(t, diffs)
-				assert(t, diffs.Items[0].Type == diffz.DiffEqual).Errorf("❌0")
-				assert(t, diffs.Items[1].Type == diffz.DiffEqual).Errorf("❌1a")
-				assert(t, diffs.Items[1].Text == "color:\n").Errorf("❌1b")
-				assert(t, diffs.Items[2].Type == diffz.DiffDelete).Errorf("❌2a")
-				assert(t, diffs.Items[2].Text == "  id: d56d5f0d-f05d-4d46-9ce2-af6396d25c55\n").Errorf("❌2b")
-				assert(t, diffs.Items[3].Type == diffz.DiffInsert).Errorf("❌3a")
-				assert(t, diffs.Items[3].Text == "  id: 5b01ec0b-0607-446e-8a25-aaef595902a9\n").Errorf("❌3b")
-				assert(t, diffs.Items[4].Type == diffz.DiffDelete).Errorf("❌4a")
-				assert(t, diffs.Items[4].Text == "  name: red\n").Errorf("❌4b")
-				assert(t, diffs.Items[5].Type == diffz.DiffInsert).Errorf("❌5a")
-				assert(t, diffs.Items[5].Text == "  name: green\n").Errorf("❌5b")
-				assert(t, diffs.Items[6].Type == diffz.DiffEqual).Errorf("❌6a")
-				assert(t, diffs.Items[6].Text == "  size: small\n").Errorf("❌6b")
-				assert(t, diffs.Items[7].Type == diffz.DiffDelete).Errorf("❌7a")
-				assert(t, diffs.Items[7].Text == "  code: #ff0000\n").Errorf("❌7b")
-				assert(t, diffs.Items[8].Type == diffz.DiffInsert).Errorf("❌8a")
-				assert(t, diffs.Items[8].Text == "  code: #00ff00\n").Errorf("❌8b")
-				assert(t, len(diffs.Items) == 9).Errorf("❌len")
+				Ω(diffs.IsDiff()).To(BeTrue())
+				Ω(diffs.Items[0].Type).To(Equal(diffz.DiffEqual), "❌0")
+				Ω(diffs.Items[1].Type).To(Equal(diffz.DiffEqual), "❌1a")
+				Ω(diffs.Items[1].Text).To(Equal("color:\n"), "❌1b")
+				Ω(diffs.Items[2].Type).To(Equal(diffz.DiffDelete), "❌2a")
+				Ω(diffs.Items[2].Text).To(Equal("  id: d56d5f0d-f05d-4d46-9ce2-af6396d25c55\n"), "❌2b")
+				Ω(diffs.Items[3].Type).To(Equal(diffz.DiffInsert), "❌3a")
+				Ω(diffs.Items[3].Text).To(Equal("  id: 5b01ec0b-0607-446e-8a25-aaef595902a9\n"), "❌3b")
+				Ω(diffs.Items[4].Type).To(Equal(diffz.DiffDelete), "❌4a")
+				Ω(diffs.Items[4].Text).To(Equal("  name: red\n"), "❌4b")
+				Ω(diffs.Items[5].Type).To(Equal(diffz.DiffInsert), "❌5a")
+				Ω(diffs.Items[5].Text).To(Equal("  name: green\n"), "❌5b")
+				Ω(diffs.Items[6].Type).To(Equal(diffz.DiffEqual), "❌6a")
+				Ω(diffs.Items[6].Text).To(Equal("  size: small\n"), "❌6b")
+				Ω(diffs.Items[7].Type).To(Equal(diffz.DiffDelete), "❌7a")
+				Ω(diffs.Items[7].Text).To(Equal("  code: #ff0000\n"), "❌7b")
+				Ω(diffs.Items[8].Type).To(Equal(diffz.DiffInsert), "❌8a")
+				Ω(diffs.Items[8].Text).To(Equal("  code: #00ff00\n"), "❌8b")
+				Ω(len(diffs.Items)).To(Equal(9), "❌len")
 			})
 		})
-		t.Run("placeholder", func(t *testing.T) {
-			t.Run("no_placeholder/diff", func(t *testing.T) {
+		Convey("placeholder", func() {
+			Convey("no_placeholder/diff", func() {
 				diffs := diffz.ByLine(left0, right0_Placeholder)
-				assertDiff(t, diffs)
+				Ω(diffs.IsDiff()).To(BeTrue())
 			})
-			t.Run("use_placeholder/equal", func(t *testing.T) {
+			Convey("use_placeholder/equal", func() {
 				diffs := diffz.Placeholder().AndIgnoreSpace().DiffByLine(left0, right0_Placeholder)
-				assertEqual(t, diffs)
+				Ω(diffs.IsDiff()).To(BeFalse())
 			})
-			t.Run("color/equal", func(t *testing.T) {
+			Convey("color/equal", func() {
 				diffs := diffz.IgnoreSpace().AndPlaceholder().DiffByLine(red, colorExpect)
-				assertEqual(t, diffs)
-				assert(t, diffs.Items[0].Text == "\n").Errorf("❌0")
-				assert(t, diffs.Items[1].Text == "color:\n").Errorf("❌1")
-				assert(t, diffs.Items[2].Text == "  id: d56d5f0d-f05d-4d46-9ce2-af6396d25c55\n").Errorf("❌2")
-				assert(t, diffs.Items[3].Text == "  name: red\n").Errorf("❌3")
-				assert(t, diffs.Items[4].Text == "  size: small\n").Errorf("❌4")
-				assert(t, diffs.Items[5].Text == "  code: #ff0000\n").Errorf("❌5")
+				Ω(diffs.IsDiff()).To(BeFalse())
+				Ω(diffs.Items[0].Text).To(Equal("\n"), "❌0")
+				Ω(diffs.Items[1].Text).To(Equal("color:\n"), "❌1")
+				Ω(diffs.Items[2].Text).To(Equal("  id: d56d5f0d-f05d-4d46-9ce2-af6396d25c55\n"), "❌2")
+				Ω(diffs.Items[3].Text).To(Equal("  name: red\n"), "❌3")
+				Ω(diffs.Items[4].Text).To(Equal("  size: small\n"), "❌4")
+				Ω(diffs.Items[5].Text).To(Equal("  code: #ff0000\n"), "❌5")
 			})
 		})
 	})
-}
-
-type assertFn func(format string, args ...any)
-
-func (fn assertFn) Errorf(format string, args ...any) { fn(format, args...) }
-
-func assert(t *testing.T, cond bool) assertFn {
-	if cond {
-		return func(string, ...any) {}
-	} else {
-		return t.Errorf
-	}
-}
-
-func assertDiff(t *testing.T, diffs diffz.Diffs) {
-	fmt.Println(diffz.Format(diffs))
-	assert(t, diffs.IsDiff() == true).
-		Errorf("expect diff")
-}
-
-func assertEqual(t *testing.T, diffs diffz.Diffs) {
-	fmt.Println(diffz.Format(diffs))
-	assert(t, diffs.IsDiff() == false).
-		Errorf("expect no diff")
 }
