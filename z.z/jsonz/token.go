@@ -22,6 +22,25 @@ const (
 	TokenColon       TokenType = ':'
 )
 
+func (t TokenType) String() string {
+	switch t {
+	case 0:
+		return "EOF"
+	case TokenNull:
+		return "null"
+	case TokenTrue:
+		return "true"
+	case TokenFalse:
+		return "false"
+	case TokenNumber:
+		return "number"
+	case TokenString:
+		return "string"
+	default:
+		return string(t)
+	}
+}
+
 // RawToken represents a raw token from the scanner.
 type RawToken struct {
 	typ TokenType
@@ -47,6 +66,16 @@ func (r RawToken) Bytes() []byte {
 // String returns the raw string value of the token. Use ToString() for unquoted strings.
 func (r RawToken) String() string {
 	return string(r.raw)
+}
+
+// IsValue returns true if the token is a value.
+func (r RawToken) IsValue() bool {
+	switch r.typ {
+	case TokenNull, TokenTrue, TokenFalse, TokenNumber, TokenString:
+		return true
+	default:
+		return false
+	}
 }
 
 // ParseNumber returns the number value of the token.

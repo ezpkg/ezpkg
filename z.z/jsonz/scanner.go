@@ -16,11 +16,11 @@ func NextToken(in []byte) (token RawToken, remain []byte, err error) {
 		typ := TokenType(in[0])
 		return RawToken{typ: typ, raw: in[:1]}, in[1:], nil
 	case 'n':
-		return nextToken(in, rNull)
+		return nextTokenConst(in, rNull)
 	case 'f':
-		return nextToken(in, rFalse)
+		return nextTokenConst(in, rFalse)
 	case 't':
-		return nextToken(in, rTrue)
+		return nextTokenConst(in, rTrue)
 	case '"':
 		return nextTokenString(in)
 	default:
@@ -30,9 +30,10 @@ func NextToken(in []byte) (token RawToken, remain []byte, err error) {
 
 func Scan(in []byte) iter.Seq2[RawToken, error] {
 	return func(yield func(token RawToken, err error) bool) {
-		last := in
+		remain := in
 		for {
-			token, remain, err := NextToken(last)
+			token, rm, err := NextToken(remain)
+			remain = rm
 			if err != nil {
 				yield(RawToken{}, err)
 				return
@@ -43,12 +44,11 @@ func Scan(in []byte) iter.Seq2[RawToken, error] {
 			if len(remain) == 0 {
 				return
 			}
-			last = remain
 		}
 	}
 }
 
-func nextToken(in []byte, expect []byte) (token RawToken, remain []byte, err error) {
+func nextTokenConst(in []byte, expect []byte) (token RawToken, remain []byte, err error) {
 	if len(in) < len(expect) || !bytes.Equal(in[:len(expect)], expect) {
 		return RawToken{}, in, newTokenError(string(expect), in)
 	}
@@ -57,7 +57,8 @@ func nextToken(in []byte, expect []byte) (token RawToken, remain []byte, err err
 }
 
 func nextTokenNumber(in []byte) (token RawToken, remain []byte, err error) {
-	for i := 0; i < len(in); i++ {
+	i := 0
+	for ; i < len(in); i++ {
 		c := in[i]
 		if c >= '0' && c <= '9' {
 			continue
@@ -67,10 +68,10 @@ func nextTokenNumber(in []byte) (token RawToken, remain []byte, err error) {
 		case '+', '-', '.', 'e', 'E':
 			continue
 		}
-		token, remain = RawToken{typ: TokenNumber, raw: in[:i]}, in[i:]
 		break
 	}
-	if len(token.raw) == 0 {
+	token, remain = RawToken{typ: TokenNumber, raw: in[:i]}, in[i:]
+	if i == 0 {
 		return RawToken{}, in, newTokenError("number", in)
 	}
 	return token, remain, nil
@@ -126,5 +127,5 @@ func snip(in []byte, n int) []byte {
 
 // newTokenError returns an error for an invalid token. Input should not be starts with space.
 func newTokenError(name string, in []byte) error {
-	return fmt.Errorf("expect %v, got %v", name, snip(in, 16))
+	return fmt.Errorf("expect %s, got %s", name, snip(in, 16))
 }
