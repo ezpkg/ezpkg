@@ -1,4 +1,4 @@
-package draft
+package jsonz
 
 import (
 	"bytes"
@@ -6,20 +6,15 @@ import (
 	"iter"
 )
 
-var rNull = []byte("null")
-var rTrue = []byte("true")
-var rFalse = []byte("false")
-
-type RawToken []byte
-
 func NextToken(in []byte) (token RawToken, remain []byte, err error) {
 	in = skipSpace(in)
 	if len(in) == 0 {
-		return nil, nil, nil
+		return RawToken{}, nil, nil
 	}
 	switch in[0] {
 	case '{', '}', '[', ']', ',', ':':
-		return in[:1], in[1:], nil
+		typ := TokenType(in[0])
+		return RawToken{typ: typ, raw: in[:1]}, in[1:], nil
 	case 'n':
 		return nextToken(in, rNull)
 	case 'f':
@@ -39,7 +34,7 @@ func Scan(in []byte) iter.Seq2[RawToken, error] {
 		for {
 			token, remain, err := NextToken(last)
 			if err != nil {
-				yield(nil, err)
+				yield(RawToken{}, err)
 				return
 			}
 			if !yield(token, nil) {
@@ -55,9 +50,10 @@ func Scan(in []byte) iter.Seq2[RawToken, error] {
 
 func nextToken(in []byte, expect []byte) (token RawToken, remain []byte, err error) {
 	if len(in) < len(expect) || !bytes.Equal(in[:len(expect)], expect) {
-		return nil, in, newTokenError(string(expect), in)
+		return RawToken{}, in, newTokenError(string(expect), in)
 	}
-	return expect, in[len(expect):], nil
+	typ := TokenType(expect[0])
+	return RawToken{typ: typ, raw: expect}, in[len(expect):], nil
 }
 
 func nextTokenNumber(in []byte) (token RawToken, remain []byte, err error) {
@@ -71,11 +67,11 @@ func nextTokenNumber(in []byte) (token RawToken, remain []byte, err error) {
 		case '+', '-', '.', 'e', 'E':
 			continue
 		}
-		token, remain = in[:i], in[i:]
+		token, remain = RawToken{typ: TokenNumber, raw: in[:i+1]}, in[i+1:]
 		break
 	}
-	if len(token) == 0 {
-		return nil, in, newTokenError("number", in)
+	if len(token.raw) == 0 {
+		return RawToken{}, in, newTokenError("number", in)
 	}
 	return token, remain, nil
 }
@@ -85,10 +81,10 @@ func nextTokenString(in []byte) (token RawToken, remain []byte, err error) {
 		c := in[i]
 		switch c {
 		case '"':
-			return in[:i+1], in[i+1:], nil
+			return RawToken{typ: TokenString, raw: in[:i+1]}, in[i+1:], nil
 		case '\\':
 			if i+1 >= len(in) {
-				return nil, in, newTokenError("string", in)
+				return RawToken{}, in, newTokenError("string", in)
 			}
 			switch in[i+1] {
 			// https://datatracker.ietf.org/doc/html/rfc8259#section-7
@@ -96,15 +92,15 @@ func nextTokenString(in []byte) (token RawToken, remain []byte, err error) {
 				i++
 			case 'u':
 				if i+5 >= len(in) {
-					return nil, in, newTokenError("string", in)
+					return RawToken{}, in, newTokenError("string", in)
 				}
 				i += 5
 			default:
-				return nil, in, newTokenError("string", in)
+				return RawToken{}, in, newTokenError("string", in)
 			}
 		}
 	}
-	return nil, in, newTokenError("string", in)
+	return RawToken{}, in, newTokenError("string", in)
 }
 
 func skipSpace(in []byte) []byte {
