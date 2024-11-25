@@ -67,7 +67,7 @@ func nextTokenNumber(in []byte) (token RawToken, remain []byte, err error) {
 		case '+', '-', '.', 'e', 'E':
 			continue
 		}
-		token, remain = RawToken{typ: TokenNumber, raw: in[:i+1]}, in[i+1:]
+		token, remain = RawToken{typ: TokenNumber, raw: in[:i]}, in[i:]
 		break
 	}
 	if len(token.raw) == 0 {

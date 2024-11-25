@@ -14,6 +14,8 @@ type Testcase struct {
 	Name string
 	Data []byte
 	Bad  bool // true if it's a bad case
+
+	ExpectTokens string
 }
 
 var SimpleSet = func() (out []Testcase) {
@@ -53,13 +55,24 @@ func GetTestcase(name string) Testcase {
 }
 
 func load(path string) Testcase {
+	loadExt := func(path string, ext string) []byte {
+		path = strings.Replace(path, ".json", ext, 1)
+		if _, err := os.Stat(filepath.Join(currentDir, path)); err != nil {
+			return nil
+		}
+		return must(os.ReadFile(filepath.Join(currentDir, path)))
+	}
+
 	var r io.Reader = must(os.Open(filepath.Join(currentDir, path)))
 	if strings.HasSuffix(path, ".gz") {
 		r = must(gzip.NewReader(r))
 	}
 	data := must(io.ReadAll(r))
 	name := filepath.Base(path)
-	tcase := Testcase{Name: name, Data: data}
+	tcase := Testcase{
+		Name: name, Data: data,
+		ExpectTokens: string(loadExt(path, ".token")),
+	}
 	mapTestcases[name] = tcase
 	return tcase
 }
