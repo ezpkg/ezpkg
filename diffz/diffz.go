@@ -5,7 +5,10 @@
 package diffz // import "ezpkg.io/diffz"
 
 import (
+	"errors"
+	"regexp"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	godebugdiff "github.com/kylelemons/godebug/diff"
@@ -24,10 +27,16 @@ const ( // re-export
 )
 
 const DefaultPlaceholder = '█'
+const DefaultRegexpOpen = "【"
+const DefaultRegexpClose = "】"
+
+var diffCharOpts = diffmatchpatch.New()
 
 type Option struct {
 	IgnoreSpace bool
 	Placeholder rune
+	RegexpOpen  string
+	RegexpClose string
 }
 
 func Default() Option {
@@ -37,16 +46,13 @@ func IgnoreSpace() Option {
 	return Option{IgnoreSpace: true}
 }
 func Placeholder() Option {
-	return Option{Placeholder: DefaultPlaceholder}
+	return Option{}.AndPlaceholder()
 }
 func PlaceholderX(placeholder rune) Option {
 	return Option{Placeholder: placeholder}
 }
 func PlaceholderZ() Option {
-	return Option{
-		IgnoreSpace: true,
-		Placeholder: DefaultPlaceholder,
-	}
+	return Option{}.AndIgnoreSpace().AndPlaceholder()
 }
 func (opt Option) AndIgnoreSpace() Option {
 	opt.IgnoreSpace = true
@@ -54,10 +60,19 @@ func (opt Option) AndIgnoreSpace() Option {
 }
 func (opt Option) AndPlaceholder() Option {
 	opt.Placeholder = DefaultPlaceholder
+	opt.RegexpOpen = DefaultRegexpOpen
+	opt.RegexpClose = DefaultRegexpClose
 	return opt
 }
-func (opt Option) AndPlaceholderX(placeholder rune) Option {
+func (opt Option) AndPlaceholderX(placeholder rune, args ...string) Option {
 	opt.Placeholder = placeholder
+	switch len(args) {
+	case 0:
+	case 1:
+		panic("expect 2 args for regexp open and close")
+	case 2:
+		opt.RegexpOpen, opt.RegexpClose = args[0], args[1]
+	}
 	return opt
 }
 func (opt Option) DiffByChar(left, right string) (out Diffs) {
@@ -89,8 +104,7 @@ func ByChar(left, right string) Diffs {
 }
 
 func ByCharX(left, right string, opt Option) (out Diffs) {
-	dmp := diffmatchpatch.New()
-	out.Items = dmp.DiffMain(left, right, false)
+	out.Items = diffCharOpts.DiffMain(left, right, false)
 	return process(opt, out)
 }
 
@@ -144,28 +158,78 @@ func ByLineZ(left, right string) (out Diffs) {
 }
 
 func Format(diffs Diffs) string {
-	dmp := diffmatchpatch.New()
-	return dmp.DiffPrettyText(diffs.Items)
+	return diffCharOpts.DiffPrettyText(diffs.Items)
 }
 
 func process(opt Option, ds Diffs) Diffs {
+	type Error struct {
+		left, right string
+	}
+
 	if opt == (Option{}) {
 		return ds
 	}
-	match := func(delText, insText string) (delNL, insNL int, ok bool) {
+	if (opt.RegexpOpen == "") != (opt.RegexpClose == "") {
+		panic("expect both regexp open and close")
+	}
+
+	findRegexp := func(text string) (*regexp.Regexp, string, error) {
+		idx := strings.Index(text, opt.RegexpClose)
+		if idx < 0 {
+			return nil, "", errors.New("《REGEXP:NO_CLOSE》")
+		}
+		expr := strings.TrimSpace(text[:idx])
+		if expr == "" {
+			return nil, "", errors.New("《REGEXP:EMPTY》")
+		}
+		re, err := regexp.Compile(expr)
+		if err != nil {
+			return nil, text[:idx], errors.New("《REGEXP:INVALID》")
+		}
+		return re, text[:idx], nil
+	}
+	processRegexpDiffs := func(xDiffs []Diff, op Operation) (opIdx, negIdx int) {
+		for i, diff := range xDiffs {
+			switch diff.Type {
+			case DiffEqual:
+				opIdx += len(diff.Text)
+				negIdx += len(diff.Text)
+			case op:
+				hasOpen := strings.Contains(diff.Text, opt.RegexpOpen)
+				hasClose := strings.Contains(diff.Text, opt.RegexpClose)
+				switch {
+				case hasOpen && !hasClose:
+					opIdx += len(diff.Text)
+				case hasClose:
+					opIdx += len(diff.Text)
+					if i+1 < len(xDiffs) && xDiffs[i+1].Type == -op {
+						negIdx += len(xDiffs[i+1].Text)
+					}
+					return opIdx, negIdx
+				}
+			case -op:
+				negIdx += len(diff.Text)
+			}
+		}
+		return opIdx, negIdx
+	}
+	match := func(delText, insText string) (delNL, insNL int, ok bool, _ *Error) {
 		delI, insI := 0, 0
 		delL, insL := len(delText), len(insText)
 		for {
 			delCh, delSize := utf8.DecodeRuneInString(delText[delI:])
 			if delSize == 0 {
-				return delI, insI, delI == delL || insI == insL
+				return delI, insI, delI == delL || insI == insL, nil
 			}
 			insCh, insSize := utf8.DecodeRuneInString(insText[insI:])
 			if insSize == 0 {
-				return delI, insI, delI == delL || insI == insL
+				return delI, insI, delI == delL || insI == insL, nil
 			}
-			if delCh == utf8.RuneError || insCh == utf8.RuneError {
-				return 0, 0, false
+			if delCh == utf8.RuneError {
+				return 0, 0, false, &Error{left: "《RUNE ERROR》"}
+			}
+			if insCh == utf8.RuneError {
+				return 0, 0, false, &Error{right: "《RUNE ERROR》"}
 			}
 			if delCh == '\n' && insCh == '\n' {
 				delNL, insNL = delI+1, insI+1
@@ -182,12 +246,64 @@ func process(opt Option, ds Diffs) Diffs {
 				insI += insSize
 				continue
 			}
-			if opt.Placeholder != 0 && opt.Placeholder == delCh || opt.Placeholder == insCh {
-				delI += delSize
-				insI += insSize
-				continue
+			if opt.Placeholder != 0 {
+				if opt.Placeholder == delCh || opt.Placeholder == insCh {
+					delI += delSize
+					insI += insSize
+					continue
+				}
 			}
-			return delNL, insNL, false
+			if opt.RegexpOpen != "" && opt.RegexpClose != "" {
+				if !strings.Contains(delText[delI:], opt.RegexpOpen) && !strings.Contains(insText[insI:], opt.RegexpOpen) {
+					return delNL, insNL, false, nil
+				}
+
+				xDiffs := diffCharOpts.DiffMain(delText[delI:], insText[insI:], false)
+				i := 0
+				for ; i < len(xDiffs) && xDiffs[i].Type == DiffEqual; i++ {
+					delI += len(xDiffs[i].Text)
+					insI += len(xDiffs[i].Text)
+				}
+				xDiffs = xDiffs[i:]
+
+				switch {
+				case len(xDiffs) == 0:
+					continue
+
+				case strings.HasPrefix(delText[delI:], opt.RegexpOpen):
+					delIdx, insIdx := processRegexpDiffs(xDiffs, DiffDelete)
+					delDiff := delText[delI : delI+delIdx]
+					insDiff := insText[insI : insI+insIdx]
+					re, rawRe, err := findRegexp(delDiff[len(opt.RegexpOpen):])
+					if err != nil {
+						return delNL, insNL, false, &Error{right: err.Error()}
+					}
+					loc := re.FindStringIndex(insDiff)
+					if loc == nil || loc[0] != 0 {
+						return delNL, insNL, false, nil
+					}
+					delI += len(opt.RegexpOpen) + len(rawRe) + len(opt.RegexpClose)
+					insI += loc[1] - loc[0]
+					continue
+
+				case strings.HasPrefix(insText[insI:], opt.RegexpOpen):
+					insIdx, delIdx := processRegexpDiffs(xDiffs, DiffInsert)
+					insDiff := insText[insI : insI+insIdx]
+					delDiff := delText[delI : delI+delIdx]
+					re, rawRe, err := findRegexp(insDiff[len(opt.RegexpOpen):])
+					if err != nil {
+						return delNL, insNL, false, &Error{left: err.Error()}
+					}
+					loc := re.FindStringIndex(delDiff)
+					if loc == nil || loc[0] != 0 {
+						return delNL, insNL, false, nil
+					}
+					insI += len(opt.RegexpOpen) + len(rawRe) + len(opt.RegexpClose)
+					delI += loc[1] - loc[0]
+					continue
+				}
+			}
+			return delNL, insNL, false, nil
 		}
 	}
 
@@ -305,10 +421,19 @@ func process(opt Option, ds Diffs) Diffs {
 				processRemaining()
 				break
 			}
-			delNL, insNL, ok := match(delText, insText)
+			delNL, insNL, ok, err := match(delText, insText)
 			appendEqual(delText[:delNL], insText[:insNL])
 			remainDel, remainIns = delText[delNL:], insText[insNL:]
-			if !ok {
+			switch {
+			case err != nil && err.left != "":
+				appendOut(DiffDelete, "❌"+err.left)
+				processRemaining()
+				break
+			case err != nil && err.right != "":
+				appendOut(DiffInsert, "❌"+err.right)
+				processRemaining()
+				break
+			case !ok:
 				processRemaining()
 				break
 			}
@@ -318,5 +443,5 @@ func process(opt Option, ds Diffs) Diffs {
 }
 
 func isSpace(c rune) bool {
-	return c == ' ' || c == '\t' || c == '\n' || c == '\r'
+	return unicode.IsSpace(c)
 }

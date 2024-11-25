@@ -49,7 +49,7 @@ func TestErrors(t *testing.T) {
 ezpkg.io/errorz_test.TestErrors.func█.█
 	/Users/i/ws/ezpkg/ezpkg/errorz/multierr_test.go:██
 testing.tRunner
-	/usr/local/go/src/testing/testing.go:████
+	【.+】/src/testing/testing.go:████
 `
 		stackAlt := `
 ezpkg.io/errorz_test/multierr_test.go:██ · TestErrors.func█.█

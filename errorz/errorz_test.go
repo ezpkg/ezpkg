@@ -26,23 +26,21 @@ func TestError(t *testing.T) {
 		})
 		t.Run("printf:%+v", func(t *testing.T) {
 			str := fmt.Sprintf("%+v", zErr)
-			fmt.Println(str)
 			assertEqual(t, str, `
 bar/one: foo
 ezpkg.io/errorz_test.TestError.func1
 	/Users/i/ws/ezpkg/ezpkg/errorz/errorz_test.go:██
 testing.tRunner
-	/usr/local/go/src/testing/testing.go:████
+	【.+】/src/testing/testing.go:████
 `)
 		})
 		t.Run("printf:%#v", func(t *testing.T) {
 			str := fmt.Sprintf("%#v", zErr)
-			fmt.Println(str)
 			assertEqual(t, str, `
 bar/one: foo
 ezpkg.io/errorz_test/errorz_test.go:██ · TestError.func1
 testing/testing.go:████ · tRunner
-`)
+		`)
 		})
 		t.Run("printf:%v", func(t *testing.T) {
 			str := fmt.Sprintf("%v", zErr)
@@ -82,7 +80,7 @@ func assert(t *testing.T, cond bool) assertFn {
 func assertEqual(t *testing.T, actual, expect string) {
 	diffs := diffz.ByLineZ(actual, expect)
 	if diffs.IsDiff() {
-		fmt.Println(actual)
+		fmt.Println("--- ACTUAL ---\n" + actual + "---\n")
 		fmt.Println()
 		fmt.Println(diffz.Format(diffs))
 		t.Error("❌ not equal")
