@@ -1,8 +1,12 @@
 package jsonz_test
 
 import (
+	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
+	jtest "ezpkg.io/-/jsonz_test"
 	. "ezpkg.io/conveyz"
 	"ezpkg.io/jsonz"
 	"ezpkg.io/stringz"
@@ -12,14 +16,21 @@ import (
 func TestParse(t *testing.T) {
 	ΩxNoDiff := ΩxNoDiffByLineZ
 
+	debug, _ := strconv.ParseBool(os.Getenv("DEBUG"))
 	Convey("Parse", t, func() {
 		parse := func(in string) (_ string) {
 			var b stringz.Builder
+			pr := func(msg string, args ...any) {
+				if debug {
+					fmt.Printf(msg, args...)
+				}
+				b.Printf(msg, args...)
+			}
 			for item, err := range jsonz.Parse([]byte(in)) {
 				if err != nil {
-					b.Printf("[ERROR] %v", err)
+					pr("[ERROR] %v\n", err)
 				} else {
-					b.Printf("%+v\n", item)
+					pr("%+v\n", item)
 				}
 			}
 			return b.String()
@@ -45,20 +56,62 @@ func TestParse(t *testing.T) {
 				s := parse(`false`)
 				ΩxNoDiff(s, `→ false`)
 			})
+			Convey("empty array", func() {
+				s := parse(`[]`)
+				ΩxNoDiff(s, `
+→ [
+→ ]`)
+			})
 			Convey("array", func() {
 				s := parse(`[1,"2",3]`)
 				ΩxNoDiff(s, `
+    → [
 [0] → 1
 [1] → "2"
-[2] → 3`)
+[2] → 3
+    → ]`)
+			})
+			Convey("empty object", func() {
+				s := parse(`{}`)
+				ΩxNoDiff(s, `
+→ {
+→ }`)
 			})
 			Convey("object", func() {
 				s := parse(`{"a":1,"b":"2","c":3}`)
 				ΩxNoDiff(s, `
+     → {
 ."a" → 1
 ."b" → "2"
-."c" → 3`)
+."c" → 3
+ → }`)
 			})
+		})
+		Convey("nested array", func() {
+			Convey("2x2", func() {
+				s := parse(`[[1,2],[3,4]]`)
+				ΩxNoDiff(s, `
+       → [
+[0]    → [
+[0][0] → 1
+[0][1] → 2
+[0]    → ]
+[1]    → [
+[1][0] → 3
+[1][1] → 4
+[1]    → ]
+       → ]`)
+			})
+			Convey("empty", func() {
+				s := parse(`[[]]`)
+				ΩxNoDiff(s, `
+[0] → [0] → []`)
+			})
+		})
+		Convey("pass01.json", func() {
+			tcase := jtest.GetTestcase("pass01.json")
+			s := parse(string(tcase.Data))
+			ΩxNoDiff(s, tcase.ExpectParse)
 		})
 	})
 }

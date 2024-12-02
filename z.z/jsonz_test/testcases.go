@@ -16,6 +16,7 @@ type Testcase struct {
 	Bad  bool // true if it's a bad case
 
 	ExpectTokens string
+	ExpectParse  string
 }
 
 var SimpleSet = func() (out []Testcase) {
@@ -27,6 +28,7 @@ var SimpleSet = func() (out []Testcase) {
 			tcase.Bad = strings.HasPrefix(name, "fail")
 			out = append(out, tcase)
 		}
+
 	}
 	return out
 }()
@@ -72,6 +74,7 @@ func load(path string) Testcase {
 	tcase := Testcase{
 		Name: name, Data: data,
 		ExpectTokens: string(loadExt(path, ".token")),
+		ExpectParse:  string(loadExt(path, ".parse")),
 	}
 	mapTestcases[name] = tcase
 	return tcase
