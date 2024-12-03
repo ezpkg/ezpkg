@@ -33,7 +33,7 @@ func (x Item) Format(f fmt.State, c rune) {
 	}
 }
 func (x Item) ParseValue() (any, error) {
-	return x.RawToken.ParseValue()
+	return x.RawToken.GetValue()
 }
 
 func (p Path) String() string {

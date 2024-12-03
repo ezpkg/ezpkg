@@ -63,7 +63,7 @@ func TestScan(t *testing.T) {
 					must(fmt.Fprintln(w, token))
 
 					// verify a few tokens
-					x, err := token.ParseValue()
+					x, err := token.GetValue()
 					switch token.String() {
 					case "null":
 						assert(t, err == nil && x == nil, "expected nil")
@@ -80,19 +80,19 @@ func TestScan(t *testing.T) {
 					case "1234567890":
 						_number0 = true
 						assert(t, token.Type() == TokenNumber, "expected number")
-						n, err := token.ParseNumber()
+						n, err := token.GetNumber()
 						assert(t, err == nil && n == float64(1234567890), "expected 1234567890")
 
 					case "1.234567890E+34":
 						_number1 = true
 						assert(t, token.Type() == TokenNumber, "expected number")
-						n, err := token.ParseNumber()
+						n, err := token.GetNumber()
 						assert(t, err == nil && n == float64(1.234567890e+34), "expected 1.234567890E+34")
 
 					case `"\u0123\u4567\u89AB\uCDEF\uabcd\uef4A"`:
 						_string0 = true
 						assert(t, token.Type() == TokenString, "expected string")
-						s, err := token.ParseString()
+						s, err := token.GetString()
 						assert(t, err == nil && s == "\u0123\u4567\u89AB\uCDEF\uabcd\uef4A", "expected \u0123\u4567\u89AB\uCDEF\uabcd\uef4A")
 					}
 				}
@@ -116,10 +116,10 @@ func TestScan(t *testing.T) {
 func assertToken(t *testing.T, token RawToken, typ TokenType, value any) {
 	switch token.Type() {
 	case TokenNumber:
-		n, err := token.ParseNumber()
+		n, err := token.GetNumber()
 		assert(t, err == nil && n == value.(float64), "expected %v", value)
 	case TokenString:
-		s, err := token.ParseString()
+		s, err := token.GetString()
 		assert(t, err == nil && s == value.(string), "expected %v", value)
 	default:
 		panic("unreachable")

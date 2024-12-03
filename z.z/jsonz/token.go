@@ -80,8 +80,8 @@ func (r RawToken) IsValue() bool {
 	}
 }
 
-// ParseNumber returns the number value of the token.
-func (r RawToken) ParseNumber() (float64, error) {
+// GetNumber returns the number value of the token.
+func (r RawToken) GetNumber() (float64, error) {
 	if r.typ != TokenNumber {
 		return 0, fmt.Errorf("invalid number token")
 	}
@@ -99,8 +99,8 @@ func (r RawToken) ParseNumber() (float64, error) {
 	}
 }
 
-// ParseBool returns the boolean value of the token.
-func (r RawToken) ParseBool() (bool, error) {
+// GetBool returns the boolean value of the token.
+func (r RawToken) GetBool() (bool, error) {
 	switch r.typ {
 	case TokenTrue:
 		return true, nil
@@ -111,9 +111,9 @@ func (r RawToken) ParseBool() (bool, error) {
 	}
 }
 
-// ParseString returns the unquoted string value of the token.
+// GetString returns the unquoted string value of the token.
 // https://datatracker.ietf.org/doc/html/rfc8259#section-7
-func (r RawToken) ParseString() (string, error) {
+func (r RawToken) GetString() (string, error) {
 	if r.typ != TokenString {
 		return "", fmt.Errorf("invalid string token")
 	}
@@ -247,8 +247,8 @@ func decodeHex(s []byte) (x rune) {
 	return
 }
 
-// ParseAny returns the value of the token as an any.
-func (r RawToken) ParseValue() (any, error) {
+// GetValue returns the value of the token as an any.
+func (r RawToken) GetValue() (any, error) {
 	switch r.typ {
 	case TokenNull:
 		return nil, nil
@@ -257,9 +257,9 @@ func (r RawToken) ParseValue() (any, error) {
 	case TokenFalse:
 		return false, nil
 	case TokenNumber:
-		return r.ParseNumber()
+		return r.GetNumber()
 	case TokenString:
-		return r.ParseString()
+		return r.GetString()
 	case TokenObjectStart, TokenObjectEnd, TokenArrayStart, TokenArrayEnd, TokenComma, TokenColon:
 		return r.typ, nil
 	}
