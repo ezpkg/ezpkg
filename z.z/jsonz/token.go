@@ -3,6 +3,8 @@ package jsonz
 import (
 	"fmt"
 	"strconv"
+	"unicode/utf16"
+	"unicode/utf8"
 )
 
 // TokenType represents the type of a JSON token.
@@ -81,7 +83,7 @@ func (r RawToken) IsValue() bool {
 // ParseNumber returns the number value of the token.
 func (r RawToken) ParseNumber() (float64, error) {
 	if r.typ != TokenNumber {
-		return 0, fmt.Errorf("invalid number token: %v", r.typ)
+		return 0, fmt.Errorf("invalid number token")
 	}
 	switch {
 	case len(r.raw) == 1 && r.raw[0] == '0':
@@ -90,7 +92,7 @@ func (r RawToken) ParseNumber() (float64, error) {
 		if r.raw[1] == '.' {
 			return strconv.ParseFloat(string(r.raw), 64)
 		} else {
-			return 0, fmt.Errorf("number cannot have leading zero: %v", r.raw)
+			return 0, fmt.Errorf("number cannot have leading zero")
 		}
 	default:
 		return strconv.ParseFloat(string(r.raw), 64)
@@ -105,18 +107,144 @@ func (r RawToken) ParseBool() (bool, error) {
 	case TokenFalse:
 		return false, nil
 	default:
-		return false, fmt.Errorf("invalid boolean token: %v", r.typ)
+		return false, fmt.Errorf("invalid boolean token")
 	}
 }
 
 // ParseString returns the unquoted string value of the token.
+// https://datatracker.ietf.org/doc/html/rfc8259#section-7
 func (r RawToken) ParseString() (string, error) {
-	switch r.typ {
-	case TokenString:
-		return strconv.Unquote(string(r.raw))
-	default:
-		return "", fmt.Errorf("invalid string token: %v", r.typ)
+	if r.typ != TokenString {
+		return "", fmt.Errorf("invalid string token")
 	}
+
+	raw := r.raw
+	if len(raw) < 2 {
+		return "", fmt.Errorf("invalid string token")
+	}
+	N := len(raw)
+	if raw[0] != '"' || raw[N-1] != '"' {
+		return "", fmt.Errorf("invalid string token")
+	}
+	i := 1
+	for ; i < N-1; i++ {
+		c := raw[i]
+		switch c {
+		case '\\':
+			goto slow
+		case '\b', '\f', '\n', '\r', '\t':
+			return "", fmt.Errorf("invalid string token")
+		}
+		if c >= utf8.RuneSelf {
+			goto slow // utf-8
+		}
+	}
+	return string(raw[1 : N-1]), nil
+
+slow:
+	s := make([]byte, 0, N-2)
+	copy(s, raw[1:i])
+	N = N - 1 // new length
+	for i < N {
+		c := raw[i]
+		switch c {
+		case '\\':
+			break
+		case '\b', '\f', '\n', '\r', '\t':
+			return "", fmt.Errorf("invalid string token")
+		default:
+			// ascii
+			if c < utf8.RuneSelf {
+				s = append(s, c)
+				i++
+				continue
+			}
+			// utf-8
+			r, size := utf8.DecodeRune(raw[i:])
+			if r == utf8.RuneError {
+				return "", fmt.Errorf("invalid string token")
+			}
+			s = append(s, raw[i:i+size]...)
+			i += size
+			continue
+		}
+
+		i++
+		if i >= N {
+			return "", fmt.Errorf("invalid string token")
+		}
+		switch raw[i] {
+		case '"', '\\', '/':
+			s = append(s, raw[i])
+			i++
+		case 'b':
+			s = append(s, '\b')
+			i++
+		case 'f':
+			s = append(s, '\f')
+			i++
+		case 'n':
+			s = append(s, '\n')
+			i++
+		case 'r':
+			s = append(s, '\r')
+			i++
+		case 't':
+			s = append(s, '\t')
+			i++
+		case 'u':
+			r, n := decodeHexRune(raw[i-1:])
+			if n == 0 {
+				return "", fmt.Errorf("invalid string token")
+			}
+			s = utf8.AppendRune(s, r)
+			i += n - 1
+		default:
+			return "", fmt.Errorf("invalid string token")
+		}
+	}
+	return string(s), nil
+}
+
+// decode \uXXXX to rune, return the rune and the number of bytes consumed (0 if error)
+func decodeHexRune(s []byte) (rune, int) {
+	x := decodeHex(s)
+	if x == -1 {
+		return utf8.RuneError, 0
+	}
+	if !utf16.IsSurrogate(x) {
+		return x, 6
+	}
+	xx := decodeHex(s[x+6:])
+	if xx == -1 {
+		return utf8.RuneError, 0
+	}
+	r := utf16.DecodeRune(x, xx)
+	if r == utf8.RuneError {
+		return utf8.RuneError, 0
+	}
+	return r, 12
+}
+
+// decode \uXXXX to rune, return -1 if error (utf8.RuneError is still a valid code point)
+func decodeHex(s []byte) (x rune) {
+	if len(s) < 6 || s[0] != '\\' || s[1] != 'u' {
+		return -1
+	}
+	for _, c := range s[2:6] {
+		switch {
+		case '0' <= c && c <= '9':
+			c = c - '0'
+		case 'a' <= c && c <= 'f':
+			c = c - 'a' + 10
+		case 'A' <= c && c <= 'F':
+			c = c - 'A' + 10
+		default:
+			return -1
+		}
+		x = x*16 + rune(c)
+	}
+	return
 }
 
 // ParseAny returns the value of the token as an any.
