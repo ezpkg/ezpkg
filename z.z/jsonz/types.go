@@ -32,6 +32,9 @@ func (x Item) Format(f fmt.State, c rune) {
 		fz.Print(x.RawToken)
 	}
 }
+func (x Item) ParseValue() (any, error) {
+	return x.RawToken.ParseValue()
+}
 
 func (p Path) String() string {
 	return fmt.Sprint(p)

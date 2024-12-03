@@ -80,11 +80,20 @@ func (r RawToken) IsValue() bool {
 
 // ParseNumber returns the number value of the token.
 func (r RawToken) ParseNumber() (float64, error) {
-	switch r.typ {
-	case TokenNumber:
-		return strconv.ParseFloat(string(r.raw), 64)
-	default:
+	if r.typ != TokenNumber {
 		return 0, fmt.Errorf("invalid number token: %v", r.typ)
+	}
+	switch {
+	case len(r.raw) == 1 && r.raw[0] == '0':
+		return 0, nil
+	case len(r.raw) > 1 && r.raw[0] == '0':
+		if r.raw[1] == '.' {
+			return strconv.ParseFloat(string(r.raw), 64)
+		} else {
+			return 0, fmt.Errorf("number cannot have leading zero: %v", r.raw)
+		}
+	default:
+		return strconv.ParseFloat(string(r.raw), 64)
 	}
 }
 
@@ -111,7 +120,7 @@ func (r RawToken) ParseString() (string, error) {
 }
 
 // ParseAny returns the value of the token as an any.
-func (r RawToken) ParseAny() (any, error) {
+func (r RawToken) ParseValue() (any, error) {
 	switch r.typ {
 	case TokenNull:
 		return nil, nil

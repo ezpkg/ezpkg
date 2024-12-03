@@ -63,7 +63,7 @@ func TestScan(t *testing.T) {
 					must(fmt.Fprintln(w, token))
 
 					// verify a few tokens
-					x, err := token.ParseAny()
+					x, err := token.ParseValue()
 					switch token.String() {
 					case "null":
 						assert(t, err == nil && x == nil, "expected nil")

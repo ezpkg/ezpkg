@@ -25,7 +25,7 @@ var SimpleSet = func() (out []Testcase) {
 		name := item.Name()
 		if strings.HasSuffix(name, ".json") {
 			tcase := load("jsonchecker/" + name)
-			tcase.Bad = strings.HasPrefix(name, "fail")
+			tcase.Bad = strings.Contains(name, "fail")
 			out = append(out, tcase)
 		}
 
