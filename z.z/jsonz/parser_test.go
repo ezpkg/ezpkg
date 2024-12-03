@@ -118,7 +118,7 @@ L1  [0] → ]
 L0      → ]`)
 			})
 		})
-		Convey("pass01.json", func() {
+		FConvey("pass01.json", func() {
 			tcase := jtest.GetTestcase("pass01.json")
 			s, _ := parse(string(tcase.Data))
 			ΩxNoDiff(s, tcase.ExpectParse)

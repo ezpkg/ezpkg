@@ -61,25 +61,42 @@ func (x Item) GetPath() []any {
 	for i, item := range x.path {
 		path[i] = item.Value()
 	}
-	return path
+	return path[1:]
 }
 
 // GetRawPath returns the path of the item as a slice of PathItem.
 // IMPORTANT: The result slice should not be modified.
 func (x Item) GetRawPath() RawPath {
-	return x.path
+	return x.path[1:]
 }
 
-// Path returns the path of the item as a string: [0]."key"[1]...
+// GetPathString returns the path of the item as a string "0.key.1".
+func (x Item) GetPathString() string {
+	return fmt.Sprint(x.path)
+}
+
+// GetAltPathString returns the path of the item as a string `[0].key[1]`.
+func (x Item) GetAltPathString() string {
+	return fmt.Sprintf("%+v", x.GetRawPath())
+}
+
+// String returns the path of the item as a string. Default to 0.key.1 or "%+v" to format as [0]."key"[1]
 func (p RawPath) String() string {
 	return fmt.Sprint(p)
 }
 
-// Format formats the path as a string: [0]."key"[1]...
+// Format formats the path as a string. Default to 0.key.1 or "%+v" to format as [0]."key"[1]
 func (p RawPath) Format(f fmt.State, c rune) {
 	fz := fmtz.WrapState(f)
-	for _, item := range p {
-		fz.Printf("%+s", item)
+	for i, item := range p {
+		if f.Flag('+') {
+			item.Format(f, c)
+		} else {
+			if i > 0 {
+				fz.WriteByteZ('.')
+			}
+			item.Format(f, c)
+		}
 	}
 }
 
@@ -106,7 +123,7 @@ func (p PathItem) Value() any {
 	}
 }
 
-// String returns the string representation of the path item. "[0]" for array, ".key" for object.
+// String returns the string representation of the path item. "0" for array, "key" for object.
 func (p PathItem) String() string {
 	switch {
 	case p.IsArray():
@@ -122,7 +139,8 @@ func (p PathItem) String() string {
 	}
 }
 
-// Format formats the path item as a string. "[0]" for array, ".key" for object.
+// Format formats the path item as a string.
+// Use "%+v" to format as "[0]" for array, ".key" for object.
 func (p PathItem) Format(f fmt.State, c rune) {
 	fz := fmtz.WrapState(f)
 	switch {
