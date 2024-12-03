@@ -65,9 +65,19 @@ func (r RawToken) Bytes() []byte {
 	return r.raw
 }
 
+// Raw returns the raw bytes value of the token.
+func (r RawToken) Raw() []byte {
+	return r.raw
+}
+
 // String returns the raw string value of the token. Use ToString() for unquoted strings.
 func (r RawToken) String() string {
 	return string(r.raw)
+}
+
+// IsZero returns true if the token is zero.
+func (r RawToken) IsZero() bool {
+	return r.typ == 0
 }
 
 // IsValue returns true if the token is a value.

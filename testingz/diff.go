@@ -44,6 +44,42 @@ func DiffByLineZ(actual, expect string) (formatted string, isDiff bool) {
 
 // Usage with conveyz:
 //
+//	ΩxNoDiff := ConveyDiffByChar(diffz.IgnoreSpace().AndPlaceholder())
+//	ΩxNoDiff(expect, actual, "my message")
+func ConveyDiffByChar(opt diffz.Option) func(actual, expect string, msgArgs ...any) {
+	pr := func(text string) {
+		if opt.IgnoreSpace {
+			fmt.Println(strings.TrimSpace(text))
+		} else {
+			fmt.Print(text)
+			if !strings.HasSuffix(text, "\n") {
+				fmt.Print(colorz.Yellow.Wrap("⛔\n(missing newline)\n"))
+			}
+		}
+	}
+
+	return func(actual, expect string, msgArgs ...any) {
+		diffs := diffz.ByCharX(actual, expect, opt)
+		if !diffs.IsDiff() {
+			return
+		}
+		fmt.Print(colorz.Green.Wrap("\n👉 EXPECTED:\n"))
+		pr(expect)
+		fmt.Print(colorz.Red.Wrap("\n👉 ACTUAL:\n"))
+		pr(actual)
+		fmt.Print("\n👉 DIFF (", colorz.Red.Wrap("actual"), colorz.Green.Wrap("expected"), "):\n")
+		fmt.Println(diffz.Format(diffs))
+		fmt.Println()
+
+		msg := typez.Coalesce(fmtz.FormatMsgArgs(msgArgs), "unexpected diff")
+		convey.So(0, func(any, ...any) string {
+			return msg // failure with message
+		})
+	}
+}
+
+// Usage with conveyz:
+//
 //	ΩxNoDiff := ConveyDiffByLine(diffz.IgnoreSpace().AndPlaceholder())
 //	ΩxNoDiff(expect, actual, "my message")
 func ConveyDiffByLine(opt diffz.Option) func(actual, expect string, msgArgs ...any) {
@@ -77,8 +113,17 @@ func ConveyDiffByLine(opt diffz.Option) func(actual, expect string, msgArgs ...a
 	}
 }
 
+var _NoDiffByChar = ConveyDiffByChar(diffz.Option{})
+var _NoDiffByCharZ = ConveyDiffByChar(diffz.IgnoreSpace().AndPlaceholder())
 var _NoDiffByLine = ConveyDiffByLine(diffz.Option{})
 var _NoDiffByLineZ = ConveyDiffByLine(diffz.IgnoreSpace().AndPlaceholder())
+
+func ΩxNoDiffByChar(actual, expect string, msgArgs ...any) {
+	_NoDiffByChar(actual, expect, msgArgs...)
+}
+func ΩxNoDiffByCharZ(actual, expect string, msgArgs ...any) {
+	_NoDiffByCharZ(actual, expect, msgArgs...)
+}
 
 func ΩxNoDiffByLine(actual, expect string, msgArgs ...any) {
 	_NoDiffByLine(actual, expect, msgArgs...)

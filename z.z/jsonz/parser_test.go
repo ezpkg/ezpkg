@@ -15,8 +15,8 @@ import (
 
 func TestParse(t *testing.T) {
 	ΩxNoDiff := ΩxNoDiffByLineZ
-
 	debug, _ := strconv.ParseBool(os.Getenv("DEBUG"))
+
 	Convey("Parse", t, func() {
 		parse := func(in string) (string, error) {
 			var b stringz.Builder
@@ -31,89 +31,91 @@ func TestParse(t *testing.T) {
 					pr("[ERROR] %v\n", err)
 					return b.String(), err
 				}
-				_, err0 := item.ParseValue()
-				if err0 != nil {
-					pr("[ERROR] %v\n", err0)
-					return b.String(), err0
+				if item.Token.IsValue() {
+					_, err0 := item.GetValue()
+					if err0 != nil {
+						pr("[ERROR] %v\n", err0)
+						return b.String(), err0
+					}
 				}
-				pr("%+v\n", item)
+				pr("L%v  %+v\t\n", item.Level, item)
 			}
 			return b.String(), nil
 		}
 		Convey("simple", func() {
 			Convey("number", func() {
 				s, _ := parse("1234")
-				ΩxNoDiff(s, `→ 1234`)
+				ΩxNoDiff(s, `L0 → 1234`)
 			})
 			Convey("string", func() {
 				s, _ := parse(`"foo"`)
-				ΩxNoDiff(s, `→ "foo"`)
+				ΩxNoDiff(s, `L0 → "foo"`)
 			})
 			Convey("null", func() {
 				s, _ := parse(`null`)
-				ΩxNoDiff(s, `→ null`)
+				ΩxNoDiff(s, `L0 → null`)
 			})
 			Convey("true", func() {
 				s, _ := parse(`true`)
-				ΩxNoDiff(s, `→ true`)
+				ΩxNoDiff(s, `L0 → true`)
 			})
 			Convey("false", func() {
 				s, _ := parse(`false`)
-				ΩxNoDiff(s, `→ false`)
+				ΩxNoDiff(s, `L0 → false`)
 			})
 			Convey("empty array", func() {
 				s, _ := parse(`[]`)
 				ΩxNoDiff(s, `
-→ [
-→ ]`)
+L0 → [
+L0 → ]`)
 			})
 			Convey("array", func() {
 				s, _ := parse(`[1,"2",3]`)
 				ΩxNoDiff(s, `
-    → [
-[0] → 1
-[1] → "2"
-[2] → 3
-    → ]`)
+L0      → [
+L1  [0] → 1
+L1  [1] → "2"
+L1  [2] → 3
+L0      → ]`)
 			})
 			Convey("empty object", func() {
 				s, _ := parse(`{}`)
 				ΩxNoDiff(s, `
-→ {
-→ }`)
+L0  → {
+L0  → }`)
 			})
 			Convey("object", func() {
 				s, _ := parse(`{"a":1,"b":"2","c":3}`)
 				ΩxNoDiff(s, `
-     → {
-."a" → 1
-."b" → "2"
-."c" → 3
- → }`)
+L0       → {
+L1  ."a" → 1
+L1  ."b" → "2"
+L1  ."c" → 3
+L0       → }`)
 			})
 		})
 		Convey("nested", func() {
 			Convey("array 2x2", func() {
 				s, _ := parse(`[[1,2],[3,4]]`)
 				ΩxNoDiff(s, `
-       → [
-[0]    → [
-[0][0] → 1
-[0][1] → 2
-[0]    → ]
-[1]    → [
-[1][0] → 3
-[1][1] → 4
-[1]    → ]
-       → ]`)
+L0         → [
+L1  [0]    → [
+L2  [0][0] → 1
+L2  [0][1] → 2
+L1  [0]    → ]
+L1  [1]    → [
+L2  [1][0] → 3
+L2  [1][1] → 4
+L1  [1]    → ]
+L0         → ]`)
 			})
 			Convey("array empty", func() {
 				s, _ := parse(`[[]]`)
 				ΩxNoDiff(s, `
-    → [
-[0] → [
-[0] → ]
-    → ]`)
+L0      → [
+L1  [0] → [
+L1  [0] → ]
+L0      → ]`)
 			})
 		})
 		Convey("pass01.json", func() {
