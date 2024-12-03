@@ -128,11 +128,10 @@ func (r RawToken) GetString() (string, error) {
 		return "", fmt.Errorf("invalid string token")
 	}
 
-	raw := r.raw
-	if len(raw) < 2 {
+	raw, N := r.raw, len(r.raw)
+	if N < 2 {
 		return "", fmt.Errorf("invalid string token")
 	}
-	N := len(raw)
 	if raw[0] != '"' || raw[N-1] != '"' {
 		return "", fmt.Errorf("invalid string token")
 	}
@@ -203,17 +202,33 @@ slow:
 			s = append(s, '\t')
 			i++
 		case 'u':
-			r, n := decodeHexRune(raw[i-1:])
+			utfRune, n := decodeHexRune(raw[i-1:])
 			if n == 0 {
 				return "", fmt.Errorf("invalid string token")
 			}
-			s = utf8.AppendRune(s, r)
+			s = utf8.AppendRune(s, utfRune)
 			i += n - 1
 		default:
 			return "", fmt.Errorf("invalid string token")
 		}
 	}
 	return string(s), nil
+}
+
+func canSimplyUnquote(raw []byte) bool {
+	N := len(raw)
+	if N <= 2 || raw[0] != '"' || raw[N-1] != '"' {
+		return false
+	}
+	for i := 1; i < N-1; i++ {
+		c := raw[i]
+		if c > 0x20 && c <= 0x7E && c != '"' && c != '\\' {
+			// printable ascii
+		} else {
+			return false
+		}
+	}
+	return true
 }
 
 // decode \uXXXX to rune, return the rune and the number of bytes consumed (0 if error)

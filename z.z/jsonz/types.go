@@ -2,6 +2,7 @@ package jsonz
 
 import (
 	"fmt"
+	"strconv"
 
 	"ezpkg.io/fmtz"
 )
@@ -54,25 +55,40 @@ func (x Item) GetTokenValue() (any, error) {
 	return x.Token.GetValue()
 }
 
-func (x Item) GetRawPath() RawPath {
-	clone := make([]PathItem, len(x.path))
-	copy(clone, x.path)
-	return clone
+// GetPath returns the path of the item as a slice of values. The values are the keys of objects (string) and the indexes of arrays (int).
+func (x Item) GetPath() []any {
+	path := make([]any, len(x.path))
+	for i, item := range x.path {
+		path[i] = item.Value()
+	}
+	return path
 }
 
+// GetRawPath returns the path of the item as a slice of PathItem.
+// IMPORTANT: The result slice should not be modified.
+func (x Item) GetRawPath() RawPath {
+	return x.path
+}
+
+// Path returns the path of the item as a string: [0]."key"[1]...
 func (p RawPath) String() string {
 	return fmt.Sprint(p)
 }
+
+// Format formats the path as a string: [0]."key"[1]...
 func (p RawPath) Format(f fmt.State, c rune) {
 	fz := fmtz.WrapState(f)
 	for _, item := range p {
-		fz.Printf("%s", item)
+		fz.Printf("%+s", item)
 	}
 }
 
+// IsArray returns true if the path item is inside an array.
 func (p PathItem) IsArray() bool {
 	return p.Token.typ == TokenArrayStart
 }
+
+// IsObject returns true if the path item is inside an object.
 func (p PathItem) IsObject() bool {
 	return p.Token.typ == TokenObjectStart
 }
@@ -90,16 +106,42 @@ func (p PathItem) Value() any {
 	}
 }
 
+// String returns the string representation of the path item. "[0]" for array, ".key" for object.
 func (p PathItem) String() string {
-	return fmt.Sprint(p)
+	switch {
+	case p.IsArray():
+		return strconv.Itoa(p.Index)
+	case p.IsObject():
+		rawKey := p.Key.Raw()
+		if canSimplyUnquote(rawKey) {
+			rawKey = rawKey[1 : len(rawKey)-1]
+		}
+		return string(rawKey)
+	default:
+		return ""
+	}
 }
+
+// Format formats the path item as a string. "[0]" for array, ".key" for object.
 func (p PathItem) Format(f fmt.State, c rune) {
 	fz := fmtz.WrapState(f)
 	switch {
 	case p.IsArray():
-		fz.Printf("[%d]", p.Index)
+		if f.Flag('+') {
+			fz.Printf("[%d]", p.Index)
+		} else {
+			fz.Printf("%d", p.Index)
+		}
 	case p.IsObject():
-		fz.Printf(".%s", p.Key)
+		rawKey := p.Key.Raw()
+		if canSimplyUnquote(rawKey) {
+			rawKey = rawKey[1 : len(rawKey)-1]
+		}
+		if f.Flag('+') {
+			fz.Printf(".%s", rawKey)
+		} else {
+			fz.Printf("%s", rawKey)
+		}
 	default:
 		// root, empty path
 	}
