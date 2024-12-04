@@ -16,6 +16,9 @@ type Item struct {
 	path RawPath
 }
 
+// Path is a slice of values. The values are the keys of objects (string) and the indexes of arrays (int).
+type Path []any
+
 type RawPath []PathItem
 
 type PathItem struct {
@@ -56,12 +59,13 @@ func (x Item) GetTokenValue() (any, error) {
 }
 
 // GetPath returns the path of the item as a slice of values. The values are the keys of objects (string) and the indexes of arrays (int).
-func (x Item) GetPath() []any {
-	path := make([]any, len(x.path))
-	for i, item := range x.path {
+func (x Item) GetPath() Path {
+	xPath := x.path[1:]
+	path := make([]any, len(xPath))
+	for i, item := range xPath {
 		path[i] = item.Value()
 	}
-	return path[1:]
+	return path
 }
 
 // GetRawPath returns the path of the item as a slice of PathItem.
@@ -78,6 +82,46 @@ func (x Item) GetPathString() string {
 // GetAltPathString returns the path of the item as a string `[0].key[1]`.
 func (x Item) GetAltPathString() string {
 	return fmt.Sprintf("%+v", x.GetRawPath())
+}
+
+// Path returns the path of the item as a string. Default to 0.key.1 or "%+v" to format as [0]."key"[1]
+func (p Path) String() string {
+	return fmt.Sprint(p)
+}
+
+// Path returns the path of the item as a string. Default to 0.key.1 or "%+v" to format as [0]."key"[1]
+func (p Path) Format(f fmt.State, c rune) {
+	fz := fmtz.WrapState(f)
+	plus := f.Flag('+')
+	for i, item := range p {
+		switch v := item.(type) {
+		case int:
+			if plus {
+				fz.Printf("[%d]", v)
+			} else {
+				if i > 0 {
+					fz.WriteByteZ('.')
+				}
+				fz.Printf("%d", v)
+			}
+		case string:
+			if plus {
+				fz.WriteByteZ('.')
+			} else {
+				if i > 0 {
+					fz.WriteByteZ('.')
+				}
+			}
+			if needQuote(v) {
+				fz.Printf("%q", v)
+			} else {
+				fz.Printf("%s", v)
+			}
+
+		default:
+			fz.Printf("!<%T>", v)
+		}
+	}
 }
 
 // String returns the path of the item as a string. Default to 0.key.1 or "%+v" to format as [0]."key"[1]
@@ -116,7 +160,7 @@ func (p PathItem) Value() any {
 	case TokenArrayStart:
 		return p.Index
 	case TokenObjectStart:
-		v, _ := p.Token.GetString()
+		v, _ := p.Key.GetString()
 		return v
 	default:
 		return nil

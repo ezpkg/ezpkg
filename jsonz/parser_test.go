@@ -88,11 +88,11 @@ L0  → }
 			Convey("object", func() {
 				s, _ := parse(`{"a":1,"b":"2","c":3}`)
 				ΩxNoDiff(s, `
-L0       → {
+L0    → {
 L1  a → 1
 L1  b → "2"
 L1  c → 3
-L0       → }
+L0    → }
 `)
 			})
 		})
@@ -115,11 +115,104 @@ L0       → ]
 			Convey("array empty", func() {
 				s, _ := parse(`[[]]`)
 				ΩxNoDiff(s, `
-L0      → [
+L0     → [
 L1  0  → [
 L1  0  → ]
-L0      → ]`)
+L0     → ]
+`)
 			})
+		})
+		Convey("GetPath", func() {
+			input := `{"name": "Alice", "age": 24, "scores": [9, {"math": 10}, 8], "address": {"city": "The Sun", "zip": 10101}}`
+
+			var b stringz.Builder
+			for item, err := range jsonz.Parse([]byte(input)) {
+				if err != nil {
+					b.Printf("[ERROR] %v\n", err)
+				} else {
+					b.Printf("%v → %v\n", item.GetPath(), item.Token)
+					b.Printf("%v → %v\n", item.GetPathString(), item.Token)
+					b.Printf("%v → %v\n", item.GetAltPathString(), item.Token)
+					b.Printf("%v → %v\n", item.GetRawPath(), item.Token)
+					b.Println()
+				}
+			}
+			ΩxNoDiff(b.String(), `
+ → {
+ → {
+ → {
+ → {
+
+name → "Alice"
+name → "Alice"
+.name → "Alice"
+name → "Alice"
+
+age → 24
+age → 24
+.age → 24
+age → 24
+
+scores → [
+scores → [
+.scores → [
+scores → [
+
+scores.0 → 9
+scores.0 → 9
+.scores[0] → 9
+scores.0 → 9
+
+scores.1 → {
+scores.1 → {
+.scores[1] → {
+scores.1 → {
+
+scores.1.math → 10
+scores.1.math → 10
+.scores[1].math → 10
+scores.1.math → 10
+
+scores.1 → }
+scores.1 → }
+.scores[1] → }
+scores.1 → }
+
+scores.2 → 8
+scores.2 → 8
+.scores[2] → 8
+scores.2 → 8
+
+scores → ]
+scores → ]
+.scores → ]
+scores → ]
+
+address → {
+address → {
+.address → {
+address → {
+
+address.city → "The Sun"
+address.city → "The Sun"
+.address.city → "The Sun"
+address.city → "The Sun"
+
+address.zip → 10101
+address.zip → 10101
+.address.zip → 10101
+address.zip → 10101
+
+address → }
+address → }
+.address → }
+address → }
+
+ → }
+ → }
+ → }
+ → }
+`)
 		})
 		Convey("pass01.json", func() {
 			tcase := jtest.GetTestcase("pass01.json")

@@ -90,6 +90,16 @@ func (r RawToken) IsValue() bool {
 	}
 }
 
+// IsOpen returns true if the token is an open token '[' or '{'.
+func (r RawToken) IsOpen() bool {
+	return r.typ == TokenArrayStart || r.typ == TokenObjectStart
+}
+
+// IsClose returns true if the token is a close token ']' or '}'.
+func (r RawToken) IsClose() bool {
+	return r.typ == TokenArrayEnd || r.typ == TokenObjectEnd
+}
+
 // GetNumber returns the number value of the token.
 func (r RawToken) GetNumber() (float64, error) {
 	if r.typ != TokenNumber {
@@ -229,6 +239,19 @@ func canSimplyUnquote(raw []byte) bool {
 		}
 	}
 	return true
+}
+
+func needQuote(s string) bool {
+	for _, c := range s {
+		if c < 0x20 || c > 0x7E {
+			return true
+		}
+		switch c {
+		case '"', '\\':
+			return true
+		}
+	}
+	return false
 }
 
 // decode \uXXXX to rune, return the rune and the number of bytes consumed (0 if error)

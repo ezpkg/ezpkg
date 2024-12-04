@@ -4,6 +4,7 @@ import (
 	"bytes"
 )
 
+// Reconstruct is an example of how to reconstruct a JSON from Parse().
 func Reconstruct(in []byte) ([]byte, error) {
 	b := bytes.Buffer{}
 	b.Grow(len(in))
