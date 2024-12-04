@@ -9,6 +9,8 @@ use (
 	errorz
 	fmtz
 	iterz
+	jsonz
+	jsonz_test
 	logz
 	mapz
 	slicez
@@ -22,7 +24,5 @@ use (
 	z.z/codez
 	z.z/codez_test
 	z.z/genz
-	z.z/jsonz
-	z.z/jsonz_test
 	zscripts
 )

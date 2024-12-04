@@ -72,53 +72,56 @@ L0 → ]`)
 			Convey("array", func() {
 				s, _ := parse(`[1,"2",3]`)
 				ΩxNoDiff(s, `
-L0      → [
-L1  [0] → 1
-L1  [1] → "2"
-L1  [2] → 3
-L0      → ]`)
+L0     → [
+L1  0  → 1
+L1  1  → "2"
+L1  2  → 3
+L0     → ]`)
 			})
 			Convey("empty object", func() {
 				s, _ := parse(`{}`)
 				ΩxNoDiff(s, `
 L0  → {
-L0  → }`)
+L0  → }
+`)
 			})
 			Convey("object", func() {
 				s, _ := parse(`{"a":1,"b":"2","c":3}`)
 				ΩxNoDiff(s, `
 L0       → {
-L1  .a → 1
-L1  .b → "2"
-L1  .c → 3
-L0       → }`)
+L1  a → 1
+L1  b → "2"
+L1  c → 3
+L0       → }
+`)
 			})
 		})
 		Convey("nested", func() {
 			Convey("array 2x2", func() {
 				s, _ := parse(`[[1,2],[3,4]]`)
 				ΩxNoDiff(s, `
-L0         → [
-L1  [0]    → [
-L2  [0][0] → 1
-L2  [0][1] → 2
-L1  [0]    → ]
-L1  [1]    → [
-L2  [1][0] → 3
-L2  [1][1] → 4
-L1  [1]    → ]
-L0         → ]`)
+L0       → [
+L1  0    → [
+L2  0.0  → 1
+L2  0.1  → 2
+L1  0    → ]
+L1  1    → [
+L2  1.0  → 3
+L2  1.1  → 4
+L1  1    → ]
+L0       → ]
+`)
 			})
 			Convey("array empty", func() {
 				s, _ := parse(`[[]]`)
 				ΩxNoDiff(s, `
 L0      → [
-L1  [0] → [
-L1  [0] → ]
+L1  0  → [
+L1  0  → ]
 L0      → ]`)
 			})
 		})
-		FConvey("pass01.json", func() {
+		Convey("pass01.json", func() {
 			tcase := jtest.GetTestcase("pass01.json")
 			s, _ := parse(string(tcase.Data))
 			ΩxNoDiff(s, tcase.ExpectParse)

@@ -32,7 +32,7 @@ func (x Item) Format(f fmt.State, c rune) {
 	fz := fmtz.WrapState(f)
 	switch {
 	case f.Flag('+'):
-		fz.Printf("%s → %s", x.path, x.Token)
+		fz.Printf("%v → %s", x.GetRawPath(), x.Token)
 
 	default:
 		fz.Print(x.Token)
@@ -72,7 +72,7 @@ func (x Item) GetRawPath() RawPath {
 
 // GetPathString returns the path of the item as a string "0.key.1".
 func (x Item) GetPathString() string {
-	return fmt.Sprint(x.path)
+	return fmt.Sprint(x.GetRawPath())
 }
 
 // GetAltPathString returns the path of the item as a string `[0].key[1]`.
