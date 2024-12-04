@@ -15,7 +15,7 @@ Package [stacktracez](https://pkg.go.dev/ezpkg.io/stacktracez) provides function
 ## Installation
 
 ```sh
-go get -u ezpkg.io/stacktracez@v0.1.2
+go get -u ezpkg.io/stacktracez@v0.2.0
 ```
 
 ## Examples

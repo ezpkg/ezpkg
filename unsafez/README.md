@@ -15,7 +15,7 @@ Package [unsafez](https://pkg.go.dev/ezpkg.io/unsafez) provides unsafe functions
 ## Installation
 
 ```sh
-go get -u ezpkg.io/unsafez@v0.1.2
+go get -u ezpkg.io/unsafez@v0.2.0
 ```
 
 ## Examples
