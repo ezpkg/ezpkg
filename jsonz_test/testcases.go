@@ -76,9 +76,9 @@ func load(path string) Testcase {
 	name := filepath.Base(path)
 	tcase := Testcase{
 		Name: name, Data: data,
-		ExpectTokens: string(loadExt(path, ".token")),
-		ExpectParse:  string(loadExt(path, ".parse")),
-		ExpectFormat: string(loadExt(path, ".format.json")),
+		ExpectTokens: loadExt(path, ".token"),
+		ExpectParse:  loadExt(path, ".parse"),
+		ExpectFormat: loadExt(path, ".format"),
 	}
 	mapTestcases[name] = tcase
 	return tcase

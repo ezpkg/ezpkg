@@ -16,10 +16,10 @@ const (
 	TokenFalse       TokenType = 'f'
 	TokenNumber      TokenType = '0'
 	TokenString      TokenType = '"'
-	TokenObjectStart TokenType = '{'
-	TokenObjectEnd   TokenType = '}'
-	TokenArrayStart  TokenType = '['
-	TokenArrayEnd    TokenType = ']'
+	TokenObjectOpen  TokenType = '{'
+	TokenObjectClose TokenType = '}'
+	TokenArrayOpen   TokenType = '['
+	TokenArrayClose  TokenType = ']'
 	TokenComma       TokenType = ','
 	TokenColon       TokenType = ':'
 )
@@ -92,12 +92,12 @@ func (r RawToken) IsValue() bool {
 
 // IsOpen returns true if the token is an open token '[' or '{'.
 func (r RawToken) IsOpen() bool {
-	return r.typ == TokenArrayStart || r.typ == TokenObjectStart
+	return r.typ == TokenArrayOpen || r.typ == TokenObjectOpen
 }
 
 // IsClose returns true if the token is a close token ']' or '}'.
 func (r RawToken) IsClose() bool {
-	return r.typ == TokenArrayEnd || r.typ == TokenObjectEnd
+	return r.typ == TokenArrayClose || r.typ == TokenObjectClose
 }
 
 // GetNumber returns the number value of the token.
@@ -308,7 +308,7 @@ func (r RawToken) GetValue() (any, error) {
 		return r.GetNumber()
 	case TokenString:
 		return r.GetString()
-	case TokenObjectStart, TokenObjectEnd, TokenArrayStart, TokenArrayEnd, TokenComma, TokenColon:
+	case TokenObjectOpen, TokenObjectClose, TokenArrayOpen, TokenArrayClose, TokenComma, TokenColon:
 		return r.typ, nil
 	}
 	return nil, fmt.Errorf("invalid token type: %v", r.typ)

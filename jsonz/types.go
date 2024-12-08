@@ -146,20 +146,20 @@ func (p RawPath) Format(f fmt.State, c rune) {
 
 // IsArray returns true if the path item is inside an array.
 func (p PathItem) IsArray() bool {
-	return p.Token.typ == TokenArrayStart
+	return p.Token.typ == TokenArrayOpen
 }
 
 // IsObject returns true if the path item is inside an object.
 func (p PathItem) IsObject() bool {
-	return p.Token.typ == TokenObjectStart
+	return p.Token.typ == TokenObjectOpen
 }
 
 // Value returns the value of the path item. If the item is inside an array, it returns the index. If the item is inside an object, it returns the key.
 func (p PathItem) Value() any {
 	switch p.Token.typ {
-	case TokenArrayStart:
+	case TokenArrayOpen:
 		return p.Index
-	case TokenObjectStart:
+	case TokenObjectOpen:
 		v, _ := p.Key.GetString()
 		return v
 	default:

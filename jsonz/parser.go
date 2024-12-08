@@ -43,25 +43,25 @@ func Parse(in []byte) iter.Seq2[Item, error] {
 
 	value:
 		switch {
-		case tok.typ == TokenArrayStart:
+		case tok.typ == TokenArrayOpen:
 			if !yieldValue(last.Key) {
 				return
 			}
 			push()
 			advance()
-			if tok.typ == TokenArrayEnd {
+			if tok.typ == TokenArrayClose {
 				goto close
 			} else {
 				goto value
 			}
 
-		case tok.typ == TokenObjectStart:
+		case tok.typ == TokenObjectOpen:
 			if !yieldValue(last.Key) {
 				return
 			}
 			push()
 			advance()
-			if tok.typ == TokenObjectEnd {
+			if tok.typ == TokenObjectClose {
 				goto close
 			} else {
 				goto key_value
@@ -102,8 +102,8 @@ func Parse(in []byte) iter.Seq2[Item, error] {
 
 	close:
 		switch {
-		case tok.typ == TokenArrayEnd:
-			if last.Token.typ != TokenArrayStart {
+		case tok.typ == TokenArrayClose:
+			if last.Token.typ != TokenArrayOpen {
 				panicf("parser: unexpected array end")
 			}
 			pop()
@@ -117,8 +117,8 @@ func Parse(in []byte) iter.Seq2[Item, error] {
 				goto end
 			}
 
-		case tok.typ == TokenObjectEnd:
-			if last.Token.typ != TokenObjectStart {
+		case tok.typ == TokenObjectClose:
+			if last.Token.typ != TokenObjectOpen {
 				panicf("parser: unexpected object end")
 			}
 			pop()
@@ -137,9 +137,9 @@ func Parse(in []byte) iter.Seq2[Item, error] {
 			last.Key = RawToken{}
 			advance()
 			switch {
-			case last.Token.typ == TokenArrayStart:
+			case last.Token.typ == TokenArrayOpen:
 				goto value
-			case last.Token.typ == TokenObjectStart:
+			case last.Token.typ == TokenObjectOpen:
 				goto key_value
 			default:
 				panicf("parser: unexpected comma")
