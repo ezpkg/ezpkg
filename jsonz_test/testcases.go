@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -17,18 +18,19 @@ type Testcase struct {
 
 	ExpectTokens string
 	ExpectParse  string
+	ExpectFormat string
 }
 
 var SimpleSet = func() (out []Testcase) {
+	re := regexp.MustCompile(`^[^.]+\.json$`)
 	list := must(os.ReadDir(filepath.Join(currentDir, "jsonchecker")))
 	for _, item := range list {
 		name := item.Name()
-		if strings.HasSuffix(name, ".json") {
+		if re.MatchString(name) {
 			tcase := load("jsonchecker/" + name)
 			tcase.Bad = strings.Contains(name, "fail")
 			out = append(out, tcase)
 		}
-
 	}
 	return out
 }()
@@ -57,12 +59,13 @@ func GetTestcase(name string) Testcase {
 }
 
 func load(path string) Testcase {
-	loadExt := func(path string, ext string) []byte {
+	loadExt := func(path string, ext string) string {
 		path = strings.Replace(path, ".json", ext, 1)
 		if _, err := os.Stat(filepath.Join(currentDir, path)); err != nil {
-			return nil
+			return ""
 		}
-		return must(os.ReadFile(filepath.Join(currentDir, path)))
+		data := must(os.ReadFile(filepath.Join(currentDir, path)))
+		return strings.TrimSpace(string(data))
 	}
 
 	var r io.Reader = must(os.Open(filepath.Join(currentDir, path)))
@@ -75,6 +78,7 @@ func load(path string) Testcase {
 		Name: name, Data: data,
 		ExpectTokens: string(loadExt(path, ".token")),
 		ExpectParse:  string(loadExt(path, ".parse")),
+		ExpectFormat: string(loadExt(path, ".format.json")),
 	}
 	mapTestcases[name] = tcase
 	return tcase

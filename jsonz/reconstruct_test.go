@@ -13,15 +13,25 @@ import (
 
 func TestReconstruct(t *testing.T) {
 	Convey("Reconstruct", t, func() {
-		tcase := jtest.GetTestcase("pass01.json")
-		out, err := jsonz.Reconstruct(tcase.Data)
-		Ω(err).ToNot(HaveOccurred())
+		Convey("no ident", func() {
+			tcase := jtest.GetTestcase("pass01.json")
+			out, err := jsonz.Reconstruct(tcase.Data)
+			Ω(err).ToNot(HaveOccurred())
 
-		fmt.Printf("--- reconstruct ---\n%s\n---\n", out)
+			fmt.Printf("\n--- reconstruct ---\n%s\n---\n", out)
 
-		actual := reformatWithStdjson(out)
-		expect := reformatWithStdjson(tcase.Data)
-		ΩxNoDiffByLine(actual, expect)
+			actual := reformatWithStdjson(out)
+			expect := reformatWithStdjson(tcase.Data)
+			ΩxNoDiffByLine(actual, expect)
+		})
+		Convey("with ident", func() {
+			tcase := jtest.GetTestcase("pass01.json")
+			out, err := jsonz.Reformat(tcase.Data, "", "\t")
+			Ω(err).ToNot(HaveOccurred())
+
+			fmt.Printf("\n--- reformat ---\n%s\n---\n", out)
+			ΩxNoDiffByLine(string(out), tcase.ExpectFormat)
+		})
 	})
 }
 
