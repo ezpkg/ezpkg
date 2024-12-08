@@ -1,3 +1,5 @@
+# ezpkg.io/errorz
+
 Package [errorz](https://pkg.go.dev/ezpkg.io/errorz) provides functions for dealing with errors, with stacktrace, validation, and multi-errors.
 
 ## Examples

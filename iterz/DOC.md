@@ -1,3 +1,5 @@
+# ezpkg.io/iterz
+
 Package [iterz](https://pkg.go.dev/ezpkg.io/iterz) extends the standard library [iter](https://pkg.go.dev/iter) with additional functions.
 
 ## Features

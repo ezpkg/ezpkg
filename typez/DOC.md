@@ -1,3 +1,5 @@
+# ezpkg.io/typez
+
 Package [typez](https://pkg.go.dev/ezpkg.io/typez) provides generic functions for working with types.
 
 ## Examples

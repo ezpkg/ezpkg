@@ -1,3 +1,5 @@
+# ezpkg.io/slicez
+
 Package [slicez](https://pkg.go.dev/ezpkg.io/slicez) extends the standard library [slices](https://pkg.go.dev/slices) with additional functions.
 
 ## Examples

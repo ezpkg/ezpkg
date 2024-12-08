@@ -1,3 +1,5 @@
+# ezpkg.io/mapz
+
 Package [mapz](https://pkg.go.dev/ezpkg.io/mapz) extends the package [golang.org/x/exp/maps](https://pkg.go.dev/golang.org/x/exp/maps) with additional functions.
 
 ## Examples

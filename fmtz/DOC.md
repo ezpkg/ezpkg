@@ -1,3 +1,5 @@
+# ezpkg.io/fmtz
+
 Package [fmtz](https://pkg.go.dev/ezpkg.io/fmtz) extends the standard library [fmt](https://pkg.go.dev/fmt) with additional functions.
 
 ## Examples

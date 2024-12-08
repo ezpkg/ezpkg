@@ -59,11 +59,18 @@ func (c *cmdDoc) loadPkgDoc(pkg string) ReadmeArgs {
 	path := env.EzpkgDir + "/" + pkg + "/DOC.md"
 	raw := unsafez.BytesToString(errorz.Must(os.ReadFile(path)))
 	raw = strings.TrimSpace(raw)
-	parts := strings.SplitN(raw, "\n", 2)
+	title, raw := splitLine(raw, "# ")
+	if title == "" {
+		panicf("%v/DOC.md: missing title", pkg)
+	}
+
+	parts := strings.SplitN(raw, "\n\n", 2)
+	desc := strings.TrimSpace(parts[0])
+	desc = strings.ReplaceAll(desc, "\n", " ")
 	return ReadmeArgs{
 		pkgName: pkg,
 		version: env.Info.Version,
-		pkgDesc: strings.TrimSpace(parts[0]),
+		pkgDesc: desc,
 		pkgDoc:  strings.TrimSpace(parts[1]),
 	}
 }

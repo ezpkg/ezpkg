@@ -10,15 +10,13 @@
 [![GitHub License](https://img.shields.io/github/license/ezpkg/jsonz)](https://github.com/ezpkg/jsonz/tree/main/LICENSE)
 [![version](https://img.shields.io/github/v/tag/ezpkg/jsonz?label=version)](https://pkg.go.dev/ezpkg.io/jsonz?tab=versions)
 
-Package [jsonz](https://pkg.go.dev/ezpkg.io/jsonz) is a minimal implementation of json parser and transformer in Go. The
+Package [jsonz](https://pkg.go.dev/ezpkg.io/jsonz) is a minimal implementation of json parser and transformer in Go. The `Parse()` function returns an iter over the JSON object, which can be used to traverse the JSON object.
 
 ## Installation
 
 ```sh
 go get -u ezpkg.io/jsonz@v0.2.0
 ```
-
-`Parse()` function returns an iter over the JSON object, which can be used to traverse the JSON object.
 
 ## Examples
 

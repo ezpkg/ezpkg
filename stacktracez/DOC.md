@@ -1,3 +1,5 @@
+# ezpkg.io/stacktracez
+
 Package [stacktracez](https://pkg.go.dev/ezpkg.io/stacktracez) provides functions for getting stack trace for using in errors and logs.
 
 ## Examples

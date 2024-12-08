@@ -1,3 +1,5 @@
+# ezpkg.io/colorz
+
 Package [colorz](https://pkg.go.dev/ezpkg.io/colorz) provides utilities for working with colors in terminal.
 
 ## Examples

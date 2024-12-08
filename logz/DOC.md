@@ -1,3 +1,5 @@
+# ezpkg.io/logz
+
 Package [logz](https://pkg.go.dev/ezpkg.io/logz) provides common interfaces and utilities for working with other log packages, including [log/slog](https://pkg.go.dev/log/slog) and [zap](https://pkg.go.dev/go.uber.org/zap). It's useful for package library to provide a common interface for logging, so that the user can choose the logging package they want to use.
 
 ## Examples

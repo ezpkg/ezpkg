@@ -1,3 +1,5 @@
+# ezpkg.io/stringz
+
 Package [stringz](https://pkg.go.dev/ezpkg.io/stringz) extends the standard library [strings](https://pkg.go.dev/strings) with additional functions.
 
 ## Examples
