@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"testing"
 
-	jtest "ezpkg.io/-/jsonz_test"
 	. "ezpkg.io/conveyz"
 	"ezpkg.io/jsonz"
+	"ezpkg.io/jsonz/test"
 	"ezpkg.io/stringz"
 	. "ezpkg.io/testingz"
 )
@@ -215,12 +215,12 @@ address → }
 `)
 		})
 		Convey("pass01.json", func() {
-			tcase := jtest.GetTestcase("pass01.json")
+			tcase := test.GetTestcase("pass01.json")
 			s, _ := parse(string(tcase.Data))
 			ΩxNoDiff(s, tcase.ExpectParse)
 		})
 		Convey("failures", func() {
-			for _, tcase := range jtest.SimpleSet {
+			for _, tcase := range test.SimpleSet {
 				if !tcase.Bad {
 					continue
 				}

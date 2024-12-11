@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	jtest "ezpkg.io/-/jsonz_test"
+	jtest "ezpkg.io/jsonz/test"
+
 	. "ezpkg.io/conveyz"
 	. "ezpkg.io/jsonz"
 	"ezpkg.io/testingz"

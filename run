@@ -51,6 +51,7 @@ echo 👉 \$PWD
 go get  -modfile=go.local.mod ./...
 go test -modfile=go.local.mod ./...
 cat go.local.mod | grep -v \"replace ezpkg\.io\" > go.mod
+go mod tidy
 " bash {} +
 }
 

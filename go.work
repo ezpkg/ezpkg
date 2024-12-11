@@ -10,7 +10,6 @@ use (
 	fmtz
 	iterz
 	jsonz
-	jsonz_test
 	logz
 	mapz
 	slicez
