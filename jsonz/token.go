@@ -24,6 +24,20 @@ const (
 	TokenColon       TokenType = ':'
 )
 
+var (
+	tokenNull        = RawToken{typ: TokenNull, raw: []byte(`null`)}
+	tokenTrue        = RawToken{typ: TokenTrue, raw: []byte(`true`)}
+	tokenFalse       = RawToken{typ: TokenFalse, raw: []byte(`false`)}
+	tokenObjectOpen  = RawToken{typ: TokenObjectOpen, raw: []byte(`{`)}
+	tokenObjectClose = RawToken{typ: TokenObjectClose, raw: []byte(`}`)}
+	tokenArrayOpen   = RawToken{typ: TokenArrayOpen, raw: []byte(`[`)}
+	tokenArrayClose  = RawToken{typ: TokenArrayClose, raw: []byte(`]`)}
+	tokenComma       = RawToken{typ: TokenComma, raw: []byte(`,`)}
+	tokenColon       = RawToken{typ: TokenColon, raw: []byte(`:`)}
+	tokenString      = RawToken{typ: TokenString, raw: []byte(`""`)}
+	tokenNumber      = RawToken{typ: TokenNumber, raw: []byte(`0`)}
+)
+
 func (t TokenType) String() string {
 	switch t {
 	case 0:
@@ -43,6 +57,35 @@ func (t TokenType) String() string {
 	}
 }
 
+func (t TokenType) New() RawToken {
+	switch t {
+	case TokenNull:
+		return tokenNull
+	case TokenTrue:
+		return tokenTrue
+	case TokenFalse:
+		return tokenFalse
+	case TokenNumber:
+		return tokenNumber
+	case TokenString:
+		return tokenString
+	case TokenObjectOpen:
+		return tokenObjectOpen
+	case TokenObjectClose:
+		return tokenObjectClose
+	case TokenArrayOpen:
+		return tokenArrayOpen
+	case TokenArrayClose:
+		return tokenArrayClose
+	case TokenComma:
+		return tokenComma
+	case TokenColon:
+		return tokenColon
+	default:
+		return RawToken{}
+	}
+}
+
 // RawToken represents a raw token from the scanner.
 type RawToken struct {
 	typ TokenType
@@ -54,6 +97,57 @@ var (
 	rTrue  = []byte("true")
 	rFalse = []byte("false")
 )
+
+// NewRawToken returns a new raw token from the raw bytes.
+func NewRawToken(raw []byte) (RawToken, error) {
+	token, remain, err := NextToken(raw)
+	if err != nil {
+		return RawToken{}, err
+	}
+	if token.typ == 0 {
+		return RawToken{}, fmt.Errorf("invalid empty token")
+	}
+	if len(remain) != 0 {
+		return RawToken{}, fmt.Errorf("invalid token")
+	}
+	switch token.typ {
+	case TokenNumber:
+		_, err = token.GetNumber() // validate number
+	case TokenString:
+		_, err = token.GetString() // validate string
+	}
+	return token, err
+}
+
+// MustRawToken returns a new raw token from the raw bytes. Panic if error.
+func MustRawToken(raw []byte) RawToken {
+	token, err := NewRawToken(raw)
+	must(err)
+	return token
+}
+
+// StringToken returns a string token.
+func StringToken(s string) RawToken {
+	return RawToken{typ: TokenString, raw: quoteString(s)}
+}
+
+// NumberToken returns a number token.
+func NumberToken(n float64) RawToken {
+	return RawToken{typ: TokenNumber, raw: []byte(strconv.FormatFloat(n, 'g', -1, 64))}
+}
+
+// IntToken returns a number token.
+func IntToken(n int) RawToken {
+	return RawToken{typ: TokenNumber, raw: []byte(strconv.Itoa(n))}
+}
+
+// BoolToken returns a boolean token.
+func BoolToken(b bool) RawToken {
+	if b {
+		return tokenTrue
+	}
+	return tokenFalse
+}
 
 // Type returns the type of the token.
 func (r RawToken) Type() TokenType {
@@ -242,7 +336,8 @@ func canSimplyUnquote(raw []byte) bool {
 }
 
 func needQuote(s string) bool {
-	for _, c := range s {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
 		if c < 0x20 || c > 0x7E {
 			return true
 		}
@@ -252,6 +347,11 @@ func needQuote(s string) bool {
 		}
 	}
 	return false
+}
+
+func quoteString(s string) []byte {
+	var b []byte
+	return strconv.AppendQuote(b, s)
 }
 
 // decode \uXXXX to rune, return the rune and the number of bytes consumed (0 if error)
