@@ -1,0 +1,37 @@
+{
+  "name": "Alice Nguyen",
+  "age": 22,
+  "gender": "female",
+  "email": "alice@example.com",
+  "phone": "(+84) 123-456-789",
+  "occupation": "Software Engineer",
+  "languages": ["English", "Vietnamese", "Japanese"],
+  "address": {
+    "house_number": 42,
+    "street": "Lý Thường Kiệt",
+    "city": "Hà Nội",
+    "country": "Vietnam",
+    "zip_code": "101010"
+  },
+  "hobbies": ["painting", "hiking", "gardening"],
+  "education": {
+    "degree": "Bachelor of Science",
+    "field_of_study": "Computer Science",
+    "university": "Hà Nội University",
+    "graduation_year": 2024
+  },
+  "is_married": false,
+  "has_pets": true,
+  "pets": [
+    {
+      "type": "cat",
+      "name": "Kitty",
+      "age": 2
+    },
+    {
+      "type": "dog",
+      "name": "Yummy",
+      "age": 3
+    }
+  ]
+}

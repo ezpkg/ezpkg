@@ -62,7 +62,7 @@ func Reformat(in []byte, prefix, indent string) ([]byte, error) {
 }
 
 type Builder struct {
-	buf    []byte
+	zBuf
 	indent string
 	prefix string
 
@@ -70,6 +70,9 @@ type Builder struct {
 	level   int
 	stack   []TokenType // array or object
 	err     error
+
+	lastIndent  bool
+	lastNewline bool
 }
 
 // NewBuilder creates a new Builder. It's optional to set the prefix and indent. A zero Builder is valid.
@@ -82,20 +85,18 @@ func NewBuilder(prefix, indent string) *Builder {
 
 // Bytes returns the bytes of the builder with an error if any.
 func (b *Builder) Bytes() ([]byte, error) {
-	return b.buf, b.err
+	return b.zBuf, b.err
 }
 
 // AddRaw adds a key and token to the builder. It will add a comma if needed.
 func (b *Builder) AddRaw(key, token RawToken) {
 	switch {
 	case token.IsOpen():
-		if ShouldAddComma(b.lastTok, token.Type()) {
-			b.writeByte(',')
-		}
-		b.writeIndent()
+		b.WriteNewline(token.Type())
+		b.WriteIndent()
 		b.writeKey(key)
 		b.writeByte(byte(token.Type()))
-		b.lastTok = token.Type()
+		b.setLastToken(token.Type())
 		b.stack = append(b.stack, token.Type())
 		b.level++
 
@@ -110,18 +111,17 @@ func (b *Builder) AddRaw(key, token RawToken) {
 		}
 		b.level--
 		b.stack = b.stack[:len(b.stack)-1]
-		b.writeIndent()
+		b.WriteNewline(token.Type())
+		b.WriteIndent()
 		b.writeByte(byte(token.Type()))
-		b.lastTok = token.Type()
+		b.setLastToken(token.Type())
 
 	case token.IsValue():
-		if ShouldAddComma(b.lastTok, token.Type()) {
-			b.writeByte(',')
-		}
-		b.writeIndent()
+		b.WriteNewline(token.Type())
+		b.WriteIndent()
 		b.writeKey(key)
 		b.write(token.Raw())
-		b.lastTok = token.Type()
+		b.setLastToken(token.Type())
 
 	default:
 		b.addErrorf("unexpected token(%s)", token)
@@ -132,13 +132,11 @@ func (b *Builder) AddRaw(key, token RawToken) {
 func (b *Builder) AddToken(key string, token RawToken) {
 	switch {
 	case token.IsOpen():
-		if ShouldAddComma(b.lastTok, token.Type()) {
-			b.writeByte(',')
-		}
-		b.writeIndent()
+		b.WriteNewline(token.Type())
+		b.WriteIndent()
 		b.writeKeyString(key)
 		b.writeByte(byte(token.Type()))
-		b.lastTok = token.Type()
+		b.setLastToken(token.Type())
 		b.stack = append(b.stack, token.Type())
 		b.level++
 
@@ -153,18 +151,17 @@ func (b *Builder) AddToken(key string, token RawToken) {
 		}
 		b.level--
 		b.stack = b.stack[:len(b.stack)-1]
-		b.writeIndent()
+		b.WriteNewline(token.Type())
+		b.WriteIndent()
 		b.writeByte(byte(token.Type()))
-		b.lastTok = token.Type()
+		b.setLastToken(token.Type())
 
 	case token.IsValue():
-		if ShouldAddComma(b.lastTok, token.Type()) {
-			b.writeByte(',')
-		}
-		b.writeIndent()
+		b.WriteNewline(token.Type())
+		b.WriteIndent()
 		b.writeKeyString(key)
 		b.write(token.Raw())
-		b.lastTok = token.Type()
+		b.setLastToken(token.Type())
 
 	default:
 		b.addErrorf("unexpected token(%s)", token)
@@ -191,17 +188,18 @@ func (b *Builder) Add(key string, value any) {
 			b.addErrorf(err.Error())
 		}
 		tokType = rawTok.typ
+
+	default:
+		// string | number | boolean | null
 	}
 
 	switch {
 	case tokType.IsOpen():
-		if ShouldAddComma(b.lastTok, tokType) {
-			b.writeByte(',')
-		}
-		b.writeIndent()
+		b.WriteNewline(tokType)
+		b.WriteIndent()
 		b.writeKeyString(key)
 		b.writeByte(byte(tokType))
-		b.lastTok = tokType
+		b.setLastToken(tokType)
 		b.stack = append(b.stack, tokType)
 		b.level++
 
@@ -216,15 +214,14 @@ func (b *Builder) Add(key string, value any) {
 		}
 		b.level--
 		b.stack = b.stack[:len(b.stack)-1]
-		b.writeIndent()
+		b.WriteNewline(tokType)
+		b.WriteIndent()
 		b.writeByte(byte(tokType))
-		b.lastTok = tokType
+		b.setLastToken(tokType)
 
 	default:
-		if ShouldAddComma(b.lastTok, tokType) {
-			b.writeByte(',')
-		}
-		b.writeIndent()
+		b.WriteNewline(TokenString) // assume value token
+		b.WriteIndent()
 		b.writeKeyString(key)
 
 		if rawTok.typ != 0 {
@@ -233,59 +230,76 @@ func (b *Builder) Add(key string, value any) {
 				return
 			}
 			b.write(rawTok.raw)
-			b.lastTok = tokType
+			b.setLastToken(tokType)
 		} else {
 			b.writeValue(value)
 		}
 	}
 }
 
+// ShouldAddComma returns true if a comma should be added before the next token.
+func (b *Builder) ShouldAddComma(next TokenType) bool {
+	return ShouldAddComma(b.lastTok, next)
+}
+
+func (b *Builder) WriteComma(next TokenType) bool {
+	ok := b.ShouldAddComma(next) || next == 0
+	if ok {
+		b.writeByte(',')
+		b.setLastToken(TokenComma)
+	}
+	return ok
+}
+
 func (b *Builder) writeValue(value any) {
-	b.lastTok = TokenNumber // default to number, can be overridden
+	b.setLastToken(TokenNumber) // default to number, can be overridden
 	switch v := value.(type) {
+	case nil:
+		b.zBuf = append(b.zBuf, "null"...)
+		b.setLastToken(TokenNull)
 	case bool:
 		if v {
-			b.buf = append(b.buf, "true"...)
-			b.lastTok = TokenTrue
+			b.zBuf = append(b.zBuf, "true"...)
+			b.setLastToken(TokenTrue)
 		} else {
-			b.buf = append(b.buf, "false"...)
-			b.lastTok = TokenFalse
+			b.zBuf = append(b.zBuf, "false"...)
+			b.setLastToken(TokenFalse)
 		}
 	case string:
-		b.buf = strconv.AppendQuote(b.buf, v)
-		b.lastTok = TokenString
+		b.zBuf = strconv.AppendQuote(b.zBuf, v)
+		b.setLastToken(TokenString)
 	case float32:
 		if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
-			b.buf = append(b.buf, "0"...)
+			b.zBuf = append(b.zBuf, "0"...)
 		} else {
-			b.buf = strconv.AppendFloat(b.buf, float64(v), 'f', -1, 32)
+			b.zBuf = strconv.AppendFloat(b.zBuf, float64(v), 'f', -1, 32)
 		}
 	case float64:
 		if math.IsNaN(v) || math.IsInf(v, 0) {
-			b.buf = append(b.buf, "0"...)
+			b.zBuf = append(b.zBuf, "0"...)
 		} else {
-			b.buf = strconv.AppendFloat(b.buf, v, 'f', -1, 64)
+			b.zBuf = strconv.AppendFloat(b.zBuf, v, 'f', -1, 64)
 		}
 	case int:
-		b.buf = strconv.AppendInt(b.buf, int64(v), 10)
+		b.zBuf = strconv.AppendInt(b.zBuf, int64(v), 10)
 	case int8:
-		b.buf = strconv.AppendInt(b.buf, int64(v), 10)
+		b.zBuf = strconv.AppendInt(b.zBuf, int64(v), 10)
 	case int16:
-		b.buf = strconv.AppendInt(b.buf, int64(v), 10)
+		b.zBuf = strconv.AppendInt(b.zBuf, int64(v), 10)
 	case int32:
-		b.buf = strconv.AppendInt(b.buf, int64(v), 10)
+		b.zBuf = strconv.AppendInt(b.zBuf, int64(v), 10)
 	case int64:
-		b.buf = strconv.AppendInt(b.buf, v, 10)
+		b.zBuf = strconv.AppendInt(b.zBuf, v, 10)
 	case uint:
-		b.buf = strconv.AppendUint(b.buf, uint64(v), 10)
+		b.zBuf = strconv.AppendUint(b.zBuf, uint64(v), 10)
 	case uint8:
-		b.buf = strconv.AppendUint(b.buf, uint64(v), 10)
+		b.zBuf = strconv.AppendUint(b.zBuf, uint64(v), 10)
 	case uint16:
-		b.buf = strconv.AppendUint(b.buf, uint64(v), 10)
+		b.zBuf = strconv.AppendUint(b.zBuf, uint64(v), 10)
 	case uint32:
-		b.buf = strconv.AppendUint(b.buf, uint64(v), 10)
+		b.zBuf = strconv.AppendUint(b.zBuf, uint64(v), 10)
 	case uint64:
-		b.buf = strconv.AppendUint(b.buf, v, 10)
+		b.zBuf = strconv.AppendUint(b.zBuf, v, 10)
 
 	default: // fallback to std encoding/json
 		err := stdjson.NewEncoder(b.writer()).Encode(value)
@@ -293,8 +307,8 @@ func (b *Builder) writeValue(value any) {
 			b.addErrorf(err.Error())
 		}
 		// trim last newline
-		if len(b.buf) > 0 && b.buf[len(b.buf)-1] == '\n' {
-			b.buf = b.buf[:len(b.buf)-1]
+		if len(b.zBuf) > 0 && b.zBuf[len(b.zBuf)-1] == '\n' {
+			b.zBuf = b.zBuf[:len(b.zBuf)-1]
 		}
 	}
 }
@@ -345,7 +359,7 @@ func (b *Builder) writeKeyString(key string) {
 		if key == "" {
 			b.addErrorf("missing key in object")
 		}
-		b.buf = strconv.AppendQuote(b.buf, key)
+		b.zBuf = strconv.AppendQuote(b.zBuf, key)
 		b.writeByte(':')
 		if b.indent != "" {
 			b.writeByte(' ')
@@ -355,13 +369,26 @@ func (b *Builder) writeKeyString(key string) {
 	}
 }
 
-func (b *Builder) writeIndent() {
+func (b *Builder) WriteNewline(next TokenType) {
+	b.WriteComma(next)
 	if b.prefix == "" && b.indent == "" {
+		return
+	}
+	if b.lastNewline {
 		return
 	}
 	if b.lastTok != 0 {
 		b.writeByte('\n')
+		b.lastNewline = true
 	}
+}
+
+func (b *Builder) WriteIndent() {
+	if b.lastIndent {
+		return
+	}
+	b.lastIndent = true
+
 	b.writeString(b.prefix)
 	for range b.level {
 		b.writeString(b.indent)
@@ -369,19 +396,25 @@ func (b *Builder) writeIndent() {
 }
 
 func (b *Builder) write(p []byte) {
-	b.buf = append(b.buf, p...)
+	b.zBuf = append(b.zBuf, p...)
 }
 
 func (b *Builder) writeByte(c byte) {
-	b.buf = append(b.buf, c)
+	b.zBuf = append(b.zBuf, c)
 }
 
 func (b *Builder) writeString(s string) {
-	b.buf = append(b.buf, s...)
+	b.zBuf = append(b.zBuf, s...)
 }
 
-func (b *Builder) writer() *zBuffer {
-	return (*zBuffer)(&b.buf)
+func (b *Builder) writer() *zBuf {
+	return &b.zBuf
+}
+
+func (b *Builder) setLastToken(tok TokenType) {
+	b.lastTok = tok
+	b.lastIndent = false
+	b.lastNewline = false
 }
 
 func (b *Builder) addErrorf(msg string, args ...any) {
@@ -393,7 +426,7 @@ func (b *Builder) addErrorf(msg string, args ...any) {
 // ShouldAddComma returns true if a comma should be added before the next token.
 func ShouldAddComma(lastToken, nextToken TokenType) bool {
 	switch lastToken {
-	case 0, TokenArrayOpen, TokenObjectOpen:
+	case 0, TokenArrayOpen, TokenObjectOpen, TokenComma, TokenColon:
 		return false
 	default:
 		switch nextToken {
@@ -405,9 +438,9 @@ func ShouldAddComma(lastToken, nextToken TokenType) bool {
 	}
 }
 
-type zBuffer []byte
+type zBuf []byte
 
-func (b *zBuffer) Write(p []byte) (n int, err error) {
+func (b *zBuf) Write(p []byte) (n int, err error) {
 	*b = append(*b, p...)
 	return len(p), nil
 }
