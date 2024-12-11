@@ -88,6 +88,26 @@ func (t TokenType) New() RawToken {
 	}
 }
 
+// IsOpen returns true if the token is an open token '[' or '{'.
+func (t TokenType) IsOpen() bool {
+	return t == TokenArrayOpen || t == TokenObjectOpen
+}
+
+// IsClose returns true if the token is a close token ']' or '}'.
+func (t TokenType) IsClose() bool {
+	return t == TokenArrayClose || t == TokenObjectClose
+}
+
+// IsValue returns true if the token is a value: null, boolean, number, string.
+func (t TokenType) IsValue() bool {
+	switch t {
+	case TokenNull, TokenTrue, TokenFalse, TokenNumber, TokenString:
+		return true
+	default:
+		return false
+	}
+}
+
 // RawToken represents a raw token from the scanner.
 type RawToken struct {
 	typ TokenType
