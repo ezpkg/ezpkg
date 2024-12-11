@@ -8,8 +8,8 @@
   "languages": ["English", "Vietnamese", "Japanese"],
   "address": {
     "house_number": 42,
-    "street": "Lý Thường Kiệt",
-    "city": "Hà Nội",
+    "street": "Ly Thuong Kiet",
+    "city": "Ha Noi",
     "country": "Vietnam",
     "zip_code": "101010"
   },
@@ -17,7 +17,7 @@
   "education": {
     "degree": "Bachelor of Science",
     "field_of_study": "Computer Science",
-    "university": "Hà Nội University",
+    "university": "Ha Noi University",
     "graduation_year": 2024
   },
   "is_married": false,

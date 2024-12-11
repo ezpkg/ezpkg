@@ -242,13 +242,14 @@ func (b *Builder) ShouldAddComma(next TokenType) bool {
 	return ShouldAddComma(b.lastTok, next)
 }
 
-func (b *Builder) WriteComma(next TokenType) bool {
+// WriteCommand writes a comma if needed.
+func (b *Builder) WriteComma(next TokenType) {
 	ok := b.ShouldAddComma(next) || next == 0
 	if ok {
 		b.writeByte(',')
 		b.setLastToken(TokenComma)
 	}
-	return ok
+	return
 }
 
 func (b *Builder) writeValue(value any) {
@@ -369,6 +370,7 @@ func (b *Builder) writeKeyString(key string) {
 	}
 }
 
+// WriteNewline writes a newline if needed.
 func (b *Builder) WriteNewline(next TokenType) {
 	b.WriteComma(next)
 	if b.prefix == "" && b.indent == "" {
@@ -383,6 +385,7 @@ func (b *Builder) WriteNewline(next TokenType) {
 	}
 }
 
+// WriteIndent writes the indentation if needed.
 func (b *Builder) WriteIndent() {
 	if b.lastIndent {
 		return
@@ -415,6 +418,11 @@ func (b *Builder) setLastToken(tok TokenType) {
 	b.lastTok = tok
 	b.lastIndent = false
 	b.lastNewline = false
+}
+
+// Len returns the number of bytes written.
+func (b *Builder) Len() int {
+	return len(b.zBuf)
 }
 
 func (b *Builder) addErrorf(msg string, args ...any) {
