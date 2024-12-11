@@ -2,6 +2,7 @@ package jsonz
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"unicode/utf16"
 	"unicode/utf8"
@@ -57,6 +58,7 @@ func (t TokenType) String() string {
 	}
 }
 
+// New returns a new raw token of the type. For number and string, use NumberToken() and StringToken().
 func (t TokenType) New() RawToken {
 	switch t {
 	case TokenNull:
@@ -131,9 +133,12 @@ func StringToken(s string) RawToken {
 	return RawToken{typ: TokenString, raw: quoteString(s)}
 }
 
-// NumberToken returns a number token.
-func NumberToken(n float64) RawToken {
-	return RawToken{typ: TokenNumber, raw: []byte(strconv.FormatFloat(n, 'g', -1, 64))}
+// NumberToken returns a number token. For NaN and Inf, fallback to 0.
+func NumberToken(f float64) RawToken {
+	if math.IsNaN(f) || math.IsInf(f, 0) {
+		return RawToken{typ: TokenNumber, raw: []byte("0")}
+	}
+	return RawToken{typ: TokenNumber, raw: []byte(strconv.FormatFloat(f, 'g', -1, 64))}
 }
 
 // IntToken returns a number token.
@@ -209,7 +214,14 @@ func (r RawToken) GetNumber() (float64, error) {
 			return 0, fmt.Errorf("number cannot have leading zero")
 		}
 	default:
-		return strconv.ParseFloat(string(r.raw), 64)
+		f, err := strconv.ParseFloat(string(r.raw), 64)
+		switch {
+		case err != nil:
+			return 0, fmt.Errorf("invalid number token")
+		case math.IsNaN(f) || math.IsInf(f, 0):
+			return 0, fmt.Errorf("invalid number token")
+		}
+		return f, nil
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	stdjson "encoding/json"
 	"fmt"
+	"math"
 	"testing"
 
 	. "ezpkg.io/conveyz"
@@ -13,7 +14,7 @@ import (
 )
 
 func TestReconstruct(t *testing.T) {
-	Convey("Reconstruct", t, func() {
+	SConvey("Reconstruct", t, func() {
 		Convey("no indent", func() {
 			tcase := test.GetTestcase("pass01.json")
 			out, err := Reconstruct(tcase.Data)
@@ -45,6 +46,9 @@ func TestReconstruct(t *testing.T) {
 			b.AddRaw(RawToken{}, StringToken("2"))
 			b.AddRaw(RawToken{}, MustRawToken([]byte("3")))
 			b.AddRaw(RawToken{}, MustRawToken([]byte(`"four"`)))
+			b.AddRaw(RawToken{}, BoolToken(true))
+			b.AddRaw(RawToken{}, NumberToken(math.NaN()))   // fallback to 0
+			b.AddRaw(RawToken{}, NumberToken(math.Inf(-1))) // fallback to 0
 			b.AddRaw(RawToken{}, TokenArrayClose.New())
 			b.AddRaw(RawToken{}, TokenObjectClose.New())
 
@@ -56,7 +60,10 @@ func TestReconstruct(t *testing.T) {
     1,
     "2",
     3,
-    "four"
+    "four",
+    true,
+    0,
+    0
   ]
 }`)
 		})

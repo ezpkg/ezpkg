@@ -82,6 +82,7 @@ func (b *Builder) Bytes() ([]byte, error) {
 	return b.Buffer.Bytes(), b.err
 }
 
+// AddRaw adds a key and token to the builder. It will add a comma if needed.
 func (b *Builder) AddRaw(key, token RawToken) {
 	switch {
 	case token.IsOpen():
