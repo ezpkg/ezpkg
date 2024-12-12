@@ -23,7 +23,7 @@ func main() {
 		for item, err := range jsoniter.Parse(data) {
 			errorz.MustZ(err)
 			if item.Token.IsOpen() || item.Token.IsClose() {
-				b.AddRaw(item.Key, item.Token)
+				b.Add(item.Key, item.Token)
 				continue
 			}
 
@@ -39,7 +39,7 @@ func main() {
 				continue
 			}
 
-			b.AddRaw(item.Key, item.Token)
+			b.Add(item.Key, item.Token)
 		}
 		out := errorz.Must(b.Bytes())
 		fmt.Printf("\n--- filter: output json ---\n%s\n----------\n", out)

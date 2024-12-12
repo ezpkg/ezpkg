@@ -113,11 +113,6 @@ func (b *Builder) AddRaw(key, token RawToken) {
 	b.add(key, token.typ, token.raw, nil)
 }
 
-// AddToken adds a key and token to the builder. It will add a comma if needed.
-func (b *Builder) AddToken(key any, token RawToken) {
-	b.add(key, token.typ, token.raw, nil)
-}
-
 // Add adds a key and value to the builder. It will add a comma if needed.
 func (b *Builder) Add(key any, value any) {
 	var token RawToken

@@ -17,7 +17,7 @@ func main() {
 	data := errorz.Must(os.ReadFile(filepath.Dir(file) + "/../alice.json"))
 	{
 		// 🐳Example: filter and print, use GetPathString()
-		fmt.Printf("\n--- filter: print line number ---\n")
+		fmt.Printf("\n--- filter: GetPathString() ---\n")
 		i, regexPetName := 0, regexp.MustCompile("pets.*name")
 		for item, err := range jsoniter.Parse(data) {
 			i++
@@ -41,7 +41,7 @@ func main() {
 	}
 	{
 		// 🐳Example: filter and print, use GetRawPath() and Match()
-		fmt.Printf("\n--- filter: print line number ---\n")
+		fmt.Printf("\n--- filter: GetRawPath() ---\n")
 		i := 0
 		for item, err := range jsoniter.Parse(data) {
 			i++

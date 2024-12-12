@@ -19,17 +19,17 @@ func main() {
 		b := jsoniter.NewBuilder("", "")
 		for item, err := range jsoniter.Parse(data) {
 			errorz.MustZ(err)
-			b.AddRaw(item.Key, item.Token)
+			b.Add(item.Key, item.Token)
 		}
 		out := errorz.Must(b.Bytes())
 		fmt.Printf("\n--- minify ---\n%s\n----------\n", out)
 	}
 	{
 		// 🦋Example: reformat json
-		b := jsoniter.NewBuilder("→   ", "\t")
+		b := jsoniter.NewBuilder("👉   ", "\t")
 		for item, err := range jsoniter.Parse(data) {
 			errorz.MustZ(err)
-			b.AddRaw(item.Key, item.Token)
+			b.Add(item.Key, item.Token)
 		}
 		out := errorz.Must(b.Bytes())
 		fmt.Printf("\n--- reformat ---\n%s\n----------\n", out)

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -24,14 +23,10 @@ func main() {
 			b.WriteNewline(item.Token.Type())
 
 			// 👉 add line number
-			fprintf(b, "%3d    ", i)
-			b.AddRaw(item.Key, item.Token)
+			fmt.Fprintf(b, "%3d    ", i)
+			b.Add(item.Key, item.Token)
 		}
 		out := errorz.Must(b.Bytes())
 		fmt.Printf("\n--- line number ---\n%s\n----------\n", out)
 	}
-}
-
-func fprintf(w io.Writer, format string, args ...any) {
-	errorz.Must(fmt.Fprintf(w, format, args...))
 }

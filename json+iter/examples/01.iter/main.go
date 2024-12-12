@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"ezpkg.io/errorz"
 	jsoniter "ezpkg.io/json+iter"
@@ -15,8 +16,12 @@ func main() {
 	data := errorz.Must(os.ReadFile(filepath.Dir(file) + "/../alice.json"))
 
 	// 🎄Example: iterate over json
+	fmt.Printf("| %25v | %18v | %22v |%v|\n", "PATH", "KEY", "TOKEN", "LVL")
+	fmt.Printf("| %s | %s | %s | - |\n", strings.Repeat("-", 25), strings.Repeat("-", 18), strings.Repeat("-", 22))
+
 	for item, err := range jsoniter.Parse(data) {
 		errorz.MustZ(err)
-		fmt.Printf("%20v : %22v   . %v . %v\n", item.Key, item.Token, item.Level, item.GetPath())
+
+		fmt.Printf("| %25v | %18v | %22v | %v |\n", item.GetPathString(), item.Key, item.Token, item.Level)
 	}
 }
