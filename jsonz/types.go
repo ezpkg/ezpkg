@@ -1,10 +1,20 @@
 package jsonz
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
 	"ezpkg.io/fmtz"
+)
+
+var (
+	ErrTokenInvalid = errors.New("invalid token")
+	ErrTokenEmpty   = errors.New("invalid empty token")
+	ErrTokenString  = errors.New("invalid string token")
+	ErrTokenNumber  = errors.New("invalid number token")
+	ErrTokenBool    = errors.New("invalid boolean token")
+	ErrTokenType    = errors.New("invalid token type")
 )
 
 type Item struct {
@@ -152,6 +162,25 @@ func (p PathItem) IsArray() bool {
 // IsObject returns true if the path item is inside an object.
 func (p PathItem) IsObject() bool {
 	return p.Token.typ == TokenObjectOpen
+}
+
+// IsArrayIndex returns true if the path item is inside an array and the index matches the given index.
+func (p PathItem) IsArrayIndex(idx int) bool {
+	return p.Token.typ == TokenArrayOpen && p.Index == idx
+}
+
+// IsObjectRawKey returns true if the path item is inside an object and the key matches the given unquote key.
+func (p PathItem) IsObjectRawKey(rawKey string) bool {
+	return p.Token.typ == TokenObjectOpen && p.Key.RawString() == rawKey
+}
+
+// IsObjectKey returns true if the path item is inside an object and the key matches the given key.
+func (p PathItem) IsObjectKey(key string) bool {
+	if p.Token.typ == TokenObjectOpen {
+		pKey, err := p.Key.GetString()
+		return err == nil && pKey == key
+	}
+	return false
 }
 
 // Value returns the value of the path item. If the item is inside an array, it returns the index. If the item is inside an object, it returns the key.

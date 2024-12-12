@@ -62,17 +62,21 @@ func Reformat(in []byte, prefix, indent string) ([]byte, error) {
 }
 
 type Builder struct {
-	zBuf
+	buf    []byte
+	altBuf []byte
+
 	indent string
 	prefix string
 
 	lastTok TokenType
 	level   int
-	stack   []TokenType // array or object
+	stack   []stItem // array or object
 	err     error
 
-	lastIndent  bool
-	lastNewline bool
+	lastIndent          bool
+	lastNewline         bool
+	skipEmptyStructures bool
+	useAltBuf           bool
 }
 
 // NewBuilder creates a new Builder. It's optional to set the prefix and indent. A zero Builder is valid.
@@ -83,38 +87,58 @@ func NewBuilder(prefix, indent string) *Builder {
 	}
 }
 
+// SetSkipEmptyStructures makes the Builder ignores empty array `[]` and empty object `{}`. Default to false.
+func (b *Builder) SetSkipEmptyStructures(skip bool) {
+	b.skipEmptyStructures = skip
+	if skip {
+		b.useAltBuf = true
+		if b.altBuf == nil {
+			b.altBuf = make([]byte, 0, 64)
+		}
+	} else {
+		b.switchBuf()
+	}
+}
+
 // Bytes returns the bytes of the builder with an error if any.
 func (b *Builder) Bytes() ([]byte, error) {
-	return b.zBuf, b.err
+	return append(b.buf, b.altBuf...), b.err
 }
 
 // AddRaw adds a key and token to the builder. It will add a comma if needed.
 func (b *Builder) AddRaw(key, token RawToken) {
 	switch {
 	case token.IsOpen():
+		idx := b.Len()
 		b.WriteNewline(token.Type())
 		b.WriteIndent()
 		b.writeKey(key)
 		b.writeByte(byte(token.Type()))
 		b.setLastToken(token.Type())
-		b.stack = append(b.stack, token.Type())
-		b.level++
+		b.push(token.Type(), idx)
 
 	case token.IsClose():
 		if key.Type() != 0 {
 			b.addErrorf("unexpected key(%s) before close token(%s)", key, token.Type())
 			return
 		}
-		if b.level <= 0 {
+		top, ok := b.pop()
+		if !ok {
 			b.addErrorf("unexpected close token(%s)", token.Type())
 			return
 		}
-		b.level--
-		b.stack = b.stack[:len(b.stack)-1]
-		b.WriteNewline(token.Type())
-		b.WriteIndent()
-		b.writeByte(byte(token.Type()))
-		b.setLastToken(token.Type())
+		if b.skipEmptyStructures {
+			altIdx := top.idx - len(b.buf)
+			if altIdx > 0 {
+				b.altBuf = b.altBuf[:altIdx]
+			}
+
+		} else {
+			b.WriteNewline(token.Type())
+			b.WriteIndent()
+			b.writeByte(byte(token.Type()))
+			b.setLastToken(token.Type())
+		}
 
 	case token.IsValue():
 		b.WriteNewline(token.Type())
@@ -132,13 +156,13 @@ func (b *Builder) AddRaw(key, token RawToken) {
 func (b *Builder) AddToken(key string, token RawToken) {
 	switch {
 	case token.IsOpen():
+		idx := b.Len()
 		b.WriteNewline(token.Type())
 		b.WriteIndent()
 		b.writeKeyString(key)
 		b.writeByte(byte(token.Type()))
 		b.setLastToken(token.Type())
-		b.stack = append(b.stack, token.Type())
-		b.level++
+		b.push(token.Type(), idx)
 
 	case token.IsClose():
 		if key != "" {
@@ -149,8 +173,7 @@ func (b *Builder) AddToken(key string, token RawToken) {
 			b.addErrorf("unexpected close token(%s)", token.Type())
 			return
 		}
-		b.level--
-		b.stack = b.stack[:len(b.stack)-1]
+		b.pop()
 		b.WriteNewline(token.Type())
 		b.WriteIndent()
 		b.writeByte(byte(token.Type()))
@@ -195,13 +218,13 @@ func (b *Builder) Add(key string, value any) {
 
 	switch {
 	case tokType.IsOpen():
+		idx := b.Len()
 		b.WriteNewline(tokType)
 		b.WriteIndent()
 		b.writeKeyString(key)
 		b.writeByte(byte(tokType))
 		b.setLastToken(tokType)
-		b.stack = append(b.stack, tokType)
-		b.level++
+		b.push(tokType, idx)
 
 	case tokType.IsClose():
 		if key != "" {
@@ -212,8 +235,7 @@ func (b *Builder) Add(key string, value any) {
 			b.addErrorf("unexpected close token(%s)", tokType)
 			return
 		}
-		b.level--
-		b.stack = b.stack[:len(b.stack)-1]
+		b.pop()
 		b.WriteNewline(tokType)
 		b.WriteIndent()
 		b.writeByte(byte(tokType))
@@ -253,63 +275,65 @@ func (b *Builder) WriteComma(next TokenType) {
 }
 
 func (b *Builder) writeValue(value any) {
+	b.switchBuf()
 	b.setLastToken(TokenNumber) // default to number, can be overridden
 	switch v := value.(type) {
 	case nil:
-		b.zBuf = append(b.zBuf, "null"...)
+		b.writeString("null")
 		b.setLastToken(TokenNull)
 	case bool:
 		if v {
-			b.zBuf = append(b.zBuf, "true"...)
+			b.buf = append(b.buf, "true"...)
 			b.setLastToken(TokenTrue)
 		} else {
-			b.zBuf = append(b.zBuf, "false"...)
+			b.buf = append(b.buf, "false"...)
 			b.setLastToken(TokenFalse)
 		}
 	case string:
-		b.zBuf = strconv.AppendQuote(b.zBuf, v)
+		b.buf = strconv.AppendQuote(b.buf, v)
 		b.setLastToken(TokenString)
 	case float32:
 		if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
-			b.zBuf = append(b.zBuf, "0"...)
+			b.buf = append(b.buf, "0"...)
 		} else {
-			b.zBuf = strconv.AppendFloat(b.zBuf, float64(v), 'f', -1, 32)
+			b.buf = strconv.AppendFloat(b.buf, float64(v), 'f', -1, 32)
 		}
 	case float64:
 		if math.IsNaN(v) || math.IsInf(v, 0) {
-			b.zBuf = append(b.zBuf, "0"...)
+			b.buf = append(b.buf, "0"...)
 		} else {
-			b.zBuf = strconv.AppendFloat(b.zBuf, v, 'f', -1, 64)
+			b.buf = strconv.AppendFloat(b.buf, v, 'f', -1, 64)
 		}
 	case int:
-		b.zBuf = strconv.AppendInt(b.zBuf, int64(v), 10)
+		b.buf = strconv.AppendInt(b.buf, int64(v), 10)
 	case int8:
-		b.zBuf = strconv.AppendInt(b.zBuf, int64(v), 10)
+		b.buf = strconv.AppendInt(b.buf, int64(v), 10)
 	case int16:
-		b.zBuf = strconv.AppendInt(b.zBuf, int64(v), 10)
+		b.buf = strconv.AppendInt(b.buf, int64(v), 10)
 	case int32:
-		b.zBuf = strconv.AppendInt(b.zBuf, int64(v), 10)
+		b.buf = strconv.AppendInt(b.buf, int64(v), 10)
 	case int64:
-		b.zBuf = strconv.AppendInt(b.zBuf, v, 10)
+		b.buf = strconv.AppendInt(b.buf, v, 10)
 	case uint:
-		b.zBuf = strconv.AppendUint(b.zBuf, uint64(v), 10)
+		b.buf = strconv.AppendUint(b.buf, uint64(v), 10)
 	case uint8:
-		b.zBuf = strconv.AppendUint(b.zBuf, uint64(v), 10)
+		b.buf = strconv.AppendUint(b.buf, uint64(v), 10)
 	case uint16:
-		b.zBuf = strconv.AppendUint(b.zBuf, uint64(v), 10)
+		b.buf = strconv.AppendUint(b.buf, uint64(v), 10)
 	case uint32:
-		b.zBuf = strconv.AppendUint(b.zBuf, uint64(v), 10)
+		b.buf = strconv.AppendUint(b.buf, uint64(v), 10)
 	case uint64:
-		b.zBuf = strconv.AppendUint(b.zBuf, v, 10)
+		b.buf = strconv.AppendUint(b.buf, v, 10)
 
-	default: // fallback to std encoding/json
-		err := stdjson.NewEncoder(b.writer()).Encode(value)
+	default:
+		// fallback to std encoding/json (TODO: need more work here)
+		err := stdjson.NewEncoder(b).Encode(value)
 		if err != nil {
 			b.addErrorf(err.Error())
 		}
 		// trim last newline
-		if len(b.zBuf) > 0 && b.zBuf[len(b.zBuf)-1] == '\n' {
-			b.zBuf = b.zBuf[:len(b.zBuf)-1]
+		if len(b.buf) > 0 && b.buf[len(b.buf)-1] == '\n' {
+			b.buf = b.buf[:len(b.buf)-1]
 		}
 	}
 }
@@ -322,7 +346,7 @@ func (b *Builder) writeKey(key RawToken) {
 		return
 	}
 	top := b.stack[len(b.stack)-1]
-	switch top {
+	switch top.tok {
 	case TokenArrayOpen:
 		if key.Type() != 0 {
 			b.addErrorf("unexpected key(%s) in array", key)
@@ -350,7 +374,7 @@ func (b *Builder) writeKeyString(key string) {
 		return
 	}
 	top := b.stack[len(b.stack)-1]
-	switch top {
+	switch top.tok {
 	case TokenArrayOpen:
 		if key != "" {
 			b.addErrorf("unexpected key(%s) in array", key)
@@ -360,7 +384,7 @@ func (b *Builder) writeKeyString(key string) {
 		if key == "" {
 			b.addErrorf("missing key in object")
 		}
-		b.zBuf = strconv.AppendQuote(b.zBuf, key)
+		b.writeQuote(key)
 		b.writeByte(':')
 		if b.indent != "" {
 			b.writeByte(' ')
@@ -398,20 +422,74 @@ func (b *Builder) WriteIndent() {
 	}
 }
 
+func (b *Builder) Write(p []byte) (n int, err error) {
+	if b.useAltBuf {
+		b.altBuf = append(b.altBuf, p...)
+	} else {
+		b.buf = append(b.buf, p...)
+	}
+	return len(p), nil
+}
+
 func (b *Builder) write(p []byte) {
-	b.zBuf = append(b.zBuf, p...)
+	if b.useAltBuf {
+		b.altBuf = append(b.altBuf, p...)
+	} else {
+		b.buf = append(b.buf, p...)
+	}
 }
 
 func (b *Builder) writeByte(c byte) {
-	b.zBuf = append(b.zBuf, c)
+	if b.useAltBuf {
+		b.altBuf = append(b.altBuf, c)
+	} else {
+		b.buf = append(b.buf, c)
+	}
 }
 
 func (b *Builder) writeString(s string) {
-	b.zBuf = append(b.zBuf, s...)
+	if b.useAltBuf {
+		b.altBuf = append(b.altBuf, s...)
+	} else {
+		b.buf = append(b.buf, s...)
+	}
 }
 
-func (b *Builder) writer() *zBuf {
-	return &b.zBuf
+func (b *Builder) writeQuote(key string) {
+	if b.useAltBuf {
+		b.altBuf = strconv.AppendQuote(b.altBuf, key)
+	} else {
+		b.buf = strconv.AppendQuote(b.buf, key)
+	}
+}
+
+func (b *Builder) switchBuf() {
+	b.buf = append(b.buf, b.altBuf...)
+	b.altBuf = b.altBuf[:0]
+	b.useAltBuf = false
+}
+
+func (b *Builder) push(token TokenType, idx int) {
+	b.level++
+	b.stack = append(b.stack, stItem{tok: token, idx: idx})
+}
+
+func (b *Builder) pop() (stItem, bool) {
+	if len(b.stack) == 0 {
+		b.addErrorf("unexpected: pop with zero stack")
+		return stItem{}, false
+	}
+	b.level--
+	top := b.stack[len(b.stack)-1]
+	b.stack = b.stack[:len(b.stack)-1]
+	return top, true
+}
+
+func (b *Builder) peek() (stItem, bool) {
+	if len(b.stack) == 0 {
+		return stItem{}, false
+	}
+	return b.stack[len(b.stack)-1], true
 }
 
 func (b *Builder) setLastToken(tok TokenType) {
@@ -422,7 +500,7 @@ func (b *Builder) setLastToken(tok TokenType) {
 
 // Len returns the number of bytes written.
 func (b *Builder) Len() int {
-	return len(b.zBuf)
+	return len(b.buf) + len(b.altBuf)
 }
 
 func (b *Builder) addErrorf(msg string, args ...any) {
@@ -446,9 +524,7 @@ func ShouldAddComma(lastToken, nextToken TokenType) bool {
 	}
 }
 
-type zBuf []byte
-
-func (b *zBuf) Write(p []byte) (n int, err error) {
-	*b = append(*b, p...)
-	return len(p), nil
+type stItem struct {
+	tok TokenType
+	idx int
 }

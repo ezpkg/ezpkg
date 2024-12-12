@@ -1,7 +1,6 @@
 package jsonz
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 	"unicode/utf16"
@@ -127,10 +126,10 @@ func NewRawToken(raw []byte) (RawToken, error) {
 		return RawToken{}, err
 	}
 	if token.typ == 0 {
-		return RawToken{}, fmt.Errorf("invalid empty token")
+		return RawToken{}, ErrTokenEmpty
 	}
 	if len(remain) != 0 {
-		return RawToken{}, fmt.Errorf("invalid token")
+		return RawToken{}, ErrTokenInvalid
 	}
 	switch token.typ {
 	case TokenNumber:
@@ -189,6 +188,11 @@ func (r RawToken) Raw() []byte {
 	return r.raw
 }
 
+// RawString returns the raw string value of the token.
+func (r RawToken) RawString() string {
+	return string(r.raw)
+}
+
 // String returns the raw string value of the token. Use ToString() for unquoted strings.
 func (r RawToken) String() string {
 	return string(r.raw)
@@ -222,7 +226,7 @@ func (r RawToken) IsClose() bool {
 // GetNumber returns the number value of the token.
 func (r RawToken) GetNumber() (float64, error) {
 	if r.typ != TokenNumber {
-		return 0, fmt.Errorf("invalid number token")
+		return 0, ErrTokenNumber
 	}
 	switch {
 	case len(r.raw) == 1 && r.raw[0] == '0':
@@ -231,15 +235,16 @@ func (r RawToken) GetNumber() (float64, error) {
 		if r.raw[1] == '.' {
 			return strconv.ParseFloat(string(r.raw), 64)
 		} else {
-			return 0, fmt.Errorf("number cannot have leading zero")
+			// number cannot have leading zero
+			return 0, ErrTokenNumber
 		}
 	default:
 		f, err := strconv.ParseFloat(string(r.raw), 64)
 		switch {
 		case err != nil:
-			return 0, fmt.Errorf("invalid number token")
+			return 0, ErrTokenNumber
 		case math.IsNaN(f) || math.IsInf(f, 0):
-			return 0, fmt.Errorf("invalid number token")
+			return 0, ErrTokenNumber
 		}
 		return f, nil
 	}
@@ -253,7 +258,7 @@ func (r RawToken) GetBool() (bool, error) {
 	case TokenFalse:
 		return false, nil
 	default:
-		return false, fmt.Errorf("invalid boolean token")
+		return false, ErrTokenBool
 	}
 }
 
@@ -261,15 +266,15 @@ func (r RawToken) GetBool() (bool, error) {
 // https://datatracker.ietf.org/doc/html/rfc8259#section-7
 func (r RawToken) GetString() (string, error) {
 	if r.typ != TokenString {
-		return "", fmt.Errorf("invalid string token")
+		return "", ErrTokenString
 	}
 
 	raw, N := r.raw, len(r.raw)
 	if N < 2 {
-		return "", fmt.Errorf("invalid string token")
+		return "", ErrTokenString
 	}
 	if raw[0] != '"' || raw[N-1] != '"' {
-		return "", fmt.Errorf("invalid string token")
+		return "", ErrTokenString
 	}
 	i := 1
 	for ; i < N-1; i++ {
@@ -278,7 +283,7 @@ func (r RawToken) GetString() (string, error) {
 		case '\\':
 			goto slow
 		case '\b', '\f', '\n', '\r', '\t':
-			return "", fmt.Errorf("invalid string token")
+			return "", ErrTokenString
 		}
 		if c >= utf8.RuneSelf {
 			goto slow // utf-8
@@ -296,7 +301,7 @@ slow:
 		case '\\':
 			break
 		case '\b', '\f', '\n', '\r', '\t':
-			return "", fmt.Errorf("invalid string token")
+			return "", ErrTokenString
 		default:
 			// ascii
 			if c < utf8.RuneSelf {
@@ -307,7 +312,7 @@ slow:
 			// utf-8
 			r, size := utf8.DecodeRune(raw[i:])
 			if r == utf8.RuneError {
-				return "", fmt.Errorf("invalid string token")
+				return "", ErrTokenString
 			}
 			s = append(s, raw[i:i+size]...)
 			i += size
@@ -316,7 +321,7 @@ slow:
 
 		i++
 		if i >= N {
-			return "", fmt.Errorf("invalid string token")
+			return "", ErrTokenString
 		}
 		switch raw[i] {
 		case '"', '\\', '/':
@@ -340,12 +345,12 @@ slow:
 		case 'u':
 			utfRune, n := decodeHexRune(raw[i-1:])
 			if n == 0 {
-				return "", fmt.Errorf("invalid string token")
+				return "", ErrTokenString
 			}
 			s = utf8.AppendRune(s, utfRune)
 			i += n - 1
 		default:
-			return "", fmt.Errorf("invalid string token")
+			return "", ErrTokenString
 		}
 	}
 	return string(s), nil
@@ -443,5 +448,5 @@ func (r RawToken) GetValue() (any, error) {
 	case TokenObjectOpen, TokenObjectClose, TokenArrayOpen, TokenArrayClose, TokenComma, TokenColon:
 		return r.typ, nil
 	}
-	return nil, fmt.Errorf("invalid token type: %v", r.typ)
+	return nil, ErrTokenType
 }
