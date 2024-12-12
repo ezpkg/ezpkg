@@ -12,6 +12,12 @@
 
 Package [iter.json](https://pkg.go.dev/ezpkg.io/iter.json) is JSON parser and transformer in Go. The `Parse()` function returns an iterator over the JSON object, which can be used to traverse the JSON object. And `Builder` can be used to construct a JSON object. Together, they provide a powerful way to iterate and manipulate your JSON data with Go [iterators](https://pkg.go.dev/iter#hdr-Iterators).
 
+## Installation
+
+```sh
+go get -u ezpkg.io/iter.json@v0.2.2
+```
+
 ## Examples
 
 Given an example [alice.json](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/alice.json) file:

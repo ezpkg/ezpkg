@@ -42,7 +42,7 @@ func (pkgs MapPkgs) Get(name string) *PkgInfo {
 }
 
 func pkgname(name string) string {
-	return strings.ReplaceAll(name, "+", "")
+	return strings.ReplaceAll(name, ".", "")
 }
 
 func splitLine(s string, prefix string) (line, remain string) {

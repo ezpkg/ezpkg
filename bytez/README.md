@@ -15,7 +15,7 @@ Package [bytez](https://pkg.go.dev/ezpkg.io/bytez) provides utilities for workin
 ## Installation
 
 ```sh
-go get -u ezpkg.io/bytez@v0.2.1
+go get -u ezpkg.io/bytez@v0.2.2
 ```
 
 ## Examples

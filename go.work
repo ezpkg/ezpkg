@@ -8,8 +8,8 @@ use (
 	diffz
 	errorz
 	fmtz
-	iterz
 	iter.json
+	iterz
 	logz
 	mapz
 	slicez

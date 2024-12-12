@@ -12,7 +12,7 @@ run-godoc() {
 }
 
 run-all() {
-    find $EZPKG_DIR/*z $EZPKG_DIR/*+* -path $EZPKG_DIR/z.z -prune -o -name go.mod  -execdir bash -c "
+    find $EZPKG_DIR/*z $EZPKG_DIR/??*.*?? -path $EZPKG_DIR/z.z -prune -o -name go.mod  -execdir bash -c "
 export PKGNAME=\$(basename \$PWD)
 echo 👉 \$PWD
 $*

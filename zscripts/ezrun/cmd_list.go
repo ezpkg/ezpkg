@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -119,6 +120,8 @@ func mapColors(codes []int, colors []Color) MapColors {
 }
 
 func listAllPkgs() (pkgs []string) {
+	rePkg := regexp.MustCompile(`^\w\w+\.\w\w+$`) // iter.json, not z.z
+
 	goWork := unsafez.BytesToString(errorz.Must(os.ReadFile(filepath.Join(env.EzpkgDir, "go.work"))))
 	for _, line := range strings.Split(goWork, "\n") {
 		line = strings.TrimSpace(line)
@@ -128,7 +131,7 @@ func listAllPkgs() (pkgs []string) {
 		switch {
 		case strings.HasSuffix(line, "z"):
 			pkgs = append(pkgs, line)
-		case strings.Contains(line, "+"):
+		case rePkg.MatchString(line):
 			pkgs = append(pkgs, line)
 		}
 
