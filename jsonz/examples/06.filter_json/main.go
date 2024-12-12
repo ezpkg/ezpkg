@@ -15,32 +15,33 @@ import (
 func main() {
 	_, file, _, _ := runtime.Caller(0)
 	data := errorz.Must(os.ReadFile(filepath.Dir(file) + "/../alice.json"))
+	{
+		// 🦁Example: filter and output json
+		b := jsonz.NewBuilder("", "    ")
+		b.SetSkipEmptyStructures(true) // 👉 skip empty [] or {}
+		regexPetName := regexp.MustCompile("pets.*name")
+		for item, err := range jsonz.Parse(data) {
+			errorz.MustZ(err)
+			if item.Token.IsOpen() || item.Token.IsClose() {
+				b.AddRaw(item.Key, item.Token)
+				continue
+			}
 
-	// 🦁Example: filter and output json
-	b := jsonz.NewBuilder("", "    ")
-	b.SetSkipEmptyStructures(true) // 👉 skip empty [] or {}
-	regexPetName := regexp.MustCompile("pets.*name")
-	for item, err := range jsonz.Parse(data) {
-		errorz.MustZ(err)
-		if item.Token.IsOpen() || item.Token.IsClose() {
+			path := item.GetPathString()
+			switch {
+			case path == "name",
+				path == "email",
+				path == "phone",
+				regexPetName.MatchString(path),
+				strings.Contains(path, "address"):
+				// continue
+			default:
+				continue
+			}
+
 			b.AddRaw(item.Key, item.Token)
-			continue
 		}
-
-		path := item.GetPathString()
-		switch {
-		case path == "name",
-			path == "email",
-			path == "phone",
-			regexPetName.MatchString(path),
-			strings.Contains(path, "address"):
-			// continue
-		default:
-			continue
-		}
-
-		b.AddRaw(item.Key, item.Token)
+		out := errorz.Must(b.Bytes())
+		fmt.Printf("\n--- filter: output json ---\n%s\n----------\n", out)
 	}
-	out := errorz.Must(b.Bytes())
-	fmt.Printf("\n--- filter: output json ---\n%s\n----------\n", out)
 }

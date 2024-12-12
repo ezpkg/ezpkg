@@ -114,19 +114,6 @@ func TestScan(t *testing.T) {
 	})
 }
 
-func assertToken(t *testing.T, token RawToken, typ TokenType, value any) {
-	switch token.Type() {
-	case TokenNumber:
-		n, err := token.GetNumber()
-		assert(t, err == nil && n == value.(float64), "expected %v", value)
-	case TokenString:
-		s, err := token.GetString()
-		assert(t, err == nil && s == value.(string), "expected %v", value)
-	default:
-		panic("unreachable")
-	}
-}
-
 func must[T any](v T, err error) T {
 	if err != nil {
 		panic(err)

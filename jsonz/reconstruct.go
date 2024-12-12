@@ -108,162 +108,103 @@ func (b *Builder) Bytes() ([]byte, error) {
 
 // AddRaw adds a key and token to the builder. It will add a comma if needed.
 func (b *Builder) AddRaw(key, token RawToken) {
-	switch {
-	case token.IsOpen():
-		snapshot := b.snapshot()
-		b.switchAltBuf()
-		b.WriteNewline(token.Type())
-		b.WriteIndent()
-		b.writeKey(key)
-		b.writeByte(byte(token.Type()))
-		b.push(token.Type(), snapshot)
-		b.setLastToken(token.Type())
-
-	case token.IsClose():
-		if key.Type() != 0 {
-			b.addErrorf("unexpected key(%s) before close token(%s)", key, token.Type())
-			return
-		}
-		snapshot, ok := b.pop()
-		if !ok {
-			b.addErrorf("unexpected close token(%s)", token.Type())
-			return
-		}
-		if b.skipEmptyStructures && b.lastTok.IsOpen() {
-			b.restore(snapshot)
-		} else {
-			b.WriteNewline(token.Type())
-			b.WriteIndent()
-			b.writeByte(byte(token.Type()))
-			b.setLastToken(token.Type())
-		}
-
-	case token.IsValue():
-		b.switchBuf()
-		b.WriteNewline(token.Type())
-		b.WriteIndent()
-		b.writeKey(key)
-		b.write(token.Raw())
-		b.setLastToken(token.Type())
-
-	default:
-		b.addErrorf("unexpected token(%s)", token)
-	}
+	b.add(key, token.typ, token.raw, nil)
 }
 
 // AddToken adds a key and token to the builder. It will add a comma if needed.
 func (b *Builder) AddToken(key string, token RawToken) {
-	switch {
-	case token.IsOpen():
-		snapshot := b.snapshot()
-		b.WriteNewline(token.Type())
-		b.WriteIndent()
-		b.writeKeyString(key)
-		b.writeByte(byte(token.Type()))
-		b.push(token.Type(), snapshot)
-		b.setLastToken(token.Type())
-
-	case token.IsClose():
-		if key != "" {
-			b.addErrorf("unexpected key(%s) before close token(%s)", key, token.Type())
-			return
-		}
-		if b.level <= 0 {
-			b.addErrorf("unexpected close token(%s)", token.Type())
-			return
-		}
-		snapshot, ok := b.pop()
-		if !ok {
-			b.addErrorf("unexpected close token(%s)", token.Type())
-			return
-		}
-		if b.skipEmptyStructures && b.lastTok.IsOpen() {
-			b.restore(snapshot)
-		} else {
-			b.WriteNewline(token.Type())
-			b.WriteIndent()
-			b.writeByte(byte(token.Type()))
-			b.setLastToken(token.Type())
-		}
-
-	case token.IsValue():
-		b.switchBuf()
-		b.WriteNewline(token.Type())
-		b.WriteIndent()
-		b.writeKeyString(key)
-		b.write(token.Raw())
-		b.setLastToken(token.Type())
-
-	default:
-		b.addErrorf("unexpected token(%s)", token)
-	}
+	b.add(key, token.typ, token.raw, nil)
 }
 
 // Add adds a key and value to the builder. It will add a comma if needed.
 func (b *Builder) Add(key string, value any) {
-	var tokType TokenType
-	var rawTok RawToken
+	var token RawToken
 
 	switch v := value.(type) {
 	case TokenType: // open or close token
-		tokType = v
+		token = v.New()
 
 	case RawToken:
-		rawTok = v
-		tokType = rawTok.typ
+		token = v
 
 	case []byte:
 		var err error
-		rawTok, err = NewRawToken(v)
+		token, err = NewRawToken(v)
 		if err != nil {
 			b.addErrorf(err.Error())
 		}
-		tokType = rawTok.typ
 
 	default:
 		// string | number | boolean | null
 	}
 
+	b.add(key, token.typ, token.raw, value)
+}
+
+func (b *Builder) add(key any, tokType TokenType, raw []byte, value any) {
 	switch {
 	case tokType.IsOpen():
 		snapshot := b.snapshot()
+		b.switchAltBuf()
 		b.WriteNewline(tokType)
 		b.WriteIndent()
-		b.writeKeyString(key)
+		b.writeKey(key)
 		b.writeByte(byte(tokType))
-		b.setLastToken(tokType)
 		b.push(tokType, snapshot)
+		b.setLastToken(tokType)
 
 	case tokType.IsClose():
-		if key != "" {
+		if isValidKey(key) {
 			b.addErrorf("unexpected key(%s) before close token(%s)", key, tokType)
 			return
 		}
-		if b.level <= 0 {
+		snapshot, ok := b.pop()
+		if !ok {
 			b.addErrorf("unexpected close token(%s)", tokType)
 			return
 		}
-		b.pop()
+		if b.skipEmptyStructures && b.lastTok.IsOpen() {
+			b.restore(snapshot)
+		} else {
+			b.WriteNewline(tokType)
+			b.WriteIndent()
+			b.writeByte(byte(tokType))
+			b.setLastToken(tokType)
+		}
+
+	case tokType == 0 && raw == nil: // value is set
+		switch intOrStr(value).(type) {
+		case int, float32, float64:
+			tokType = TokenNumber
+		case string:
+			tokType = TokenString
+		case bool:
+			tokType = TokenTrue
+		case nil:
+			tokType = TokenNull
+		default:
+			// fallback to encoding/json
+			tokType = TokenString
+		}
+		fallthrough
+
+	case tokType.IsValue():
+		b.switchBuf()
 		b.WriteNewline(tokType)
 		b.WriteIndent()
-		b.writeByte(byte(tokType))
+		b.writeKey(key)
+		if raw != nil {
+			b.write(raw)
+		} else {
+			b.writeValue(value)
+		}
 		b.setLastToken(tokType)
 
 	default:
-		b.switchBuf()
-		b.WriteNewline(TokenString) // assume value token
-		b.WriteIndent()
-		b.writeKeyString(key)
-
-		if rawTok.typ != 0 {
-			if !rawTok.IsValue() {
-				b.addErrorf("unexpected token(%s) as value", rawTok)
-				return
-			}
-			b.write(rawTok.raw)
-			b.setLastToken(tokType)
+		if raw != nil {
+			b.addErrorf("unexpected token(%s)", raw)
 		} else {
-			b.writeValue(value)
+			b.addErrorf("unexpected token(%s)", value)
 		}
 	}
 }
@@ -346,59 +287,51 @@ func (b *Builder) writeValue(value any) {
 	}
 }
 
-func (b *Builder) writeKey(key RawToken) {
-	if b.level <= 0 {
-		if key.Type() != 0 {
-			b.addErrorf("unexpected key(%s) at root", key)
-		}
-		return
-	}
-	top := b.stack[len(b.stack)-1]
-	switch top.tok {
-	case TokenArrayOpen:
-		if key.Type() != 0 {
-			b.addErrorf("unexpected key(%s) in array", key)
-			return
-		}
-	case TokenObjectOpen:
-		if key.Type() == 0 {
-			b.addErrorf("missing key in object")
-		}
-		b.write(key.Raw())
-		b.writeByte(':')
-		if b.indent != "" {
-			b.writeByte(' ')
-		}
-	default:
-		panic("unexpected stack")
-	}
-}
+func (b *Builder) writeKey(key any) {
+	var keyType TokenType
+	var raw []byte
+	var str string
 
-func (b *Builder) writeKeyString(key string) {
+	switch key := key.(type) {
+	case RawToken:
+		keyType = key.Type()
+		raw = key.Raw()
+	case string:
+		keyType = TokenString
+		str = key
+	default:
+		b.addErrorf("writeKey: unexpected key type(%T)", key)
+		return
+	}
+
 	if b.level <= 0 {
-		if key != "" {
-			b.addErrorf("unexpected key(%s) at root", key)
+		if isValidKey(key) {
+			b.addErrorf("writeKey: unexpected key(%s) at root", key)
 		}
 		return
 	}
 	top := b.stack[len(b.stack)-1]
 	switch top.tok {
 	case TokenArrayOpen:
-		if key != "" {
-			b.addErrorf("unexpected key(%s) in array", key)
+		if isValidKey(key) {
+			b.addErrorf("writeKey: unexpected key(%s) in array", key)
 			return
 		}
 	case TokenObjectOpen:
-		if key == "" {
-			b.addErrorf("missing key in object")
+		if keyType == 0 {
+			b.addErrorf("writeKey: missing key in object")
 		}
-		b.writeQuote(key)
+		if raw != nil {
+			b.write(raw)
+		} else {
+			b.writeQuote(str)
+		}
 		b.writeByte(':')
 		if b.indent != "" {
 			b.writeByte(' ')
 		}
 	default:
-		panic("unexpected stack")
+		b.addErrorf("writeKey: unexpected stack")
 	}
 }
 
@@ -559,4 +492,15 @@ type stItem struct {
 	lastTok     TokenType
 	lastIndent  bool
 	lastNewline bool
+}
+
+func isValidKey(key any) bool {
+	switch key := key.(type) {
+	case string:
+		return key != ""
+	case RawToken:
+		return key.IsValue()
+	default:
+		return false
+	}
 }
