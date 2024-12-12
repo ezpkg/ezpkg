@@ -40,11 +40,11 @@ const defaultPkgMode = packages.NeedName |
 
 type cmdPkg struct {
 	fileSet *token.FileSet
-	pkgInfo map[string]*PkgInfo // map[name]*PkgInfo
+	pkgInfo MapPkgs // map[name]*PkgInfo
 }
 
 func (c *cmdPkg) Run(cx *cli.Context) error {
-	c.pkgInfo = map[string]*PkgInfo{}
+	c.pkgInfo = MapPkgs{}
 
 	args := script.WrapArgs(cx)
 	switch {
@@ -141,7 +141,7 @@ func (c *cmdPkg) processPackage(pkgName string) (pkgInfo *PkgInfo, err error) {
 	_pkgs := errorz.Must(packages.Load(config, "./..."))
 	for _, pkg := range _pkgs {
 		errorz.ValidateTof(&err, strings.HasPrefix(pkg.PkgPath, "ezpkg.io/"), "package path must start with ezpkg.io: %v", pkg.PkgPath)
-		if pkg.Name == pkgName {
+		if pkg.Name == pkgname(pkgName) {
 			if pkgInfo != nil {
 				panic(fmt.Sprintf("duplicated package name %q", pkg.Name))
 			}
@@ -200,7 +200,7 @@ func (c *cmdPkg) processGoMod(pkgInfo *PkgInfo) {
 	pkgInfo.goModLocal = outputGoMod(true)
 }
 
-func calcDeps(pkgs map[string]*PkgInfo) {
+func calcDeps(pkgs MapPkgs) {
 	marks := map[string]int{} // 0: unmarked, -1: pending, 1: done
 	var visit func(parent, name string)
 	visit = func(parent, name string) {
@@ -211,7 +211,7 @@ func calcDeps(pkgs map[string]*PkgInfo) {
 			panic("circular dependency")
 		default:
 			marks[name] = -1 // pending
-			pkg := pkgs[name]
+			pkg := pkgs.Get(name)
 			if pkg == nil {
 				panic(fmt.Sprintf("package %s→%s not found", parent, name))
 			}

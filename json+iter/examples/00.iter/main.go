@@ -7,7 +7,7 @@ import (
 	"runtime"
 
 	"ezpkg.io/errorz"
-	"ezpkg.io/jsonz"
+	jsoniter "ezpkg.io/json+iter"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 	data := errorz.Must(os.ReadFile(filepath.Dir(file) + "/../alice.json"))
 
 	// 🎄Example: iterate over json
-	for item, err := range jsonz.Parse(data) {
+	for item, err := range jsoniter.Parse(data) {
 		errorz.MustZ(err)
 		fmt.Printf("%20v : %22v   . %v . %v\n", item.Key, item.Token, item.Level, item.GetPath())
 	}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"ezpkg.io/errorz"
-	"ezpkg.io/jsonz"
+	jsoniter "ezpkg.io/json+iter"
 )
 
 type Address struct {
@@ -16,9 +16,9 @@ type Address struct {
 
 func main() {
 	{
-		b := jsonz.NewBuilder("", "    ")
+		b := jsoniter.NewBuilder("", "    ")
 		// open an object
-		b.Add("", jsonz.TokenObjectOpen)
+		b.Add("", jsoniter.TokenObjectOpen)
 
 		// add a few fields
 		b.Add("name", "Alice")
@@ -27,10 +27,10 @@ func main() {
 		b.Add("phone", "(+84) 123-456-789")
 
 		// open an array
-		b.Add("languages", jsonz.TokenArrayOpen)
+		b.Add("languages", jsoniter.TokenArrayOpen)
 		b.Add("", "English")
 		b.Add("", "Vietnamese")
-		b.Add("", jsonz.TokenArrayClose)
+		b.Add("", jsoniter.TokenArrayClose)
 		// close the array
 
 		// accept any type that can marshal to json
@@ -45,7 +45,7 @@ func main() {
 		b.Add("pets", []byte(`[{"type":"cat","name":"Kitty","age":2},{"type":"dog","name":"Yummy","age":3}]`))
 
 		// close the object
-		b.Add("", jsonz.TokenObjectClose)
+		b.Add("", jsoniter.TokenObjectClose)
 
 		out := errorz.Must(b.Bytes())
 		fmt.Printf("\n--- build json ---\n%s\n", out)

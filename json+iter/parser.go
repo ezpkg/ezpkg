@@ -1,4 +1,4 @@
-package jsonz
+package jsoniter
 
 import (
 	"fmt"

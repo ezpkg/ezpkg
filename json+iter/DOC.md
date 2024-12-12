@@ -1,18 +1,20 @@
-# ezpkg.io/jsonz
+# ezpkg.io/json+iter
 
-Package [jsonz](https://pkg.go.dev/ezpkg.io/jsonz) is a minimal implementation of json parser and transformer in Go. The
+Package [json+iter](https://pkg.go.dev/ezpkg.io/json+iter) is a minimal implementation of json parser and transformer in Go. The
 `Parse()` function returns an iter over the JSON object, which can be used to traverse the JSON object.
 
 ## Examples
 
 ### 1. Iterate over the JSON object:
 
+See [example code](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/00.iter/main.go).
+
 ```go
 package main
 
 import (
 	"fmt"
-	"ezpkg.io/jsonz"
+	jsoniter "ezpkg.io/json+iter"
 )
 
 func main() {
@@ -20,7 +22,7 @@ func main() {
 
 	fmt.Println("| Path | Index | Key | Token |")
 	fmt.Println("|------|-------|-----|-------|")
-	for item, err := range jsonz.Parse([]byte(jsonStr)) {
+	for item, err := range jsoniter.Parse([]byte(jsonStr)) {
 		if err != nil {
 			panic(err)
 		}
@@ -57,19 +59,19 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"ezpkg.io/jsonz"
+	jsoniter "ezpkg.io/json+iter"
 )
 
 func main() {
 	jsonStr := `{"name": "Alice", "age": 24, "address": {"city": "The Sun", "zip": 10101}}`
 	
 	var b bytes.Buffer
-	var lastTokenType jsonz.TokenType
-	for item, err := range jsonz.Parse([]byte(jsonStr)) {
+	var lastTokenType jsoniter.TokenType
+	for item, err := range jsoniter.Parse([]byte(jsonStr)) {
 		if err != nil {
 			panic(err)
 		}
-		if jsonz.ShouldAddComma(lastTokenType, item.Token.Type()) {
+		if jsoniter.ShouldAddComma(lastTokenType, item.Token.Type()) {
 			b.WriteByte(',')
 		}
 		if item.Key.IsValue() {
@@ -98,7 +100,7 @@ package main
 
 import (
 	"fmt"
-	"ezpkg.io/jsonz"
+	jsoniter "ezpkg.io/json+iter"
 	"ezpkg.io/bytez"
 )
 
@@ -106,12 +108,12 @@ func main() {
 	jsonStr := `{"name": "Alice", "age": 24, "address": {"city": "The Sun", "zip": 10101}}`
 	
 	var b bytez.Buffer
-	var lastTokenType jsonz.TokenType
-	for item, err := range jsonz.Parse([]byte(jsonStr)) {
+	var lastTokenType jsoniter.TokenType
+	for item, err := range jsoniter.Parse([]byte(jsonStr)) {
 		if err != nil {
 			panic(err)
 		}
-		if jsonz.ShouldAddComma(lastTokenType, item.Token.Type()) {
+		if jsoniter.ShouldAddComma(lastTokenType, item.Token.Type()) {
 			b.Print(",")
 		}
 		b.Println()

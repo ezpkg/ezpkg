@@ -35,6 +35,16 @@ type PkgInfo struct {
 	ezDepsAll []string // direct and indirect ezpkg.io dependencies
 }
 
+type MapPkgs map[string]*PkgInfo
+
+func (pkgs MapPkgs) Get(name string) *PkgInfo {
+	return pkgs[name]
+}
+
+func pkgname(name string) string {
+	return strings.ReplaceAll(name, "+", "")
+}
+
 func splitLine(s string, prefix string) (line, remain string) {
 	if !strings.HasPrefix(s, prefix) {
 		return "", s

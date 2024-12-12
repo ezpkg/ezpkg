@@ -1,4 +1,4 @@
-module ezpkg.io/jsonz
+module ezpkg.io/json+iter
 
 go 1.23
 

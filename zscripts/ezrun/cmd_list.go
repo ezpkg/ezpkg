@@ -122,9 +122,16 @@ func listAllPkgs() (pkgs []string) {
 	goWork := unsafez.BytesToString(errorz.Must(os.ReadFile(filepath.Join(env.EzpkgDir, "go.work"))))
 	for _, line := range strings.Split(goWork, "\n") {
 		line = strings.TrimSpace(line)
-		if strings.HasSuffix(line, "z") && !strings.Contains(line, "/") {
+		if strings.Contains(line, "/") {
+			continue
+		}
+		switch {
+		case strings.HasSuffix(line, "z"):
+			pkgs = append(pkgs, line)
+		case strings.Contains(line, "+"):
 			pkgs = append(pkgs, line)
 		}
+
 	}
 	return pkgs
 }

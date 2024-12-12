@@ -1,4 +1,4 @@
-package jsonz_test
+package jsoniter_test
 
 import (
 	"bytes"
@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	. "ezpkg.io/conveyz"
-	. "ezpkg.io/jsonz"
-	"ezpkg.io/jsonz/test"
+	. "ezpkg.io/json+iter"
+	"ezpkg.io/json+iter/test"
 	. "ezpkg.io/testingz"
 )
 

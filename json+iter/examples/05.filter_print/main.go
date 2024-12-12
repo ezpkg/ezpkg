@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"ezpkg.io/errorz"
-	"ezpkg.io/jsonz"
+	jsoniter "ezpkg.io/json+iter"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 		// 🐳Example: filter and print, use GetPathString()
 		fmt.Printf("\n--- filter: print line number ---\n")
 		i, regexPetName := 0, regexp.MustCompile("pets.*name")
-		for item, err := range jsonz.Parse(data) {
+		for item, err := range jsoniter.Parse(data) {
 			i++
 			errorz.MustZ(err)
 
@@ -43,7 +43,7 @@ func main() {
 		// 🐳Example: filter and print, use GetRawPath() and Match()
 		fmt.Printf("\n--- filter: print line number ---\n")
 		i := 0
-		for item, err := range jsonz.Parse(data) {
+		for item, err := range jsoniter.Parse(data) {
 			i++
 			errorz.MustZ(err)
 

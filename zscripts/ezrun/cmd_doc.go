@@ -49,7 +49,7 @@ func (c *cmdDoc) generateDoc(pkgs []string) {
 		errorz.MustZ(os.WriteFile(path, data, 0644))
 
 		zzFile := env.EzpkgDir + "/" + pkg + "/zz.go"
-		zzData := fmt.Sprintf("package %s\n\n// internal usage\nconst zzVersion = `%s`\n", pkg, env.Info.Version)
+		zzData := fmt.Sprintf("package %s\n\n// internal usage\nconst zzVersion = `%s`\n", pkgname(pkg), env.Info.Version)
 		errorz.MustZ(os.WriteFile(zzFile, []byte(zzData), 0644))
 	}
 	fmt.Printf("\n✅ DONE!\n")

@@ -9,7 +9,7 @@ use (
 	errorz
 	fmtz
 	iterz
-	jsonz
+	json+iter
 	logz
 	mapz
 	slicez

@@ -8,7 +8,7 @@ import (
 	"runtime"
 
 	"ezpkg.io/errorz"
-	"ezpkg.io/jsonz"
+	jsoniter "ezpkg.io/json+iter"
 )
 
 func main() {
@@ -17,8 +17,8 @@ func main() {
 	{
 		// 🐞Example: print with line number
 		i := 0
-		b := jsonz.NewBuilder("", "    ")
-		for item, err := range jsonz.Parse(data) {
+		b := jsoniter.NewBuilder("", "    ")
+		for item, err := range jsoniter.Parse(data) {
 			i++
 			errorz.MustZ(err)
 			b.WriteNewline(item.Token.Type())

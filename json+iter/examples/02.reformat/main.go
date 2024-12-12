@@ -7,7 +7,7 @@ import (
 	"runtime"
 
 	"ezpkg.io/errorz"
-	"ezpkg.io/jsonz"
+	jsoniter "ezpkg.io/json+iter"
 )
 
 func main() {
@@ -16,8 +16,8 @@ func main() {
 
 	{
 		// 🐝Example: minify json
-		b := jsonz.NewBuilder("", "")
-		for item, err := range jsonz.Parse(data) {
+		b := jsoniter.NewBuilder("", "")
+		for item, err := range jsoniter.Parse(data) {
 			errorz.MustZ(err)
 			b.AddRaw(item.Key, item.Token)
 		}
@@ -26,8 +26,8 @@ func main() {
 	}
 	{
 		// 🦋Example: reformat json
-		b := jsonz.NewBuilder("→   ", "\t")
-		for item, err := range jsonz.Parse(data) {
+		b := jsoniter.NewBuilder("→   ", "\t")
+		for item, err := range jsoniter.Parse(data) {
 			errorz.MustZ(err)
 			b.AddRaw(item.Key, item.Token)
 		}

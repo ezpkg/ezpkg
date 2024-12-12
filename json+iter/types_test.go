@@ -1,10 +1,10 @@
-package jsonz_test
+package jsoniter_test
 
 import (
 	"testing"
 
 	. "ezpkg.io/conveyz"
-	. "ezpkg.io/jsonz"
+	. "ezpkg.io/json+iter"
 )
 
 func TestTypes(t *testing.T) {
