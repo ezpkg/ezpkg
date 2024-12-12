@@ -1,4 +1,4 @@
-package jsoniter_test
+package iterjson_test
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	. "ezpkg.io/conveyz"
-	jsoniter "ezpkg.io/json+iter"
-	"ezpkg.io/json+iter/test"
+	iterjson "ezpkg.io/iter.json"
+	"ezpkg.io/iter.json/test"
 	"ezpkg.io/stringz"
 	. "ezpkg.io/testingz"
 )
@@ -26,7 +26,7 @@ func TestParse(t *testing.T) {
 				}
 				b.Printf(msg, args...)
 			}
-			for item, err := range jsoniter.Parse([]byte(in)) {
+			for item, err := range iterjson.Parse([]byte(in)) {
 				if err != nil {
 					pr("[ERROR] %v\n", err)
 					return b.String(), err
@@ -126,7 +126,7 @@ L0     → ]
 			input := `{"name": "Alice", "age": 24, "scores": [9, {"math": 10}, 8], "address": {"city": "The Sun", "zip": 10101}}`
 
 			var b stringz.Builder
-			for item, err := range jsoniter.Parse([]byte(input)) {
+			for item, err := range iterjson.Parse([]byte(input)) {
 				if err != nil {
 					b.Printf("[ERROR] %v\n", err)
 				} else {

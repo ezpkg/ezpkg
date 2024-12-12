@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"ezpkg.io/errorz"
-	jsoniter "ezpkg.io/json+iter"
+	iterjson "ezpkg.io/iter.json"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 	fmt.Printf("| %25v | %18v | %22v |%v|\n", "PATH", "KEY", "TOKEN", "LVL")
 	fmt.Printf("| %s | %s | %s | - |\n", strings.Repeat("-", 25), strings.Repeat("-", 18), strings.Repeat("-", 22))
 
-	for item, err := range jsoniter.Parse(data) {
+	for item, err := range iterjson.Parse(data) {
 		errorz.MustZ(err)
 
 		fmt.Printf("| %25v | %18v | %22v | %v |\n", item.GetPathString(), item.Key, item.Token, item.Level)

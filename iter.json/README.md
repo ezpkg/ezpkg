@@ -1,11 +1,26 @@
-# ezpkg.io/json+iter
+<div align="center">
 
-Package [json+iter](https://pkg.go.dev/ezpkg.io/json+iter) is a minimal implementation of json parser and transformer in Go. The
-`Parse()` function returns an iter over the JSON object, which can be used to traverse the JSON object.
+[![gopherz](https://ezpkg.io/_/gopherz.svg)](https://ezpkg.io)
+
+</div>
+
+# ezpkg.io/iter.json
+
+[![PkgGoDev](https://pkg.go.dev/badge/ezpkg.io/iter.json)](https://pkg.go.dev/ezpkg.io/iter.json)
+[![GitHub License](https://img.shields.io/github/license/ezpkg/iter.json)](https://github.com/ezpkg/iter.json/tree/main/LICENSE)
+[![version](https://img.shields.io/github/v/tag/ezpkg/iter.json?label=version)](https://pkg.go.dev/ezpkg.io/iter.json?tab=versions)
+
+Package [iter.json](https://pkg.go.dev/ezpkg.io/iter.json) is a minimal implementation of json parser and transformer in Go. The `Parse()` function returns an iter over the JSON object, which can be used to traverse the JSON object.
+
+## Installation
+
+```sh
+go get -u ezpkg.io/iter.json@v0.2.1
+```
 
 ## Examples
 
-Given an example [eve.json](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/eve.json) file:
+Given an example [eve.json](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/eve.json) file:
 
 ```json
 {
@@ -23,7 +38,7 @@ You can query and manipulate the JSON object in various ways:
 
 ### 1. Iterating JSON:
 
-Use `for range Parse()` to iterate over a JSON data, then print the path, key, token, and level of each item. See [examples/01.iter](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/01.iter/main.go).
+Use `for range Parse()` to iterate over a JSON data, then print the path, key, token, and level of each item. See [examples/01.iter](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/01.iter/main.go).
 
 ```go
 package main
@@ -32,7 +47,7 @@ import (
     "fmt"
 
     "ezpkg.io/errorz"
-    jsoniter "ezpkg.io/json+iter"
+    iterjson "ezpkg.io/iter.json"
 )
 
 func main() {
@@ -41,7 +56,7 @@ func main() {
     // 🎄Example: iterate over json
     fmt.Printf("| %12v | %10v | %10v |%v|\n", "PATH", "KEY", "TOKEN", "LVL")
     fmt.Println("| ------------ | ---------- | ---------- | - |")
-    for item, err := range jsoniter.Parse([]byte(data)) {
+    for item, err := range iterjson.Parse([]byte(data)) {
         errorz.MustZ(err)
 
         fmt.Printf("| %12v | %10v | %10v | %v |\n", item.GetPathString(), item.Key, item.Token, item.Level)
@@ -71,12 +86,12 @@ The code will output:
 
 ### 2. Building JSON:
 
-Use `Builder` to build a JSON data. It accepts optional arguments for indentation. See [examples/02.builder](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/02.builder/main.go).
+Use `Builder` to build a JSON data. It accepts optional arguments for indentation. See [examples/02.builder](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/02.builder/main.go).
 
 ```go
-b := jsoniter.NewBuilder("", "    ")
+b := iterjson.NewBuilder("", "    ")
 // open an object
-b.Add("", jsoniter.TokenObjectOpen)
+b.Add("", iterjson.TokenObjectOpen)
 
 // add a few fields
 b.Add("name", "Alice")
@@ -85,10 +100,10 @@ b.Add("email", "alice@example.com")
 b.Add("phone", "(+84) 123-456-789")
 
 // open an array
-b.Add("languages", jsoniter.TokenArrayOpen)
+b.Add("languages", iterjson.TokenArrayOpen)
 b.Add("", "English")
 b.Add("", "Vietnamese")
-b.Add("", jsoniter.TokenArrayClose)
+b.Add("", iterjson.TokenArrayClose)
 // close the array
 
 // accept any type that can marshal to json
@@ -103,7 +118,7 @@ b.Add("address", Address{
 b.Add("pets", []byte(`[{"type":"cat","name":"Kitty","age":2},{"type":"dog","name":"Yummy","age":3}]`))
 
 // close the object
-b.Add("", jsoniter.TokenObjectClose)
+b.Add("", iterjson.TokenObjectClose)
 
 out := errorz.Must(b.Bytes())
 fmt.Printf("\n--- build json ---\n%s\n", out)
@@ -139,13 +154,13 @@ Which will output the JSON with indentation:
 
 ### 3. Formatting JSON:
 
-You can reconstruct or format a JSON data by sending its key and values to a `Builder`. See [examples/03.reformat](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/03.reformat/main.go).
+You can reconstruct or format a JSON data by sending its key and values to a `Builder`. See [examples/03.reformat](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/03.reformat/main.go).
 
 ```go
 {
     // 🐝Example: minify json
-    b := jsoniter.NewBuilder("", "")
-    for item, err := range jsoniter.Parse(data) {
+    b := iterjson.NewBuilder("", "")
+    for item, err := range iterjson.Parse(data) {
         errorz.MustZ(err)
         b.AddRaw(item.Key, item.Token)
     }
@@ -154,8 +169,8 @@ You can reconstruct or format a JSON data by sending its key and values to a `Bu
 }
 {
     // 🦋Example: format json
-    b := jsoniter.NewBuilder("👉   ", "\t")
-    for item, err := range jsoniter.Parse(data) {
+    b := iterjson.NewBuilder("👉   ", "\t")
+    for item, err := range iterjson.Parse(data) {
         errorz.MustZ(err)
         b.AddRaw(item.Key, item.Token)
     }
@@ -190,13 +205,13 @@ The first example minifies the JSON while the second example formats it with pre
 
 ### 4. Adding line numbers
 
-In this example, we add line numbers to the JSON output, by adding a `b.WriteNewline()` before the `fmt.Fprintf()` call. See [examples/04.line_number](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/04.line_number/main.go).
+In this example, we add line numbers to the JSON output, by adding a `b.WriteNewline()` before the `fmt.Fprintf()` call. See [examples/04.line_number](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/04.line_number/main.go).
 
 ```go
 // 🐞Example: print with line number
 i := 0
-b := jsoniter.NewBuilder("", "    ")
-for item, err := range jsoniter.Parse(data) {
+b := iterjson.NewBuilder("", "    ")
+for item, err := range iterjson.Parse(data) {
     i++
     errorz.MustZ(err)
     b.WriteNewline(item.Token.Type())
@@ -229,12 +244,12 @@ This will output:
 
 ### 5. Adding comments
 
-By putting a `fmt.Fprintf(comment)` between `b.WriteComma()` and `b.WriteNewline()`, you can add a comment to the end of each line. See [examples/05.comment](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/05.comment/main.go).
+By putting a `fmt.Fprintf(comment)` between `b.WriteComma()` and `b.WriteNewline()`, you can add a comment to the end of each line. See [examples/05.comment](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/05.comment/main.go).
 
 ```go
 i, newlineIdx, maxIdx := 0, 0, 30
-b := jsoniter.NewBuilder("", "    ")
-for item, err := range jsoniter.Parse(data) {
+b := iterjson.NewBuilder("", "    ")
+for item, err := range iterjson.Parse(data) {
     errorz.MustZ(err)
     b.WriteComma(item.Token.Type())
 
@@ -279,14 +294,14 @@ This will output:
 
 ### 6. Filtering JSON and extracting values
 
-There are `item.GetPathString()` and `item.GetRawPath()` to get the path of the current item. You can use them to filter the JSON data. See [examples/06.filter_print](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/06.filter_print/main.go).
+There are `item.GetPathString()` and `item.GetRawPath()` to get the path of the current item. You can use them to filter the JSON data. See [examples/06.filter_print](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/06.filter_print/main.go).
 
 Example with `item.GetPathString()` and `regexp`:
 
 ```go
 fmt.Printf("\n--- filter: GetPathString() ---\n")
 i := 0
-for item, err := range jsoniter.Parse(data) {
+for item, err := range iterjson.Parse(data) {
     i++
     errorz.MustZ(err)
 
@@ -309,7 +324,7 @@ Example with `item.GetRawPath()` and `path.Match()`:
 ```go
 fmt.Printf("\n--- filter: GetRawPath() ---\n")
 i := 0
-for item, err := range jsoniter.Parse(data) {
+for item, err := range iterjson.Parse(data) {
     i++
     errorz.MustZ(err)
 
@@ -339,13 +354,13 @@ Both examples will output:
 
 ### 7. Filtering JSON and returning a new JSON
 
-By combining the `Builder` with the option `SetSkipEmptyStructures(false)` and the filtering logic, you can filter the JSON data and return a new JSON. See [examples/07.filter_json](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/07.filter_json/main.go)
+By combining the `Builder` with the option `SetSkipEmptyStructures(false)` and the filtering logic, you can filter the JSON data and return a new JSON. See [examples/07.filter_json](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/07.filter_json/main.go)
 
 ```go
 // 🦁Example: filter and output json
-b := jsoniter.NewBuilder("", "    ")
+b := iterjson.NewBuilder("", "    ")
 b.SetSkipEmptyStructures(true) // 👉 skip empty [] or {}
-for item, err := range jsoniter.Parse(data) {
+for item, err := range iterjson.Parse(data) {
     errorz.MustZ(err)
     if item.Token.IsOpen() || item.Token.IsClose() {
         b.Add(item.Key, item.Token)
@@ -381,13 +396,13 @@ This example will return a new JSON with only the filtered fields:
 
 ### 8. Editing values
 
-This is an example for editing values in a JSON data. Assume that we are using number ids for our API. The ids are too big and JavaScript can't handle them. We need to convert them to strings. See [examples/08.number_id](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/08.number_id/main.go) and [order.json](https://github.com/ezpkg/ezpkg/blob/main/json+iter/examples/order.json).
+This is an example for editing values in a JSON data. Assume that we are using number ids for our API. The ids are too big and JavaScript can't handle them. We need to convert them to strings. See [examples/08.number_id](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/08.number_id/main.go) and [order.json](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/order.json).
 
 Iterate over the JSON data, find all `_id` fields and convert the number ids to strings:
 
 ```go
-b := jsoniter.NewBuilder("", "    ")
-for item, err := range jsoniter.Parse(data) {
+b := iterjson.NewBuilder("", "    ")
+for item, err := range iterjson.Parse(data) {
     errorz.MustZ(err)
     key, _ := item.GetRawPath().Last().ObjectKey()
     if strings.HasSuffix(key, "_id") {
@@ -424,3 +439,13 @@ This will add quotes to the number ids:
     ]
 }
 ```
+
+## About ezpkg.io
+
+As I work on various Go projects, I often find myself creating utility functions, extending existing packages, or developing packages to solve specific problems. Moving from one project to another, I usually have to copy or rewrite these solutions. So I created this repository to have all these utilities and packages in one place. Hopefully, you'll find them useful as well.
+
+For more information, see the [main repository](https://github.com/ezpkg/ezpkg).
+
+## Author
+
+[![Oliver Nguyen](https://olivernguyen.io/_/badge.svg)](https://olivernguyen.io)&nbsp;&nbsp;[![github](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/iOliverNguyen)

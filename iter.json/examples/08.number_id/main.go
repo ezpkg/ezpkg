@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"ezpkg.io/errorz"
-	jsoniter "ezpkg.io/json+iter"
+	iterjson "ezpkg.io/iter.json"
 )
 
 func main() {
@@ -17,8 +17,8 @@ func main() {
 	data := errorz.Must(os.ReadFile(filepath.Dir(file) + "/../order.json"))
 	{
 		// 🥝Example: convert all number ids to string
-		b := jsoniter.NewBuilder("", "    ")
-		for item, err := range jsoniter.Parse(data) {
+		b := iterjson.NewBuilder("", "    ")
+		for item, err := range iterjson.Parse(data) {
 			errorz.MustZ(err)
 			key, _ := item.GetRawPath().Last().ObjectKey()
 			if strings.HasSuffix(key, "_id") {

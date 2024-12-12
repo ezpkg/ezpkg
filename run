@@ -48,10 +48,11 @@ $*
 run-ztarget-finalize() {
     find "$ZTARGET_DIR" -name go.local.mod -execdir bash -c "
 echo 👉 \$PWD
-go get  -modfile=go.local.mod ./...
-go test -modfile=go.local.mod ./...
-cat go.local.mod | grep -v \"replace ezpkg\.io\" > go.mod
+cp go.local.mod go.mod
+go get  ./... && go test ./...
 go mod tidy
+cp go.mod go.localx.mod
+cat go.localx.mod | grep -v \"replace ezpkg\.io\" > go.mod
 " bash {} +
 }
 

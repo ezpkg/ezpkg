@@ -1,4 +1,4 @@
-package jsoniter
+package iterjson // import ezpkg.io/iter.json
 
 import (
 	"errors"

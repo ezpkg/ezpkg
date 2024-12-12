@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"ezpkg.io/errorz"
-	jsoniter "ezpkg.io/json+iter"
+	iterjson "ezpkg.io/iter.json"
 )
 
 func main() {
@@ -17,10 +17,10 @@ func main() {
 	data := errorz.Must(os.ReadFile(filepath.Dir(file) + "/../alice.json"))
 	{
 		// 🦁Example: filter and output json
-		b := jsoniter.NewBuilder("", "    ")
+		b := iterjson.NewBuilder("", "    ")
 		b.SetSkipEmptyStructures(true) // 👉 skip empty [] or {}
 		regexPetName := regexp.MustCompile("pets.*name")
-		for item, err := range jsoniter.Parse(data) {
+		for item, err := range iterjson.Parse(data) {
 			errorz.MustZ(err)
 			if item.Token.IsOpen() || item.Token.IsClose() {
 				b.Add(item.Key, item.Token)
