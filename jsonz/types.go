@@ -32,9 +32,9 @@ type Path []any
 type RawPath []PathItem
 
 type PathItem struct {
-	Index int
-	Token RawToken
-	Key   RawToken
+	Index int      // array index or object index
+	Key   RawToken // object key
+	Token RawToken // [ or { or } or ]
 }
 
 func (x Item) String() string {
@@ -134,6 +134,69 @@ func (p Path) Format(f fmt.State, c rune) {
 	}
 }
 
+// NewRawPath returns a new RawPath. Use int for array index and string for object key. Keys should be quoted for better performance (optional).
+func NewRawPath(parts ...any) (path RawPath, err error) {
+	path = make(RawPath, len(parts))
+	for i, part := range parts {
+		path[i], err = NewPathItem(part)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return path, nil
+}
+
+// Match returns true if the path is equal to the given path, by raw values (int for array index, string for object key). Examples:
+//
+//	path.Match([]any{1, "key", 2})
+func (p RawPath) Match(X ...any) bool {
+	if len(X) == 1 {
+		switch slice := X[0].(type) {
+		case []any:
+			return p.Match(slice...)
+		case RawPath:
+			return match(p, slice)
+		default:
+			// continue
+		}
+	}
+	return match(p, X)
+}
+
+func match[T any](p RawPath, X []T) bool {
+	if len(p) != len(X) {
+		return false
+	}
+	for i, item := range X {
+		if !p[i].Match(item) {
+			return false
+		}
+	}
+	return true
+}
+
+// ContainsRaw returns true if the path contains the given path, by raw values (int for array index, string for object key). Examples:
+//
+//	path.Contains([]any{1, "key", 2})
+func (p RawPath) Contains(X ...any) bool {
+	if len(p) < len(X) {
+		return false
+	}
+	for i := 0; i <= len(p)-len(X); i++ {
+		match := true
+		for j := range X {
+			if !p[i+j].Match(X[j]) {
+				match = false
+				break
+			}
+		}
+		if match {
+			return true
+		}
+	}
+	return false
+}
+
 // String returns the path of the item as a string. Default to 0.key.1 or "%+v" to format as [0]."key"[1]
 func (p RawPath) String() string {
 	return fmt.Sprint(p)
@@ -154,6 +217,52 @@ func (p RawPath) Format(f fmt.State, c rune) {
 	}
 }
 
+// NewPathItem returns a new PathItem. Use int for array index and string for object key. Keys should be quoted for better performance (optional).
+func NewPathItem(x any) (pi PathItem, err error) {
+	switch x := intOrStr(x).(type) {
+	case int:
+		if x < 0 {
+			return pi, fmt.Errorf("invalid path index: %d", x)
+		}
+		pi.Token = tokenArrayOpen
+		pi.Index = x
+		return pi, nil
+
+	case string:
+		pi.Token = tokenObjectOpen
+		if len(x) == 0 {
+			return pi, ErrTokenEmpty
+		}
+		if x[0] == '"' {
+			pi.Key, err = NewRawToken([]byte(x))
+		} else {
+			pi.Key = RawToken{
+				typ: TokenString,
+				raw: quoteString(x),
+			}
+		}
+		return pi, err
+
+	case []byte:
+		pi.Token = tokenObjectOpen
+		if len(x) == 0 {
+			return pi, ErrTokenEmpty
+		}
+		if x[0] == '"' {
+			pi.Key, err = NewRawToken(x)
+		} else {
+			pi.Key = RawToken{
+				typ: TokenString,
+				raw: quoteString(string(x)),
+			}
+		}
+		return pi, err
+
+	default:
+		return pi, fmt.Errorf("invalid path type: %T", x)
+	}
+}
+
 // IsArray returns true if the path item is inside an array.
 func (p PathItem) IsArray() bool {
 	return p.Token.typ == TokenArrayOpen
@@ -171,7 +280,7 @@ func (p PathItem) IsArrayIndex(idx int) bool {
 
 // IsObjectRawKey returns true if the path item is inside an object and the key matches the given unquote key.
 func (p PathItem) IsObjectRawKey(rawKey string) bool {
-	return p.Token.typ == TokenObjectOpen && p.Key.RawString() == rawKey
+	return p.Token.typ == TokenObjectOpen && string(p.Key.raw) == rawKey
 }
 
 // IsObjectKey returns true if the path item is inside an object and the key matches the given key.
@@ -181,6 +290,32 @@ func (p PathItem) IsObjectKey(key string) bool {
 		return err == nil && pKey == key
 	}
 	return false
+}
+
+// Match returns true if the path item matches the given value. The value must be an int for array index or a string|[]byte for object key.
+func (p PathItem) Match(x any) bool {
+	switch x := intOrStr(x).(type) {
+	case int:
+		return p.IsArrayIndex(x)
+	case string:
+		return p.IsObjectKey(x)
+	case []byte:
+		return p.IsObjectKey(string(x))
+	case PathItem:
+		if p.Token.typ != x.Token.typ {
+			return false
+		}
+		switch p.Token.typ {
+		case TokenArrayOpen:
+			return p.Index == x.Index
+		case TokenObjectOpen:
+			return p.Key.Equal(x.Key)
+		default:
+			return false
+		}
+	default:
+		return false
+	}
 }
 
 // Value returns the value of the path item. If the item is inside an array, it returns the index. If the item is inside an object, it returns the key.

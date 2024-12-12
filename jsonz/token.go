@@ -188,11 +188,6 @@ func (r RawToken) Raw() []byte {
 	return r.raw
 }
 
-// RawString returns the raw string value of the token.
-func (r RawToken) RawString() string {
-	return string(r.raw)
-}
-
 // String returns the raw string value of the token. Use ToString() for unquoted strings.
 func (r RawToken) String() string {
 	return string(r.raw)
@@ -268,13 +263,41 @@ func (r RawToken) GetString() (string, error) {
 	if r.typ != TokenString {
 		return "", ErrTokenString
 	}
+	b, err := unquote(r.raw)
+	return string(b), err
+}
 
-	raw, N := r.raw, len(r.raw)
+// GetValue returns the value of the token as an any.
+func (r RawToken) GetValue() (any, error) {
+	switch r.typ {
+	case TokenNull:
+		return nil, nil
+	case TokenTrue:
+		return true, nil
+	case TokenFalse:
+		return false, nil
+	case TokenNumber:
+		return r.GetNumber()
+	case TokenString:
+		return r.GetString()
+	case TokenObjectOpen, TokenObjectClose, TokenArrayOpen, TokenArrayClose, TokenComma, TokenColon:
+		return r.typ, nil
+	}
+	return nil, ErrTokenType
+}
+
+// Equal returns true if the token is equal to the other token.
+func (r RawToken) Equal(other RawToken) bool {
+	return r.typ == other.typ && string(r.raw) == string(other.raw)
+}
+
+func unquote(raw []byte) ([]byte, error) {
+	N := len(raw)
 	if N < 2 {
-		return "", ErrTokenString
+		return nil, ErrTokenString
 	}
 	if raw[0] != '"' || raw[N-1] != '"' {
-		return "", ErrTokenString
+		return nil, ErrTokenString
 	}
 	i := 1
 	for ; i < N-1; i++ {
@@ -283,17 +306,17 @@ func (r RawToken) GetString() (string, error) {
 		case '\\':
 			goto slow
 		case '\b', '\f', '\n', '\r', '\t':
-			return "", ErrTokenString
+			return nil, ErrTokenString
 		}
 		if c >= utf8.RuneSelf {
 			goto slow // utf-8
 		}
 	}
-	return string(raw[1 : N-1]), nil
+	return raw[1 : N-1], nil
 
 slow:
-	s := make([]byte, 0, N-2)
-	copy(s, raw[1:i])
+	b := make([]byte, 0, N-2)
+	copy(b, raw[1:i])
 	N = N - 1 // new length
 	for i < N {
 		c := raw[i]
@@ -301,59 +324,59 @@ slow:
 		case '\\':
 			break
 		case '\b', '\f', '\n', '\r', '\t':
-			return "", ErrTokenString
+			return nil, ErrTokenString
 		default:
 			// ascii
 			if c < utf8.RuneSelf {
-				s = append(s, c)
+				b = append(b, c)
 				i++
 				continue
 			}
 			// utf-8
 			r, size := utf8.DecodeRune(raw[i:])
 			if r == utf8.RuneError {
-				return "", ErrTokenString
+				return nil, ErrTokenString
 			}
-			s = append(s, raw[i:i+size]...)
+			b = append(b, raw[i:i+size]...)
 			i += size
 			continue
 		}
 
 		i++
 		if i >= N {
-			return "", ErrTokenString
+			return nil, ErrTokenString
 		}
 		switch raw[i] {
 		case '"', '\\', '/':
-			s = append(s, raw[i])
+			b = append(b, raw[i])
 			i++
 		case 'b':
-			s = append(s, '\b')
+			b = append(b, '\b')
 			i++
 		case 'f':
-			s = append(s, '\f')
+			b = append(b, '\f')
 			i++
 		case 'n':
-			s = append(s, '\n')
+			b = append(b, '\n')
 			i++
 		case 'r':
-			s = append(s, '\r')
+			b = append(b, '\r')
 			i++
 		case 't':
-			s = append(s, '\t')
+			b = append(b, '\t')
 			i++
 		case 'u':
 			utfRune, n := decodeHexRune(raw[i-1:])
 			if n == 0 {
-				return "", ErrTokenString
+				return nil, ErrTokenString
 			}
-			s = utf8.AppendRune(s, utfRune)
+			b = utf8.AppendRune(b, utfRune)
 			i += n - 1
 		default:
-			return "", ErrTokenString
+			return nil, ErrTokenString
 		}
 	}
-	return string(s), nil
+	return b, nil
 }
 
 func canSimplyUnquote(raw []byte) bool {
@@ -432,21 +455,31 @@ func decodeHex(s []byte) (x rune) {
 	return
 }
 
-// GetValue returns the value of the token as an any.
-func (r RawToken) GetValue() (any, error) {
-	switch r.typ {
-	case TokenNull:
-		return nil, nil
-	case TokenTrue:
-		return true, nil
-	case TokenFalse:
-		return false, nil
-	case TokenNumber:
-		return r.GetNumber()
-	case TokenString:
-		return r.GetString()
-	case TokenObjectOpen, TokenObjectClose, TokenArrayOpen, TokenArrayClose, TokenComma, TokenColon:
-		return r.typ, nil
+func intOrStr(x any) any {
+	switch x := x.(type) {
+	case int:
+		return x
+	case string:
+		return x
+	case int8:
+		return int(x)
+	case int16:
+		return int(x)
+	case int32:
+		return int(x)
+	case int64:
+		return int(x)
+	case uint:
+		return int(x)
+	case uint8:
+		return int(x)
+	case uint16:
+		return int(x)
+	case uint32:
+		return int(x)
+	case uint64:
+		return int(x)
+	default:
+		return x
 	}
-	return nil, ErrTokenType
 }
