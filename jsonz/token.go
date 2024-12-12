@@ -121,15 +121,22 @@ var (
 
 // NewRawToken returns a new raw token from the raw bytes.
 func NewRawToken(raw []byte) (RawToken, error) {
+	token, remain, err := newRawToken(raw)
+	switch {
+	case err != nil:
+		return RawToken{}, err
+	case token.typ == 0:
+		return RawToken{}, ErrTokenEmpty
+	case len(remain) != 0:
+		return RawToken{}, ErrTokenInvalid
+	}
+	return token, err
+}
+
+func newRawToken(raw []byte) (RawToken, []byte, error) {
 	token, remain, err := NextToken(raw)
 	if err != nil {
-		return RawToken{}, err
-	}
-	if token.typ == 0 {
-		return RawToken{}, ErrTokenEmpty
-	}
-	if len(remain) != 0 {
-		return RawToken{}, ErrTokenInvalid
+		return RawToken{}, remain, err
 	}
 	switch token.typ {
 	case TokenNumber:
@@ -137,7 +144,7 @@ func NewRawToken(raw []byte) (RawToken, error) {
 	case TokenString:
 		_, err = token.GetString() // validate string
 	}
-	return token, err
+	return token, remain, err
 }
 
 // MustRawToken returns a new raw token from the raw bytes. Panic if error.

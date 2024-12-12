@@ -3,9 +3,11 @@ package jsonz
 import (
 	"bytes"
 	stdjson "encoding/json"
-	"fmt"
+	"iter"
 	"math"
 	"strconv"
+
+	"ezpkg.io/errorz"
 )
 
 // Reconstruct is an example of how to reconstruct a JSON from Parse().
@@ -119,6 +121,8 @@ func (b *Builder) AddToken(key string, token RawToken) {
 // Add adds a key and value to the builder. It will add a comma if needed.
 func (b *Builder) Add(key string, value any) {
 	var token RawToken
+	var parseNext func() (Item, error, bool)
+	var stopParse func()
 
 	switch v := value.(type) {
 	case TokenType: // open or close token
@@ -128,6 +132,24 @@ func (b *Builder) Add(key string, value any) {
 		token = v
 
 	case []byte:
+		tok, remain, err := newRawToken(v)
+		if tok.typ != 0 && err == nil && len(remain) == 0 {
+			token = tok // valid token
+		} else {
+			parseNext, stopParse = iter.Pull2(Parse(v))
+			defer stopParse()
+			item, err0, ok := parseNext()
+			switch {
+			case err0 != nil:
+				b.addErrorf("Add: %v", err0)
+			case !ok || item.Token.Type() == 0:
+				b.addErrorf("Add: empty value")
+			default:
+				token = item.Token
+			}
+		}
+
+	case stdjson.RawMessage:
 		var err error
 		token, err = NewRawToken(v)
 		if err != nil {
@@ -139,6 +161,16 @@ func (b *Builder) Add(key string, value any) {
 	}
 
 	b.add(key, token.typ, token.raw, value)
+	if parseNext == nil {
+		return
+	}
+	for item, err0, ok := parseNext(); ok; item, err0, ok = parseNext() {
+		if err0 != nil {
+			b.addErrorf("Add: %v", err0)
+			return
+		}
+		b.add(item.Key, item.Token.Type(), item.Token.Raw(), nil)
+	}
 }
 
 func (b *Builder) add(key any, tokType TokenType, raw []byte, value any) {
@@ -466,7 +498,7 @@ func (b *Builder) Len() int {
 
 func (b *Builder) addErrorf(msg string, args ...any) {
 	if b.err == nil {
-		b.err = fmt.Errorf(msg, args...)
+		b.err = errorz.Newf(msg, args...)
 	}
 }
 
