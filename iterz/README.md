@@ -15,7 +15,7 @@ Package [iterz](https://pkg.go.dev/ezpkg.io/iterz) extends the standard library 
 ## Installation
 
 ```sh
-go get -u ezpkg.io/iterz@v0.2.0
+go get -u ezpkg.io/iterz@v0.2.1
 ```
 
 ## Features

@@ -15,7 +15,7 @@ Package [json+iter](https://pkg.go.dev/ezpkg.io/json+iter) is a minimal implemen
 ## Installation
 
 ```sh
-go get -u ezpkg.io/json+iter@v0.2.0
+go get -u ezpkg.io/json+iter@v0.2.1
 ```
 
 ## Examples

@@ -15,7 +15,7 @@ Package [slicez](https://pkg.go.dev/ezpkg.io/slicez) extends the standard librar
 ## Installation
 
 ```sh
-go get -u ezpkg.io/slicez@v0.2.0
+go get -u ezpkg.io/slicez@v0.2.1
 ```
 
 ## Examples
