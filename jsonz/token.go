@@ -1,6 +1,7 @@
 package jsonz
 
 import (
+	"bytes"
 	"math"
 	"strconv"
 	"unicode/utf16"
@@ -250,6 +251,21 @@ func (r RawToken) GetNumber() (float64, error) {
 		}
 		return f, nil
 	}
+}
+
+// GetInt returns the integer value of the token.
+func (r RawToken) GetInt() (int, error) {
+	if r.typ != TokenNumber {
+		return 0, ErrTokenNumber
+	}
+	if bytes.ContainsAny(r.raw, ".eE") {
+		return 0, ErrNumberNotInt
+	}
+	v, err := strconv.ParseInt(string(r.raw), 10, 64)
+	if err != nil {
+		return 0, ErrTokenNumber
+	}
+	return int(v), nil
 }
 
 // GetBool returns the boolean value of the token.

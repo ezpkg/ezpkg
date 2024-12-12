@@ -13,6 +13,7 @@ var (
 	ErrTokenEmpty   = errors.New("invalid empty token")
 	ErrTokenString  = errors.New("invalid string token")
 	ErrTokenNumber  = errors.New("invalid number token")
+	ErrNumberNotInt = errors.New("number is not an integer")
 	ErrTokenBool    = errors.New("invalid boolean token")
 	ErrTokenType    = errors.New("invalid token type")
 )
@@ -163,6 +164,14 @@ func (p RawPath) Match(X ...any) bool {
 	return match(p, X)
 }
 
+// Last returns the last item of the path.
+func (p RawPath) Last() PathItem {
+	if len(p) == 0 {
+		return PathItem{}
+	}
+	return p[len(p)-1]
+}
+
 func match[T any](p RawPath, X []T) bool {
 	if len(p) != len(X) {
 		return false
@@ -290,6 +299,24 @@ func (p PathItem) IsObjectKey(key string) bool {
 		return err == nil && pKey == key
 	}
 	return false
+}
+
+// ArrayIndex returns the array index of the path item. It returns the index as an int if the item is inside an array.
+func (p PathItem) ArrayIndex() (int, bool) {
+	if p.Token.typ == TokenArrayOpen {
+		return p.Index, true
+	}
+	return 0, false
+}
+
+// ObjectKey returns the object key of the path item. It returns the key as a string if the item is inside an object.
+func (p PathItem) ObjectKey() (string, bool) {
+	if p.Token.typ == TokenObjectOpen {
+		if str, err := p.Key.GetString(); err == nil {
+			return str, true
+		}
+	}
+	return "", false
 }
 
 // Match returns true if the path item matches the given value. The value must be an int for array index or a string|[]byte for object key.

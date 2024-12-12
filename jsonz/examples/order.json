@@ -1,0 +1,17 @@
+{
+  "order_id": 12345678901234,
+  "number": 12,
+  "customer_id": 12345678905678,
+  "items": [
+    {
+      "item_id": 12345678901042,
+      "quantity": 1,
+      "price": 123.45
+    },
+    {
+      "item_id": 12345678901098,
+      "quantity": 2,
+      "price": 234.56
+    }
+  ]
+}
