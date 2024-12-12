@@ -15,7 +15,7 @@ func main() {
 	data := errorz.Must(os.ReadFile(filepath.Dir(file) + "/../alice.json"))
 
 	{
-		// minify json
+		// 🐝Example: minify json
 		b := jsonz.NewBuilder("", "")
 		for item, err := range jsonz.Parse(data) {
 			errorz.MustZ(err)
@@ -25,7 +25,7 @@ func main() {
 		fmt.Printf("\n--- minify ---\n%s\n----------\n", out)
 	}
 	{
-		// reformat json
+		// 🦋Example: reformat json
 		b := jsonz.NewBuilder("→   ", "\t")
 		for item, err := range jsonz.Parse(data) {
 			errorz.MustZ(err)

@@ -15,6 +15,7 @@ func main() {
 	_, file, _, _ := runtime.Caller(0)
 	data := errorz.Must(os.ReadFile(filepath.Dir(file) + "/../alice.json"))
 	{
+		// 🐞Example: print with line number
 		i := 0
 		b := jsonz.NewBuilder("", "    ")
 		for item, err := range jsonz.Parse(data) {
