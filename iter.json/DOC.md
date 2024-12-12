@@ -4,11 +4,11 @@ Package [iter.json](https://pkg.go.dev/ezpkg.io/iter.json) is JSON parser and tr
 
 ## Examples
 
-Given an example [eve.json](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/eve.json) file:
+Given an example [alice.json](https://github.com/ezpkg/ezpkg/blob/main/iter.json/examples/alice.json) file:
 
 ```json
 {
-  "name": "Eve",
+  "name": "Alice",
   "age": 24,
   "scores": [9, 10, 8],
   "address": {
@@ -35,7 +35,7 @@ import (
 )
 
 func main() {
-    data := `{"name": "Eve", "age": 24, "scores": [9, 10, 8], "address": {"city": "The Sun", "zip": 10101}}`
+    data := `{"name": "Alice", "age": 24, "scores": [9, 10, 8], "address": {"city": "The Sun", "zip": 10101}}`
 
     // 🎄Example: iterate over json
     fmt.Printf("| %12v | %10v | %10v |%v|\n", "PATH", "KEY", "TOKEN", "LVL")
@@ -54,7 +54,7 @@ The code will output:
 |         PATH |        KEY |      TOKEN |LVL|
 | ------------ | ---------- | ---------- | - |
 |              |            |          { | 0 |
-|         name |     "name" |      "Eve" | 1 |
+|         name |     "name" |    "Alice" | 1 |
 |          age |      "age" |         24 | 1 |
 |       scores |   "scores" |          [ | 1 |
 |     scores.0 |            |          9 | 2 |
@@ -167,12 +167,12 @@ The first example minifies the JSON while the second example formats it with pre
 
 ```text
 --- minify ---
-{"name":"Eve","age":24,"scores":[9,10,8],"address":{"city":"The Sun","zip":10101}}
+{"name":"Alice","age":24,"scores":[9,10,8],"address":{"city":"The Sun","zip":10101}}
 ----------
 
 --- reformat ---
 👉   {
-👉       "name": "Eve",
+👉       "name": "Alice",
 👉       "age": 24,
 👉       "scores": [
 👉           9,
@@ -212,7 +212,7 @@ This will output:
 
 ```text
   1    {
-  2        "name": "Eve",
+  2        "name": "Alice",
   3        "age": 24,
   4        "scores": [
   5            9,
@@ -262,7 +262,7 @@ This will output:
 
 ```text
 {                             //  1
-    "name": "Eve",            //  2
+    "name": "Alice",          //  2
     "age": 24,                //  3
     "scores": [               //  4
         9,                    //  5
@@ -329,7 +329,7 @@ for item, err := range iterjson.Parse(data) {
 Both examples will output:
 
 ```text
- 2                "Eve" . name
+ 2              "Alice" . name
  9                    { . address
 10            "The Sun" . address.city
 11                10101 . address.zip
@@ -370,7 +370,7 @@ This example will return a new JSON with only the filtered fields:
 
 ```json
 {
-    "name": "Eve",
+    "name": "Alice",
     "address": {
         "city": "The Sun",
         "zip": 10101

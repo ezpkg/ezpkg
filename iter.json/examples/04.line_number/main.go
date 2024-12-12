@@ -12,7 +12,7 @@ import (
 
 func main() {
 	_, file, _, _ := runtime.Caller(0)
-	data := errorz.Must(os.ReadFile(filepath.Dir(file) + "/../alice.json"))
+	data := errorz.Must(os.ReadFile(filepath.Dir(file) + "/../alice.nguyen.json"))
 	{
 		// 🐞Example: print with line number
 		i := 0

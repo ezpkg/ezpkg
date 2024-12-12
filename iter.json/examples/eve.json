@@ -1,9 +1,0 @@
-{
-  "name": "Eve",
-  "age": 24,
-  "scores": [9, 10, 8],
-  "address": {
-    "city": "The Sun",
-    "zip": 10101
-  }
-}
