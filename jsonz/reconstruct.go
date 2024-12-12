@@ -68,13 +68,11 @@ type Builder struct {
 	indent string
 	prefix string
 
-	lastTok TokenType
-	level   int
-	stack   []stItem // array or object
-	err     error
+	stItem
+	level int
+	stack []stItem // array or object
+	err   error
 
-	lastIndent          bool
-	lastNewline         bool
 	skipEmptyStructures bool
 	useAltBuf           bool
 }
@@ -102,6 +100,9 @@ func (b *Builder) SetSkipEmptyStructures(skip bool) {
 
 // Bytes returns the bytes of the builder with an error if any.
 func (b *Builder) Bytes() ([]byte, error) {
+	if b.Len() == 0 {
+		return []byte("null"), nil
+	}
 	return append(b.buf, b.altBuf...), b.err
 }
 
@@ -109,30 +110,27 @@ func (b *Builder) Bytes() ([]byte, error) {
 func (b *Builder) AddRaw(key, token RawToken) {
 	switch {
 	case token.IsOpen():
-		idx := b.Len()
+		snapshot := b.snapshot()
+		b.switchAltBuf()
 		b.WriteNewline(token.Type())
 		b.WriteIndent()
 		b.writeKey(key)
 		b.writeByte(byte(token.Type()))
+		b.push(token.Type(), snapshot)
 		b.setLastToken(token.Type())
-		b.push(token.Type(), idx)
 
 	case token.IsClose():
 		if key.Type() != 0 {
 			b.addErrorf("unexpected key(%s) before close token(%s)", key, token.Type())
 			return
 		}
-		top, ok := b.pop()
+		snapshot, ok := b.pop()
 		if !ok {
 			b.addErrorf("unexpected close token(%s)", token.Type())
 			return
 		}
-		if b.skipEmptyStructures {
-			altIdx := top.idx - len(b.buf)
-			if altIdx > 0 {
-				b.altBuf = b.altBuf[:altIdx]
-			}
-
+		if b.skipEmptyStructures && b.lastTok.IsOpen() {
+			b.restore(snapshot)
 		} else {
 			b.WriteNewline(token.Type())
 			b.WriteIndent()
@@ -141,6 +139,7 @@ func (b *Builder) AddRaw(key, token RawToken) {
 		}
 
 	case token.IsValue():
+		b.switchBuf()
 		b.WriteNewline(token.Type())
 		b.WriteIndent()
 		b.writeKey(key)
@@ -152,17 +151,17 @@ func (b *Builder) AddRaw(key, token RawToken) {
 	}
 }
 
-// AddRaw adds a key and token to the builder. It will add a comma if needed.
+// AddToken adds a key and token to the builder. It will add a comma if needed.
 func (b *Builder) AddToken(key string, token RawToken) {
 	switch {
 	case token.IsOpen():
-		idx := b.Len()
+		snapshot := b.snapshot()
 		b.WriteNewline(token.Type())
 		b.WriteIndent()
 		b.writeKeyString(key)
 		b.writeByte(byte(token.Type()))
+		b.push(token.Type(), snapshot)
 		b.setLastToken(token.Type())
-		b.push(token.Type(), idx)
 
 	case token.IsClose():
 		if key != "" {
@@ -173,13 +172,22 @@ func (b *Builder) AddToken(key string, token RawToken) {
 			b.addErrorf("unexpected close token(%s)", token.Type())
 			return
 		}
-		b.pop()
-		b.WriteNewline(token.Type())
-		b.WriteIndent()
-		b.writeByte(byte(token.Type()))
-		b.setLastToken(token.Type())
+		snapshot, ok := b.pop()
+		if !ok {
+			b.addErrorf("unexpected close token(%s)", token.Type())
+			return
+		}
+		if b.skipEmptyStructures && b.lastTok.IsOpen() {
+			b.restore(snapshot)
+		} else {
+			b.WriteNewline(token.Type())
+			b.WriteIndent()
+			b.writeByte(byte(token.Type()))
+			b.setLastToken(token.Type())
+		}
 
 	case token.IsValue():
+		b.switchBuf()
 		b.WriteNewline(token.Type())
 		b.WriteIndent()
 		b.writeKeyString(key)
@@ -218,13 +226,13 @@ func (b *Builder) Add(key string, value any) {
 
 	switch {
 	case tokType.IsOpen():
-		idx := b.Len()
+		snapshot := b.snapshot()
 		b.WriteNewline(tokType)
 		b.WriteIndent()
 		b.writeKeyString(key)
 		b.writeByte(byte(tokType))
 		b.setLastToken(tokType)
-		b.push(tokType, idx)
+		b.push(tokType, snapshot)
 
 	case tokType.IsClose():
 		if key != "" {
@@ -242,6 +250,7 @@ func (b *Builder) Add(key string, value any) {
 		b.setLastToken(tokType)
 
 	default:
+		b.switchBuf()
 		b.WriteNewline(TokenString) // assume value token
 		b.WriteIndent()
 		b.writeKeyString(key)
@@ -275,7 +284,6 @@ func (b *Builder) WriteComma(next TokenType) {
 }
 
 func (b *Builder) writeValue(value any) {
-	b.switchBuf()
 	b.setLastToken(TokenNumber) // default to number, can be overridden
 	switch v := value.(type) {
 	case nil:
@@ -469,9 +477,29 @@ func (b *Builder) switchBuf() {
 	b.useAltBuf = false
 }
 
-func (b *Builder) push(token TokenType, idx int) {
+func (b *Builder) switchAltBuf() {
+	b.useAltBuf = true
+}
+
+func (b *Builder) snapshot() stItem {
+	snapshot := b.stItem
+	snapshot.idx = b.Len()
+	return snapshot
+}
+
+func (b *Builder) restore(snapshot stItem) {
+	altIdx := snapshot.idx - len(b.buf)
+	if altIdx >= 0 {
+		b.altBuf = b.altBuf[:altIdx]
+	}
+	b.stItem = snapshot
+}
+
+func (b *Builder) push(token TokenType, snapshot stItem) {
 	b.level++
-	b.stack = append(b.stack, stItem{tok: token, idx: idx})
+	item := snapshot
+	item.tok = token
+	b.stack = append(b.stack, item)
 }
 
 func (b *Builder) pop() (stItem, bool) {
@@ -525,6 +553,10 @@ func ShouldAddComma(lastToken, nextToken TokenType) bool {
 }
 
 type stItem struct {
-	tok TokenType
 	idx int
+	tok TokenType
+
+	lastTok     TokenType
+	lastIndent  bool
+	lastNewline bool
 }

@@ -161,6 +161,58 @@ func TestReconstruct(t *testing.T) {
 }`)
 				})
 			})
+			Convey("SkipEmptyStructures", func() {
+				exec := func(in string) string {
+					b := NewBuilder("", "")
+					b.SetSkipEmptyStructures(true)
+					for item, err := range Parse([]byte(in)) {
+						Ω(err).ToNot(HaveOccurred())
+						b.AddRaw(item.Key, item.Token)
+					}
+					return string(must(b.Bytes()))
+				}
+
+				Convey("[]", func() {
+					out := exec(`[]`)
+					Ω(out).To(Equal("null"))
+				})
+				Convey("{}", func() {
+					out := exec(`{}`)
+					Ω(out).To(Equal("null"))
+				})
+				Convey(`[1,[],{},2]`, func() {
+					out := exec(`[1,[],{},2]`)
+					Ω(out).To(Equal("[1,2]"))
+				})
+				Convey(`[[[[],1,[]]]]`, func() {
+					out := exec(`[[[[],1,[]]]]`)
+					Ω(out).To(Equal("[[[1]]]"))
+				})
+				Convey(`[[],"foo",{}]`, func() {
+					out := exec(`[[],"foo",{}]`)
+					Ω(out).To(Equal(`["foo"]`))
+				})
+				Convey(`{"a":{},"b":42,"c":[]}`, func() {
+					out := exec(`{"a":{},"b":42,"c":[]}`)
+					Ω(out).To(Equal(`{"b":42}`))
+				})
+				Convey(`complex`, func() {
+					out := exec(`
+{
+  "a": {},
+  "_": [
+    [],
+    {
+      "d": {},
+      "e": "1",
+      "f": [[1]]
+    }
+  ],
+  "c": []
+}`)
+					Ω(out).To(Equal(`{"_":[{"e":"1","f":[[1]]}]}`))
+				})
+			})
 		})
 	})
 }

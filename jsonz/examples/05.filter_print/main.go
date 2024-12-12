@@ -18,7 +18,7 @@ func main() {
 	{
 		// 🐳Example: filter and print, use GetPathString()
 		fmt.Printf("\n--- filter: print line number ---\n")
-		i, rePetName := 0, regexp.MustCompile("pets.*name")
+		i, regexPetName := 0, regexp.MustCompile("pets.*name")
 		for item, err := range jsonz.Parse(data) {
 			i++
 			errorz.MustZ(err)
@@ -28,7 +28,7 @@ func main() {
 			case path == "name",
 				path == "email",
 				path == "phone",
-				rePetName.MatchString(path),
+				regexPetName.MatchString(path),
 				strings.Contains(path, "address"):
 				// continue
 			default:
